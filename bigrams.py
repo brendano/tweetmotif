@@ -46,19 +46,19 @@ def collect_statistics(filename):
       "bigrams": bigram_counts,
       "big_n": big_n }
 
-def compare_models(collection_model, background_model, min_count=1):
-  bkgnd_bigram_counts = background_model["bigrams"]
+def compare_models(collection_model, background_model, ngram_type, min_count=1):
+  bkgnd_ngram_counts = background_model[ngram_type]
   bkgnd_N = float(background_model["big_n"])
-  coll_bigram_counts = collection_model["bigrams"]
+  coll_ngram_counts = collection_model[ngram_type]
   coll_N = float(collection_model["big_n"])
-  coll_bigrams_and_counts = coll_bigram_counts.items()
-  coll_bigrams_and_mle_probs = map(lambda (b, c): (b, c/coll_N), coll_bigrams_and_counts)
-  coll_bigrams_and_mle_prob_ratio = map(lambda (b, p): (b, compute_ratio(p, bkgnd_bigram_counts[b]/bkgnd_N)), coll_bigrams_and_counts)
-  coll_bigrams_and_mle_prob_ratio.sort(key=lambda pair: pair[1], reverse=True)
-  for bigram, ratio in coll_bigrams_and_mle_prob_ratio:
-    if coll_bigram_counts[bigram] < min_count:
+  coll_ngrams_and_counts = coll_ngram_counts.items()
+  coll_ngrams_and_mle_probs = map(lambda (b, c): (b, c/coll_N), coll_ngrams_and_counts)
+  coll_ngrams_and_mle_prob_ratio = map(lambda (b, p): (b, compute_ratio(p, bkgnd_ngram_counts[b]/bkgnd_N)), coll_ngrams_and_counts)
+  coll_ngrams_and_mle_prob_ratio.sort(key=lambda pair: pair[1], reverse=True)
+  for ngram, ratio in coll_ngrams_and_mle_prob_ratio:
+    if coll_ngram_counts[ngram] < min_count:
       continue
-    print "%s\t%s" % (ratio, bigram)
+    print "%s\t%s" % (ratio, ngram)
 
 def compute_ratio(num, denom):
   if denom == 0:
@@ -79,7 +79,7 @@ def compute_ratio(num, denom):
 if __name__=='__main__':
   background_model = collect_statistics("the_en_tweets")
   collection_model = collect_statistics(sys.argv[1])
-  compare_models(collection_model, background_model, 1)
+  compare_models(collection_model, background_model, "unigrams", 1)
 
   #output_ngram_counts(unigram_counts, 100)
   #output_ngram_counts(bigram_counts, 20)
