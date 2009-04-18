@@ -22,8 +22,6 @@ PROTECT_THESE += ABBREVS
 PROTECT_S = "|".join(PROTECT_THESE)
 PROTECT_RE = mycompile(PROTECT_S)
 
-EDGE_SINGLE_QUOTE = r"\s'\S|\S'\s"
-
 def tokenize(tweet):
   s = tweet
   s = squeeze_whitespace(s)
@@ -71,8 +69,6 @@ def edge_quote_munge(s):
 SPLITTER_RE = mycompile(r'[^a-zA-Z0-9_@]+')
 def unprotected_tokenize(s):
   return s.split()
-
-
 
 if __name__=='__main__':
   for line in sys.stdin:
