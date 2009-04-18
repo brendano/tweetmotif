@@ -8,6 +8,7 @@ import sys
 import re
 import fileinput
 from collections import defaultdict
+import twokenize
 
 non_word = re.compile(r'''[^a-zA-Z0-9_@]+''')
 
@@ -35,7 +36,7 @@ def collect_statistics(filename):
   bigram_counts = defaultdict(int)
   big_n = 0
   for line in fileinput.input(filename):
-    toks = map(lambda tok: tok.lower(), tokens(line))
+    toks = map(lambda tok: tok.lower(), twokenize.tokenize(line))
     big_n += len(toks)
     for unigram in toks:
       unigram_counts[unigram] += 1
@@ -51,23 +52,34 @@ def compare_models(collection_model, background_model, min_count=1):
   coll_bigram_counts = collection_model["bigrams"]
   coll_N = float(collection_model["big_n"])
   coll_bigrams_and_counts = coll_bigram_counts.items()
-  coll_bigrams_and_counts.sort()
-  for bigram, count in coll_bigrams_and_counts:
-    if count < min_count:
+  coll_bigrams_and_mle_probs = map(lambda (b, c): (b, c/coll_N), coll_bigrams_and_counts)
+  coll_bigrams_and_mle_prob_ratio = map(lambda (b, p): (b, compute_ratio(p, bkgnd_bigram_counts[b]/bkgnd_N)), coll_bigrams_and_counts)
+  coll_bigrams_and_mle_prob_ratio.sort(key=lambda pair: pair[1], reverse=True)
+  for bigram, ratio in coll_bigrams_and_mle_prob_ratio:
+    if coll_bigram_counts[bigram] < min_count:
       continue
-    coll_MLE = count/coll_N
-    bkgnd_MLE = bkgnd_bigram_counts[bigram]/bkgnd_N
-    if coll_MLE > bkgnd_MLE * 10:
-      print "%s\t%s" % (count/coll_N, ' '.join(bigram))
-    else:
-      print "-\t%s" % ' '.join(bigram)
+    print "%s\t%s" % (ratio, bigram)
+
+def compute_ratio(num, denom):
+  if denom == 0:
+    return 0
+  else:
+    return num/denom
+
+#  for bigram, count in coll_bigrams_and_counts:
+#    if count < min_count:
+#      continue
+#    coll_MLE = count/coll_N
+#    bkgnd_MLE = bkgnd_bigram_counts[bigram]/bkgnd_N
+#    if coll_MLE > bkgnd_MLE * 100:
+#      print "%s\t%s" % (count/coll_N, ' '.join(bigram))
+#    else:
+#      print "-\t%s" % ' '.join(bigram)
 
 if __name__=='__main__':
-  unigram_counts = defaultdict(int)
-  bigram_counts = defaultdict(int)
-  background_model = collect_statistics("the_en")
+  background_model = collect_statistics("the_en_tweets")
   collection_model = collect_statistics(sys.argv[1])
-  compare_models(collection_model, background_model, 20)
+  compare_models(collection_model, background_model, 1)
 
   #output_ngram_counts(unigram_counts, 100)
   #output_ngram_counts(bigram_counts, 20)
