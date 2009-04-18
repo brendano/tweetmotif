@@ -10,7 +10,7 @@ import fileinput
 from collections import defaultdict
 import twokenize
 
-non_word = re.compile(r'''[^a-zA-Z0-9_@]+''')
+punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
 
 def tokens(text):
   return non_word.sub(' ', text).split()
@@ -36,7 +36,7 @@ def collect_statistics(filename):
   bigram_counts = defaultdict(int)
   big_n = 0
   for line in fileinput.input(filename):
-    toks = map(lambda tok: tok.lower(), twokenize.tokenize(line))
+    toks = filter(lambda tok: not punc_re.search(tok), map(lambda tok: tok.lower(), twokenize.tokenize(line)))
     big_n += len(toks)
     for unigram in toks:
       unigram_counts[unigram] += 1
