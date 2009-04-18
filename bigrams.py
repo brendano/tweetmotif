@@ -11,6 +11,7 @@ import fileinput
 from collections import defaultdict
 import twokenize
 import lang_model
+import util
 
 punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
 
@@ -51,7 +52,7 @@ def output_ngram_counts(ngram_counts, min_count=1):
 #      "big_n": big_n }
 
 def collect_statistics_into_model(filename, lang_model):
-  for line in fileinput.input(filename):
+  for line in util.counter(  fileinput.input(filename)  ):
     toks = (tok.lower() for tok in twokenize.tokenize(line))
     toks = (tok for tok in toks if not punc_re.search(tok))
     toks = list(toks)
@@ -101,9 +102,12 @@ if __name__=='__main__':
   #background_model = collect_statistics("data/the_en_tweets")
   #collection_model = collect_statistics(sys.argv[1])
 
-  background_model = lang_model.LocalLanguageModel()
-  collection_model = lang_model.LocalLanguageModel()
+  background_model = lang_model.LocalLM()
   collect_statistics_into_model("data/the_en_tweets", background_model)
+
+  #background_model = lang_model.MemcacheLM()
+
+  collection_model = lang_model.LocalLM()
   collect_statistics_into_model(sys.argv[1], collection_model)
   for ratio,ngram in compare_models(collection_model, background_model, "unigram", 1):
     print "%s\t%s" % (ratio, ngram)
