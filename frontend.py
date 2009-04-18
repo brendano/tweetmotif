@@ -13,6 +13,14 @@ def do_search(q, lc):
   for r in search.yield_results(q,2):
     lc.add_tweet(r)
 
+def nice_tweet(tweet):
+  link = "http://twitter.com/%s/status/%s" % (tweet['from_user'],tweet['id'])
+  s = ""
+  s += "<span class=text>" + tweet['text'] + "</span>"
+  s += " "
+  s += "<a href='%s'>msg</a>"
+  return s
+
 def my_app(environ, start_response):
   status = '200 OK'
   response_headers = [('Content-type','text/html')]
@@ -23,9 +31,11 @@ def my_app(environ, start_response):
   for ratio,bigram in model_analysis.compare_models(lc.model, model_analysis.background_model):
     s = "<br>%s &nbsp; %s" % (" ".join(bigram), ratio)
     yield str(s)
-    for tweet in lc.index[bigram]:
-      yield "<br> &nbsp;"
-      yield repr(tweet)
+    for i,tweet in enumerate(lc.index[bigram]):
+      if i > 10: break
+      yield "<br>"
+      yield nice_tweet(tweet)
+
   #yield "<pre>"
   #yield repr(lc.model)
   #yield "<hr>"

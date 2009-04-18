@@ -1,8 +1,6 @@
 import twokenize
 from collections import defaultdict
-
-def bigrams(tokens):
-  return zip(['!START'] + tokens, tokens)
+import bigrams
 
 class LinkedCorpus:
   def __init__(self):
@@ -23,7 +21,7 @@ class LinkedCorpus:
     for unigram in toks:
       unigram_counts[unigram] += 1
       self.index[unigram].append(tweet)
-    for bigram in bigrams(toks):
+    for bigram in bigrams.bigrams(toks):
       bigram_counts[bigram] += 1
       self.index[bigram].append(tweet)
 
