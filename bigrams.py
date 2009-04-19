@@ -15,12 +15,26 @@ import util
 
 punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
 
-def tokens(text):
-  return non_word.sub(' ', text).split()
+#def tokens(text):
+#  return non_word.sub(' ', text).split()
+
+def unigrams(tokens):
+  return [(tok,) for tok in tokens]
 
 def bigrams(tokens):
-  return zip(['!START'] + tokens, tokens)
+  #return zip(['!START'] + tokens, tokens)
+  return ngrams(tokens,2)
 
+def multi_ngrams(tokens, n_and_up):
+  ret = []
+  for k in range(n_and_up, len(tokens)):
+    ret += ngrams(tokens, k)
+  return ret
+
+def ngrams(tokens, n):
+  return [tuple(tokens[i:(i+n)]) for i in range(len(tokens) - (n-1))]
+
+    
 def output_ngram_counts(ngram_counts, min_count=1):
   join_flag = False
   if type(ngram_counts.keys()[0]) == tuple:
@@ -34,23 +48,6 @@ def output_ngram_counts(ngram_counts, min_count=1):
         ngram = ' '.join(ngram)
       print "%s\t%s" % ("*" * (count/histogram_bucket), ngram)
 
-#def collect_statistics(filename):
-#  unigram_counts = defaultdict(int)
-#  bigram_counts = defaultdict(int)
-#  big_n = 0
-#  #ret = collect_statistics_into_tables(filename, unigram_counts, bigram_counts);
-#  #return {"unigrams":unigram_counts, "bigrams":bigram_counts, "big_n":ret["big_n"]}
-#  for line in fileinput.input(filename):
-#    toks = filter(lambda tok: not punc_re.search(tok), map(lambda tok: tok.lower(), twokenize.tokenize(line)))
-#    big_n += len(toks)
-#    for unigram in toks:
-#      unigram_counts[unigram] += 1
-#    for bigram in bigrams(toks):
-#      bigram_counts[bigram] += 1
-#  return { "unigrams": unigram_counts,
-#      "bigrams": bigram_counts,
-#      "big_n": big_n }
-
 def tokenize_and_clean(msg):
   toks = (tok.lower() for tok in twokenize.tokenize(msg))
   toks = (tok for tok in toks if not punc_re.search(tok))
@@ -60,7 +57,7 @@ def collect_statistics_into_model(filename, lang_model):
   for line in util.counter(  fileinput.input(filename)  ):
     toks = tokenize_and_clean(line)
     lang_model.info['big_n'] += len(toks)
-    for unigram in toks:
+    for unigram in unigrams(toks):
       lang_model.add('unigram', unigram)
     for bigram in bigrams(toks):
       lang_model.add('bigram', bigram)

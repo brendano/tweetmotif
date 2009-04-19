@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 import twokenize
 import bigrams
@@ -11,12 +12,12 @@ class LinkedCorpus:
   def add_tweet(self, tweet):
     toks = bigrams.tokenize_and_clean(tweet['text'])
     self.model.info['big_n'] += len(toks)
-    for unigram in toks:
+    for unigram in set(toks):
       self.model.add('unigram',unigram)
       self.index[unigram].append(tweet)
-    for bigram in bigrams.bigrams(toks):
+    for bigram in set(bigrams.bigrams(toks)):
       self.model.add('bigram',bigram)
       self.index[bigram].append(tweet)
+    for ngram in set(bigrams.multi_ngrams(toks, n_and_up=3)):
+      pass
 
-
-    

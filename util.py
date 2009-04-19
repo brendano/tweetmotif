@@ -5,6 +5,7 @@ from StringIO import StringIO
 import re
 import operator
 
+
 def write_csv(data, filename, cols=None):
   """ data is a list of dicts. python's DictWriter is too timid to automatically determine an ordering, so we'll do it.
 This function is supposed to work like R's write.table()"""

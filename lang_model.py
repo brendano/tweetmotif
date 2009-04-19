@@ -1,4 +1,6 @@
-import memcache
+#from memcache import Client
+from cmemcached import Client
+#from cmemcache import Client
 import marshal, urllib2, base64
 import simplejson
 from collections import defaultdict
@@ -23,7 +25,8 @@ mc_keymaker = lambda x: binascii.b2a_base64(repr(x))[:-1]
 class MemcacheLM:
   def __init__(self, dont_load_info=False):
     location = ['127.0.0.1:11211']
-    self.mc = memcache.Client(location)
+    #location = ['127.0.0.1:13000']
+    self.mc = Client(location)
     if dont_load_info:
       self.info = {'big_n':0}
     else:
