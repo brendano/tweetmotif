@@ -51,11 +51,14 @@ def output_ngram_counts(ngram_counts, min_count=1):
 #      "bigrams": bigram_counts,
 #      "big_n": big_n }
 
+def tokenize_and_clean(msg):
+  toks = (tok.lower() for tok in twokenize.tokenize(msg))
+  toks = (tok for tok in toks if not punc_re.search(tok))
+  return list(toks)
+
 def collect_statistics_into_model(filename, lang_model):
   for line in util.counter(  fileinput.input(filename)  ):
-    toks = (tok.lower() for tok in twokenize.tokenize(line))
-    toks = (tok for tok in toks if not punc_re.search(tok))
-    toks = list(toks)
+    toks = tokenize_and_clean(line)
     lang_model.info['big_n'] += len(toks)
     for unigram in toks:
       lang_model.add('unigram', unigram)

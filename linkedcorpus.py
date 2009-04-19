@@ -1,28 +1,21 @@
-import twokenize
 from collections import defaultdict
+import twokenize
 import bigrams
+import lang_model
 
 class LinkedCorpus:
   def __init__(self):
-    self.model = { 
-      "unigrams": defaultdict(int),
-      "bigrams":  defaultdict(int),
-      "big_n": 0
-    }
+    self.model = lang_model.LocalLM()
     self.index = defaultdict(list)
 
   def add_tweet(self, tweet):
-    s = tweet['text']
-
-    unigram_counts = self.model['unigrams']
-    bigram_counts = self.model['bigrams']
-    toks = map(lambda tok: tok.lower(), twokenize.tokenize(s))
-    self.model['big_n'] += len(toks)
+    toks = bigrams.tokenize_and_clean(tweet['text'])
+    self.model.info['big_n'] += len(toks)
     for unigram in toks:
-      unigram_counts[unigram] += 1
+      self.model.add('unigram',unigram)
       self.index[unigram].append(tweet)
     for bigram in bigrams.bigrams(toks):
-      bigram_counts[bigram] += 1
+      self.model.add('bigram',bigram)
       self.index[bigram].append(tweet)
 
 
