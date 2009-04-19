@@ -24,10 +24,10 @@ def prebaked_iter(filename):
   for line in fileinput.input(filename):
     yield simplejson.loads(line)
 
-def do_search(lc, q=None, prebaked=None):
+def do_search(lc, q=None, prebaked=None, pages=5):
   assert q or prebaked
   if prebaked: tweet_iter = prebaked_iter(prebaked)
-  elif q: tweet_iter = search.yield_results(q,6)
+  elif q: tweet_iter = search.yield_results(q,pages)
 
   for i,r in enumerate(tweet_iter):
     print>>sys.stderr, ("%s " % i),
@@ -62,7 +62,10 @@ def my_app(environ, start_response):
   if not prebaked and not q:
     return
 
-  do_search(lc, q=q, prebaked=prebaked)
+  opts = {}
+  if vars.get('pages'):
+    opts['pages'] = int(vars['pages'][0])
+  do_search(lc, q=q, prebaked=prebaked, **opts)
 
   def show_results(type):
     for topic, tweets in ranking.rank_and_filter(lc, background_model, q, type=type):

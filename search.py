@@ -18,7 +18,7 @@ def fetch(url):
   return urllib2.urlopen(url)
 
 #SEARCH_URL = "http://search.twitter.com/search.json?q=%s&rpp=100"
-SEARCH_URL = "http://anyall.org/nph-kazamo/http://search.twitter.com/search.json?q=%s&rpp=100"
+SEARCH_URL = "http://anyall.org/nph-kazamo/http://search.twitter.com/search.json?q=%s&rpp=100&lang=en"
 
 def yield_results(q, pages=10):   # pages=range(1,16)
   url = SEARCH_URL % urllib2.quote(q)

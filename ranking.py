@@ -14,14 +14,19 @@ def rank_and_filter(linkedcorpus, background_model, q, type='bigram'):
   q_toks_set = set(q_toks)
   stopwords = bigrams.stopwords - q_toks_set
   for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type,2):
+    if type=='unigram':
+      ngram=(ngram,)
+      print ngram
     norm_ngram = [tok_norm(t) for t in ngram]
-    if q_toks_set <= set(norm_ngram): continue
-    if len(linkedcorpus.index[ngram]) <= 2: continue
+    if (set(norm_ngram) - q_toks_set) <= stopwords: continue
+    #if len(linkedcorpus.index[ngram]) <= 2: continue
     if set(norm_ngram) <= stopwords: continue
     if len(norm_ngram)>1 and norm_ngram[-1] in stopwords: 
       # may as well be an n-1 gram
       continue
-    yield " ".join(ngram), linkedcorpus.index[ngram]
+    topic_label = ngram if isinstance(ngram,str) else " ".join(ngram)
+    tweets = linkedcorpus.index[ngram[0]] if len(ngram)==1 else linkedcorpus.index[ngram]
+    yield topic_label, tweets
 
 
 def prebaked_iter(filename):
