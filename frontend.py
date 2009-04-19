@@ -27,7 +27,7 @@ def prebaked_iter(filename):
 def do_search(lc, q=None, prebaked=None):
   assert q or prebaked
   if prebaked: tweet_iter = prebaked_iter(prebaked)
-  elif q: tweet_iter = search.yield_results(q,3)
+  elif q: tweet_iter = search.yield_results(q,6)
 
   for i,r in enumerate(tweet_iter):
     print>>sys.stderr, ("%s " % i),

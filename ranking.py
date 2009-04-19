@@ -12,10 +12,15 @@ def rank_and_filter(linkedcorpus, background_model, q, type='bigram'):
   print twokenize.tokenize(q)
   q_toks = [tok_norm(t) for t in twokenize.tokenize(q)]
   q_toks_set = set(q_toks)
+  stopwords = bigrams.stopwords - q_toks_set
   for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type,2):
     norm_ngram = [tok_norm(t) for t in ngram]
     if q_toks_set <= set(norm_ngram): continue
     if len(linkedcorpus.index[ngram]) <= 2: continue
+    if set(norm_ngram) <= stopwords: continue
+    if len(norm_ngram)>1 and norm_ngram[-1] in stopwords: 
+      # may as well be an n-1 gram
+      continue
     yield " ".join(ngram), linkedcorpus.index[ngram]
 
 

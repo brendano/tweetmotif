@@ -18,6 +18,9 @@ punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
 #def tokens(text):
 #  return non_word.sub(' ', text).split()
 
+stopwords = set(open("stopwords").read().split())
+
+
 def unigrams(tokens):
   return [(tok,) for tok in tokens]
 
