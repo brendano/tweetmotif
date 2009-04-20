@@ -12,6 +12,7 @@ class LinkedCorpus:
   def add_tweet(self, tweet):
     toks = bigrams.tokenize_and_clean(tweet['text'])
     self.model.info['big_n'] += len(toks)
+    tweet['toks'] = toks
     for unigram in set(toks):
       self.model.add('unigram',unigram)
       self.index[unigram].append(tweet)

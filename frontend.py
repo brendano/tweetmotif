@@ -8,16 +8,20 @@ import linkedcorpus
 import lang_model
 import bigrams
 import ranking
+import highlighter
 
 def page_header():
   return """
-  <style> ul { font-size:8pt } </style>
+  <style>
+  ul { font-size:8pt }
+  .topic_hl { font-weight:bold; color: darkblue; }
+  </style>
   <h1>why is it trend????</h1>
   """
 
 def form_area(q):
   if q is None: q = ""
-  return """<form method=get>query <input name=q value="%s></form>
+  return """<form method=get>query <input name=q value="%s"></form>
   """ % (cgi.escape(q))
 
 def prebaked_iter(filename):
@@ -30,13 +34,15 @@ def do_search(lc, q=None, prebaked=None, pages=5):
   elif q: tweet_iter = search.yield_results(q,pages)
 
   for i,r in enumerate(tweet_iter):
-    print>>sys.stderr, ("%s " % i),
+    print>>sys.stderr, ("%s" % i),
     lc.add_tweet(r)
 
-def nice_tweet(tweet):
+def nice_tweet(tweet, topic_ngram):
   link = "http://twitter.com/%s/status/%s" % (tweet['from_user'],tweet['id'])
   s = ""
-  s += "<span class=text>" + tweet['text'] + "</span>"
+  s += "<span class=text>"
+  s += highlighter.highlight(tweet['toks'], {topic_ngram: ("<span class='topic_hl'>","</span>")})
+  s += "</span>"
   s += " "
   s += "<a href='%s'>msg</a>" % link
   return s
@@ -68,14 +74,14 @@ def my_app(environ, start_response):
   do_search(lc, q=q, prebaked=prebaked, **opts)
 
   def show_results(type):
-    for topic, tweets in ranking.rank_and_filter(lc, background_model, q, type=type):
+    for topic_ngram, topic, tweets in ranking.rank_and_filter(lc, background_model, q, type=type):
       s = "<b>%s</b> &nbsp; <small>(%s)</small>" % (topic, len(tweets))
       yield s
       yield "<ul>"
       for i,tweet in enumerate(tweets):
         if i > 20: break
         yield "<li>"
-        yield nice_tweet(tweet)
+        yield nice_tweet(tweet, topic_ngram)
       yield "</ul>"
   
   yield "<table><tr><th>unigrams <th>bigrams"

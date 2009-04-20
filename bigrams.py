@@ -52,9 +52,11 @@ def output_ngram_counts(ngram_counts, min_count=1):
       print "%s\t%s" % ("*" * (count/histogram_bucket), ngram)
 
 def tokenize_and_clean(msg):
-  toks = (tok.lower() for tok in twokenize.tokenize(msg))
-  toks = (tok for tok in toks if not punc_re.search(tok))
-  return list(toks)
+  toks = twokenize.tokenize(msg)
+  for i in range(len(toks)):
+    toks[i] = toks[i].lower()
+  inds = [i for i in range(len(toks)) if not punc_re.search(toks[i])]
+  return toks.subset(inds)
 
 def collect_statistics_into_model(filename, lang_model):
   for line in util.counter(  fileinput.input(filename)  ):
