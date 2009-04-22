@@ -75,12 +75,12 @@ class TokyoLM:
     self.info.close()
 
   def add(self, type, ngram):
-    #self.counts[type][ngram] += 1
-    counts = self.counts[type]
-    key = "_".join(ngram)
-    if key not in counts:
-      counts[key] = '0'
-    counts[key] = str(1 + int(counts[key]))
+    self.counts[type][ngram] += 1
+    #counts = self.counts[type]
+    #key = "_".join(ngram)
+    #if key not in counts:
+    #  counts[key] = '0'
+    #counts[key] = str(1 + int(counts[key]))
 
 class KVIntProxy:
   def __init__(self, wrapped_dict):
@@ -96,7 +96,9 @@ class KVIntProxy:
 class KVNgramProxy:
   def __init__(self,d): self.d=d
   def __getitem__(self,k): 
-    kj = ('_'.join(k)).encode('utf-8')
+    kj = ('_'.join(k))
+    if isinstance(kj, unicode):
+      kj = kj.encode('utf-8')
     if kj not in self.d: return 0   #self.d[kj] = '0'
     return int(self.d[kj])
   def __setitem__(self,k,v):
@@ -177,7 +179,7 @@ def make_tokyo_model(text_filename):
   import bigrams
   model = TokyoLM(readonly=False)
   bigrams.collect_statistics_into_model(text_filename, model)
-  model.sync()
+  #model.sync()
   return model
 
   #model = LocalLM()
