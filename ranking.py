@@ -47,10 +47,10 @@ if __name__=='__main__':
     lc.add_tweet(tweet)
 
   import lang_model, ansi
-  background_model = lang_model.MemcacheLM()
-  for topic, tweets in rank_and_filter(lc, background_model, q):
-    print ansi.color(topic,'bold','blue'), "(%s)" % len(tweets)
+  #background_model = lang_model.MemcacheLM()
+  background_model = lang_model.TokyoLM(readonly=True)
+  for topic_ngram, topic_label, tweets in rank_and_filter(lc, background_model, q):
+    print ansi.color(topic_label,'bold','blue'), "(%s)" % len(tweets)
     for tweet in tweets: print "",tweet['text']
-
 
 

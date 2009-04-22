@@ -110,7 +110,8 @@ def stringify(iter):
       yield x
 
 
-background_model = lang_model.MemcacheLM()
+#background_model = lang_model.MemcacheLM()
+background_model = lang_model.TokyoLM()
 
 from wsgiref.simple_server import make_server, demo_app
 #httpd = make_server('', 8000, demo_app)
