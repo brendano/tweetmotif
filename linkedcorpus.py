@@ -10,10 +10,10 @@ class LinkedCorpus:
     self.index = defaultdict(list)
 
   def add_tweet(self, tweet):
-    toks = bigrams.tokenize_and_clean(tweet['text'])
+    toks = bigrams.tokenize_and_clean(tweet['text'], alignments=True)
     self.model.info['big_n'] += len(toks)
     tweet['toks'] = toks
-    for unigram in set(toks):
+    for unigram in set(bigrams.unigrams(toks)):
       self.model.add('unigram',unigram)
       self.index[unigram].append(tweet)
     for bigram in set(bigrams.bigrams(toks)):

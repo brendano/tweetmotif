@@ -70,15 +70,15 @@ def align(toks, orig):
 class AlignmentFailed(Exception): pass
 
 def tokenize(tweet):
-  text = tweet
+  text = unicode(tweet)
   text = squeeze_whitespace(text)
   t = Tokenization()
-  t += _tokenize(text)
+  t += simple_tokenize(text)
   t.text = text
   t.alignments = align(t, text)
   return t
 
-def _tokenize(text):
+def simple_tokenize(text):
   s = text
   s = edge_quote_munge(s)
 
