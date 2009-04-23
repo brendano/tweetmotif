@@ -64,7 +64,7 @@ class TokyoNgramProxy:
     kj = '_'.join(k)
     if isinstance(kj, unicode): kj = kj.encode('utf-8')
     if kj not in self.d: return 0
-    return struct.unpack('L', self.d[kj])[0]
+    return struct.unpack('I', self.d[kj])[0]
   def __setitem__(self,k,v):
     raise NotImplementedError
   def __getattr__(self,name):
