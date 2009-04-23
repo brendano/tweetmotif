@@ -1,10 +1,59 @@
+"some python utilties - anyall.org/util.py"
+
 from __future__ import division
-import sys, time, math, itertools, csv
+import sys, time, math, itertools, csv, codecs, re, operator
 #import numpy
 from StringIO import StringIO
-import re
-import operator
 
+__author__ = "brendan o'connor (anyall.org)"
+__version__ = "Apr 09 or so"
+
+#########  Make UTF-8 hurt less
+
+# My rant about pre-py3k encoding handling
+# They like to say, always use unicode internally, then decode/encode at I/O boundaries
+# That's good once you've accomplished it, but it's impractical without the following shims
+# Since Python has inconsistent policies for what encoding an arbitrary stream will be.
+
+def fix_stdio():
+  """ forces utf8 at I/O boundaries, since it's ascii by default when using
+  pipes .. ugh ..  Never call this multple times in the same process; horrible
+  things sometimes seem to happen."""
+  sys.stdout = codecs.open('/dev/stdout','w',encoding='utf8',buffering=0)
+  sys.stdout = ShutUpAboutBrokenPipe(sys.stdout)
+  sys.stdin  = codecs.open('/dev/stdin','r',encoding='utf8')
+  sys.stderr = codecs.open('/dev/stderr','w',encoding='utf8',buffering=0)
+
+def unicodify(s, encoding='utf8'):
+  """ because {str,unicode}.{encode,decode} is anti-polymorphic, but sometimes
+  you can't control which you have. """
+  if isinstance(s,unicode): return s
+  return s.decode(encoding)
+
+def stringify(s, encoding='utf8'):
+  if isinstance(s,str): return s
+  return s.encode(encoding)
+
+class ShutUpAboutBrokenPipe:
+  """i like to press ctrl-c; why is python yelling at me?"""
+  def __init__(self, fp):
+    self.fp = fp
+  def write(self,*a,**k):
+    try:
+      self.fp.write(*a,**k)
+    except IOError, e:
+      if e.errno == 32:  # broken pipe
+        sys.exit(0)
+      raise e
+
+
+##########  CSV and TSV
+
+def read_csv(filename, **k):
+  f = open(filename)
+  r = list(csv.DictReader(f, **k))
+  f.close()
+  return r
 
 def write_csv(data, filename, cols=None):
   """ data is a list of dicts. python's DictWriter is too timid to automatically determine an ordering, so we'll do it.
@@ -19,11 +68,22 @@ This function is supposed to work like R's write.table()"""
     w.writerow( row )
   f.close()
 
-def read_csv(filename, **k):
+def tsv_reader(f):
+  "honest-to-goodness tsv with no quoting nor embedded tabs nor newlines"
+  return csv.DictReader(f, dialect=None, delimiter='\t', quoting=csv.QUOTE_NONE)
+
+def read_tsv(filename, **k):
+  "honest-to-goodness tsv with no quoting nor embedded tabs nor newlines"
   f = open(filename)
-  r = list(csv.DictReader(f, **k))
+  r = list(tsv_reader(f, **k))
   f.close()
   return r
+
+def write_tsv(data, filename):
+  raise NotImplementedError("not sure whether to make this autoguess columns or not or what")
+
+
+##########  Misc
 
 def fancy_sub(s, pat, repl_fn=lambda m: ">> %s <<" % m.group()):
   """ like ruby String.gsub() when passing in a block """
@@ -72,17 +132,6 @@ def product(seq, default=1):
   if len(seq)==0: return default
   return reduce(operator.mul, seq)
   
-# def dgroup(seq, key):
-#   ret = {}
-  
-# def safestr(x):
-#   """safe for printing"""
-#   if isinstance(x, str): return x
-#   if isinstance(x, unicode): return x.encode('utf-8')
-#   try:
-#     return str(x)
-#   except 
-
 
 class DataFrame(list):
   " simplest implementation: list of hashes plus syntactic sugar "
@@ -111,36 +160,45 @@ class DataFrame(list):
     """print as html table, open in browser"""
     pass
 
+
+######### jacked from anyall.org/counter.py
+
+
 class Counter:
-  """ Usages
-  
-  # wrap any iterator
-  for x in counter(range(20)):
-    time.sleep(.1)
-  
-  for x in counter(x for x in range(20)):
-    time.sleep(.1)
-  
-  # generator doesn't know its length; but you can fill in
-  for x in counter((x for x in range(20)), max=20)):
-    time.sleep(.1)
-  
-  # name it
-  for x in counter(range(20), name="trial"):
-    time.sleep(.1)
-  
-  # manual, non-wrapper usage.  API is: start, next, end
-  counter.start()
-  for x in range(0,50):
-    time.sleep(.1)
-    counter.next()
-  counter.end()
-  
-  # if you know the max, can not bother with end
-  counter.start(max=50)
-  for x in range(0,50):
-    time.sleep(.1)
-    counter.next()
+  """ 
+  Count iterations and measure speed with ETA's.  Similar to "pv".
+
+  Usage:
+
+      from counter import counter
+
+      # wrap any iterator
+      for x in counter(range(20)):
+        time.sleep(.1)
+
+      for x in counter(x for x in range(20)):
+        time.sleep(.1)
+
+      # generator doesn't know its length; but you can fill in
+      for x in counter((x for x in range(20)), max=20)):
+        time.sleep(.1)
+
+      # name it
+      for x in counter(range(20), name="trial"):
+        time.sleep(.1)
+
+      # manual, non-wrapper usage.  API is: start, next, end
+      counter.start()
+      for x in range(0,50):
+        time.sleep(.1)
+        counter.next()
+      counter.end()
+
+      # if you know the max, can not bother with end
+      counter.start(max=50)
+      for x in range(0,50):
+        time.sleep(.1)
+        counter.next()
   """
 
   def __init__(self):
@@ -224,6 +282,7 @@ counter = Counter()
   
 
 def smart_fmt(x, space=False):
+  # too complex probably
   def fmt1():
     d = int((math.log10(abs(x))))
     if x >= 1:
@@ -264,12 +323,16 @@ def smart_time_fmt(secs):
     return "%d:%.2d:%.2d" % (secs//(60*60), (secs//60) % 60, secs % 60)
   
 ## counter test
-if 0:
+if 0:  #__name__=='__main__':
   import time,random
-  util.counter.start(100)
-  for x in range(0,100):
+  print "Slow count, manual API"
+  counter.start(10)
+  for x in range(0,10):
     time.sleep(0 + random.random() * 2)
     #time.sleep(0.4)
-    util.counter.next()
-  util.counter.end()
-  
+    counter.next()
+  counter.end()
+  print "Fast count, iterator wrapper API"
+  for x in counter(range(100)):
+    time.sleep(0.1)
+

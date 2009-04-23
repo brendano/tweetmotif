@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re,sys
 import emoticons
+import util
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 def flatten(iter):
   return list(itertools.chain(*iter))
@@ -70,7 +71,7 @@ def align(toks, orig):
 class AlignmentFailed(Exception): pass
 
 def tokenize(tweet):
-  text = unicode(tweet)
+  text = util.unicodify(tweet)
   text = squeeze_whitespace(text)
   t = Tokenization()
   t += simple_tokenize(text)
@@ -80,7 +81,7 @@ def tokenize(tweet):
 
 def simple_tokenize(text):
   s = text
-  s = edge_quote_munge(s)
+  s = edge_punct_munge(s)
 
   # strict alternating ordering through the string.  first and last are goods.
   # good bad good bad good bad good
@@ -114,12 +115,17 @@ def squeeze_whitespace(s):
   new_string,n = WS_RE.subn(" ",s)
   return new_string.strip()
 
+EDGE_PUNCT      = r"""['"([\)\]]"""   # alignment failures. hm.
+#NOT_EDGE_PUNCT = r"""[^'"([\)\]]"""
+NOT_EDGE_PUNCT = r"""[a-zA-Z0-9]"""
+EDGE_PUNCT_LEFT  = r"""(\s|^)(%s+)(%s)""" % (EDGE_PUNCT, NOT_EDGE_PUNCT)
+EDGE_PUNCT_RIGHT =   r"""(%s)(%s+)(\s|$)""" % (NOT_EDGE_PUNCT, EDGE_PUNCT)
+EDGE_PUNCT_LEFT_RE = mycompile(EDGE_PUNCT_LEFT)
+EDGE_PUNCT_RIGHT_RE= mycompile(EDGE_PUNCT_RIGHT)
 
-SQUOTE_LEFTEDGE  = mycompile(r"""\s('")(\S)""")
-SQUOTE_RIGHTEDGE = mycompile(r"""(\S)('")\s""")
-def edge_quote_munge(s):
-  s = SQUOTE_LEFTEDGE.subn( r" \1 \2", s)[0]
-  s = SQUOTE_RIGHTEDGE.subn(r"\1 \2 ", s)[0]
+def edge_punct_munge(s):
+  s = EDGE_PUNCT_LEFT_RE.subn( r"\1\2 \3", s)[0]
+  s = EDGE_PUNCT_RIGHT_RE.subn(r"\1 \2\3", s)[0]
   return s
 
 
@@ -129,10 +135,8 @@ def unprotected_tokenize(s):
 
 if __name__=='__main__':
   import ansi
-  #import codecs; sys.stdout = codecs.open('/dev/stdout','w',encoding='utf8',buffering=0)
+  util.fix_stdio()
   for line in sys.stdin:
-    #print line.strip()
-    #print " ".join(tokenize(line.strip()))
-    print (ansi.color(line.strip(),'red'))
-    print (ansi.color(" ".join(tokenize(line.strip())),'blue','bold'))
+    print ansi.color(line.strip(),'red')
+    print ansi.color(" ".join(tokenize(line.strip())),'blue','bold')
 

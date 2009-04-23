@@ -122,6 +122,7 @@ def compute_ratio(num, denom):
 
 
 if __name__=='__main__':
+  import util; util.fix_stdio()
   #background_model = lang_model.LocalLM()
   #collect_statistics_into_model(open("data/the_en_tweets"), background_model)
 

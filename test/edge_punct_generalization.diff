@@ -1,0 +1,35 @@
+--- twokenize_orig.py	2009-04-22 18:04:18.000000000 -0700
++++ twokenize.py	2009-04-22 18:55:17.000000000 -0700
+@@ -81,7 +81,7 @@
+ 
+ def simple_tokenize(text):
+   s = text
+-  s = edge_quote_munge(s)
++  s = edge_punct_munge(s)
+ 
+   # strict alternating ordering through the string.  first and last are goods.
+   # good bad good bad good bad good
+@@ -115,12 +115,17 @@
+   new_string,n = WS_RE.subn(" ",s)
+   return new_string.strip()
+ 
+-
+-SQUOTE_LEFTEDGE  = mycompile(r"""\s('")(\S)""")
+-SQUOTE_RIGHTEDGE = mycompile(r"""(\S)('")\s""")
+-def edge_quote_munge(s):
+-  s = SQUOTE_LEFTEDGE.subn( r" \1 \2", s)[0]
+-  s = SQUOTE_RIGHTEDGE.subn(r"\1 \2 ", s)[0]
++EDGE_PUNCT      = r"""['"([\)\]]"""   # alignment failures. hm.
++#NOT_EDGE_PUNCT = r"""[^'"([\)\]]"""
++NOT_EDGE_PUNCT = r"""[a-zA-Z0-9]"""
++EDGE_PUNCT_LEFT  = r"""(\s|^)(%s+)(%s)""" % (EDGE_PUNCT, NOT_EDGE_PUNCT)
++EDGE_PUNCT_RIGHT =   r"""(%s)(%s+)(\s|$)""" % (NOT_EDGE_PUNCT, EDGE_PUNCT)
++EDGE_PUNCT_LEFT_RE = mycompile(EDGE_PUNCT_LEFT)
++EDGE_PUNCT_RIGHT_RE= mycompile(EDGE_PUNCT_RIGHT)
++
++def edge_punct_munge(s):
++  s = EDGE_PUNCT_LEFT_RE.subn( r"\1\2 \3", s)[0]
++  s = EDGE_PUNCT_RIGHT_RE.subn(r"\1 \2\3", s)[0]
+   return s
+ 
+ 
