@@ -22,7 +22,7 @@ SEARCH_URL = "http://anyall.org/nph-kazamo/http://search.twitter.com/search.json
 
 def yield_results(q, pages=10):   # pages=range(1,16)
   url = SEARCH_URL % urllib2.quote(q)
-  pages = range(1,pages)
+  pages = range(1,pages+1)
   for page in pages:
   #for page in [1]:
     #print>>sys.stderr, "page %d" % page

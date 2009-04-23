@@ -19,6 +19,7 @@ punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
 #  return non_word.sub(' ', text).split()
 
 stopwords = set(open("stopwords").read().split())
+stopwords_as_unigrams = set(open("stopwords_as_unigrams").read().split())
 
 
 def unigrams(tokens):
@@ -83,6 +84,7 @@ def compare_models(collection_model, background_model, ngram_type, min_count=1):
 
   coll_ngrams_and_mle_probs = map(lambda (b,c): (b, c/coll_N), coll_ngrams_and_counts)
   coll_ngrams_and_mle_prob_ratio = map(lambda (b,p): (b, compute_ratio(p, bkgnd_ngram_counts[b]/bkgnd_N)), coll_ngrams_and_counts)
+  #coll_ngrams_and_mle_prob_ratio = map(lambda (b,p): (b, pseudocounted_ratio(p, bkgnd_ngram_counts[b]/bkgnd_N)), coll_ngrams_and_counts)  # pseudocount smoothing is crappy because causes ties.  how about good-turing or kneser-ney?
   coll_ngrams_and_mle_prob_ratio.sort(key=lambda pair: pair[1], reverse=True)
   for ngram, ratio in coll_ngrams_and_mle_prob_ratio:
     if coll_ngram_counts[ngram] < min_count:
@@ -105,6 +107,9 @@ def compute_ratio(num, denom):
     return 0
   else:
     return num/denom
+
+def pseudocounted_ratio(num,denom, a=0.1):
+  return (num+a) / (denom+a)
 
 #  for bigram, count in coll_bigrams_and_counts:
 #    if count < min_count:

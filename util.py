@@ -15,24 +15,26 @@ __version__ = "Apr 09 or so"
 # That's good once you've accomplished it, but it's impractical without the following shims
 # Since Python has inconsistent policies for what encoding an arbitrary stream will be.
 
-def fix_stdio():
-  """ forces utf8 at I/O boundaries, since it's ascii by default when using
-  pipes .. ugh ..  Never call this multple times in the same process; horrible
-  things sometimes seem to happen."""
-  sys.stdout = codecs.open('/dev/stdout','w',encoding='utf8',buffering=0)
-  sys.stdout = ShutUpAboutBrokenPipe(sys.stdout)
-  sys.stdin  = codecs.open('/dev/stdin','r',encoding='utf8')
-  sys.stderr = codecs.open('/dev/stderr','w',encoding='utf8',buffering=0)
-
-def unicodify(s, encoding='utf8'):
+def unicodify(s, encoding='utf8', *args):
   """ because {str,unicode}.{encode,decode} is anti-polymorphic, but sometimes
   you can't control which you have. """
   if isinstance(s,unicode): return s
-  return s.decode(encoding)
+  return s.decode(encoding, *args)
 
-def stringify(s, encoding='utf8'):
+def stringify(s, encoding='utf8', *args):
   if isinstance(s,str): return s
-  return s.encode(encoding)
+  return s.encode(encoding, *args)
+
+def fix_stdio(encoding='utf8', errors='strict', buffering=0):
+  """ forces utf8 at I/O boundaries, since it's ascii by default when using
+  pipes .. ugh ..  Never call this multple times in the same process; horrible
+  things sometimes seem to happen."""
+  import codecs, sys
+  en,er,bu=encoding,errors,buffering
+  sys.stdout = codecs.open('/dev/stdout', 'w', encoding=en, errors=er, buffering=bu)
+  sys.stdout = ShutUpAboutBrokenPipe(sys.stdout)
+  sys.stdin  = codecs.open('/dev/stdin',  'r', encoding=en, errors=er, buffering=bu)
+  sys.stderr = codecs.open('/dev/stderr', 'w', encoding=en, errors=er, buffering=0)
 
 class ShutUpAboutBrokenPipe:
   """i like to press ctrl-c; why is python yelling at me?"""
@@ -109,6 +111,17 @@ def dgroupby(seq,key):
 
 def na_rm(seq):
   return [x for x in seq if x is not None]
+
+def myjoin(seq, sep=" "):
+  " because str.join() is annoying "
+  return sep.join(str(x) for x in seq)
+
+def uniq_c(seq):
+  ret = defaultdict(lambda:0)
+  for x in seq:
+    ret[x] += 1
+  return dict(ret)
+
 
 class Struct(dict):
   def __getattr__(self, a):
