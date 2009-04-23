@@ -1,0 +1,8 @@
+ul { font-size:9.5pt }
+.topic_hl { font-weight:bold; color: darkblue; }
+a.t { color: black }
+a.m { color: darkblue }
+.topic_label { cursor:pointer;cursor:hand }
+.topic_label.sel { background: yellow }
+span:hover.topic_label { cursor:pointer;cursor:hand; text-decoration:underline }  /*background:#6495ED }*/
+/* span:hover.topic_label.sel { background: yellow } */
