@@ -52,6 +52,7 @@ def score_topic(topic):
   return topic.ratio
   #a = 1 if len(topic.ngram)==1 else 1.5
   #return topic.ratio * a
+
 def rank_and_filter3(linkedcorpus, background_model, q):
   # apply final topic ranking
   r = rank_and_filter2(linkedcorpus, background_model, q)

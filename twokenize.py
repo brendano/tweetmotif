@@ -6,7 +6,7 @@ mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 def flatten(iter):
   return list(itertools.chain(*iter))
 
-URL_S = 'https?://\S+'
+URL_S = r'''https?://\S+'''
 PUNCT_S = '''[“".?!,:;]+'''
 ENTITY_S = '&(amp|lt|gt|quot);'
 
