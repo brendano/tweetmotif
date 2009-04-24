@@ -25,7 +25,8 @@ OTHER_RE = mycompile( '('+NORMAL_EYES+'|'+WINK+')'  + NOSE_AREA + OTHER_MOUTHS )
 
 EMOTICON_S = (
     "("+NORMAL_EYES+"|"+WINK+")"+ NOSE_AREA + 
-    "("+TONGUE+"|"+OTHER_MOUTHS+"|"+SAD_MOUTHS+"|"+HAPPY_MOUTHS+")"
+    "("+TONGUE+"|"+OTHER_MOUTHS+"|"+SAD_MOUTHS+"|"+HAPPY_MOUTHS+")" +
+    r"\S"
 )
 EMOTICON_RE = mycompile(EMOTICON_S)
 

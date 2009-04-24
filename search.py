@@ -2,17 +2,8 @@ import simplejson
 import urllib2,urllib,sys,pprint,cgi,time
 from datetime import datetime,timedelta
 
-#import codecs; sys.stdout = codecs.open('/dev/stdout','w',encoding='utf8',buffering=0)
-
-#min_datetime = datetime.now() + timedelta(days=2)
-#
-#query = " ".join(sys.argv[1:])
-#query_terms = sys.argv[1:]
-#
-#need_date_restriction = False
-
 import socket
-socket.setdefaulttimeout(1) # http://www.voidspace.org.uk/python/articles/urllib2.shtml
+socket.setdefaulttimeout(2) # http://www.voidspace.org.uk/python/articles/urllib2.shtml
 
 def fetch(url):
   for i in range(2):

@@ -3,7 +3,8 @@ ul { font-size:10pt }
 .topic_hl { font-weight:bold; color: darkblue; }
 .q_hl { font-weight:bold; color: darkred }
 a.t { color: black }
-a.m { color: darkblue }
+a.m { color: #444 }
+a.at { color: #444 }
 input#q { color: darkred }
 .topic_label { cursor:pointer;cursor:hand; color:darkblue }
 .topic_label.sel { background: yellow }

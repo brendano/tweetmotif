@@ -32,7 +32,7 @@ def page_header():
   """ % globals()
 
 def safehtml(x):
-  return cgi.escape(str(x))
+  return cgi.escape(str(x),quote=True)
 
 def opt(name, type=None, default=None):
   o = util.Struct(name=name, type=type, default=default)
@@ -45,10 +45,14 @@ def opt(name, type=None, default=None):
   return o
 
 def type_clean(val,type):
-  if type==bool: return bool(int(val))
+  if type==bool:
+    if val in ['0','f','false','False','no','n']: return False
+    if val in ['1','t','true','True','yes','n']: return True
+    raise Exception("bad bool value %s" % repr(val))
   return type(val)
 
 class Opts(util.Struct):
+  " modelled on trollop.rubyforge.org and gist.github.com/5682"
   def __init__(self, environ, *optlist):
     vars = cgi.parse_qs(environ['QUERY_STRING'])
     for opt in optlist:
@@ -77,8 +81,10 @@ class Opts(util.Struct):
 def form_area(opts):
   ret = "<form method=get> query " + opts.input('q')
   ret += " for 100*" + opts.input('pages') + " tweets; "
-  ret += " simple? " + opts.input('simple')
-  ret += " split? " + opts.input('split')
+  ret += " simple?" + opts.input('simple')
+  ret += " split?" + opts.input('split')
+  ret += " max topics" + opts.input('max_topics')
+  ret += " ncol" + opts.input('ncol')
   ret += " <input type=submit>"
   ret += "</form>"
   return ret
@@ -104,18 +110,18 @@ def nice_tweet(tweet, q_toks, topic_ngram):
   link = "http://twitter.com/%s/status/%s" % (tweet['from_user'],tweet['id'])
   s = ""
   s += "<span class=text>"
-  hl_spec = {topic_ngram: ("<span class='topic_hl'>","</span>")}
+  hl_spec = {topic_ngram: ("<span class=topic_hl>","</span>")}
   for ug in set(bigrams.unigrams(q_toks)):
     if ug[0] in bigrams.stopwords: continue
     if ug[0] in topic_ngram: continue
-    hl_spec[ug] = ("<span class='q_hl'>","</span>")
+    hl_spec[ug] = ("<span class=q_hl>","</span>")
   text = highlighter.highlight(tweet['toks'], hl_spec)
-  text = URL_RE.subn(r'<a class="t" href="\1">\1</a>', text)[0]
+  text = URL_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
   s += text
   s += "</span>"
   s += " "
-  #s += "<a class='m' href='%s'>msg</a>" % link
-  s += "<a class='m' href='%s'>%s</a>" % (link,tweet['from_user'])
+  #s += "<a class=m href='%s'>msg</a>" % link
+  s += "<a class=m target=_blank href='%s'>%s</a>" % (link,tweet['from_user'])
   return s
 
 def single_query(q, topic_label, pages=1, exclude=()):
@@ -163,6 +169,7 @@ def my_app(environ, start_response):
       opt('split', default=0),
       opt('simple', default=0),
       opt('max_topics', default=50),
+      opt('ncol', default=3),
       opt('single_query', default=0),
       )
 
@@ -194,7 +201,7 @@ def my_app(environ, start_response):
       topics = topics[:opts.max_topics]
     topic_labels = ("""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in topics)
     #for x in topic_labels: yield x
-    for x in table_byrow(list(topic_labels)): yield x
+    for x in table_byrow(list(topic_labels), ncol=opts.ncol): yield x
 
     yield "<td valign=top>"
     yield "<div id=tweets>"
