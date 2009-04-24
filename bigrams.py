@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.5
+# -*- coding: utf-8 -*-
 
 # Histogram of unigrams and bigrams in a stream of tweets
 #
@@ -13,18 +14,23 @@ import twokenize
 import lang_model
 import util
 
-punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
-
-#def tokens(text):
-#  return non_word.sub(' ', text).split()
-
-stopwords = set(open("stopwords").read().split())
-stopwords_as_unigrams = set(open("stopwords_only_as_unigrams").read().split())
-stopwords = stopwords | set(open("super_stopwords").read().split())
-
 def analyze_tweet(tweet):
   toks = tokenize_and_clean(tweet['text'], alignments=True)
   tweet['toks'] = toks
+
+read_set = lambda f: set(open(f).read().split())
+stopwords = read_set("stopwords_dir/normal_stopwords")
+stopwords_as_unigrams = read_set("stopwords_dir/only_as_unigrams")
+stopwords |= read_set("stopwords_dir/super_stopwords")
+
+mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
+# junk tokens contribute no information and can be ignored
+#JUNK_TOK_RE = mycompile(r'''^[^a-zA-Z0-9_@]+$''')
+JUNK_TOK = mycompile(r'''^[.,]''')
+# dont make n-grams across phrase boundary markers.
+PHRASE_BOUNDARY_TOK_RE = mycompile(r'''^[“"'?!:;]+$''')
+# and dont start or end an ngram on a two-sided connective.
+#STRONG_TWOSIDE_CONNECTIVE_TOK = mycompile(r'''^[&@]+$'''
 
 def tokenize_and_clean(msg, alignments):
   if alignments: 
@@ -33,12 +39,11 @@ def tokenize_and_clean(msg, alignments):
     toks = twokenize.simple_tokenize(msg)
   for i in range(len(toks)):
     toks[i] = toks[i].lower()
-  inds = [i for i in range(len(toks)) if not punc_re.search(toks[i])]
+  inds = [i for i in range(len(toks)) if not JUNK_TOK.search(toks[i])]
   if alignments: 
     return toks.subset(inds)
   else:
     return [toks[i] for i in inds]
-
 
 def unigrams(tokens):
   return [(tok,) for tok in tokens]
@@ -56,7 +61,6 @@ def multi_ngrams(tokens, n_and_up):
 def ngrams(tokens, n):
   return [tuple(tokens[i:(i+n)]) for i in range(len(tokens) - (n-1))]
 
-    
 def output_ngram_counts(ngram_counts, min_count=1):
   join_flag = False
   if type(ngram_counts.keys()[0]) == tuple:
@@ -125,11 +129,6 @@ def pseudocounted_ratio(num,denom, a=0.1):
 #      print "%s\t%s" % (count/coll_N, ' '.join(bigram))
 #    else:
 #      print "-\t%s" % ' '.join(bigram)
-
-#def load_background_model():
-#  global background_model
-#  background_model = collect_statistics("data/the_en_tweets")
-
 
 if __name__=='__main__':
   import util; util.fix_stdio()

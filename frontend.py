@@ -93,8 +93,6 @@ def prebaked_iter(filename):
   for line in fileinput.input(filename):
     yield simplejson.loads(line)
 
-URL_RE = re.compile("(%s)" % twokenize.URL_S)
-
 def nice_tweet(tweet, q_toks, topic_ngram):
   link = "http://twitter.com/%s/status/%s" % (tweet['from_user'],tweet['id'])
   s = ""
@@ -105,7 +103,8 @@ def nice_tweet(tweet, q_toks, topic_ngram):
     if ug[0] in topic_ngram: continue
     hl_spec[ug] = ("<span class=q_hl>","</span>")
   text = highlighter.highlight(tweet['toks'], hl_spec)
-  text = URL_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
+  text = twokenize.URL_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
+  #text = twokenize.AT_RE.subn(r'<a class=at target=_blank href="\1">\1</a>
   s += text
   s += "</span>"
   s += " "

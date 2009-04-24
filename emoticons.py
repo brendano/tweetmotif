@@ -1,3 +1,7 @@
+""" emoticon recognition via patterns.  tested on english twitter, but probably works for other social media dialects. """
+
+__author__ = "Brendan O'Connor (anyall.org, brenocon@gmail.com)"
+
 #from __future__ import print_function
 import re,sys
 import util
@@ -6,15 +10,15 @@ mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 #SMILEY = mycompile(r'[:=].{0,1}[\)dpD]')
 #MULTITOK_SMILEY = mycompile(r' : [\)dp]')
 
-HAPPY_MOUTHS = r'[\)\]D]'
-SAD_MOUTHS = r'[\(\[]'
-TONGUE = r'[pP]'
-OTHER_MOUTHS = r'[doO]'
-
 NORMAL_EYES = r'[:=]'
 WINK = r'[;]'
 
-NOSE_AREA = r'(| |-)'   ## rather tight precision, could use . wildcard...
+NOSE_AREA = r'(|o|O|-)'   ## rather tight precision, \S might be reasonable...
+
+HAPPY_MOUTHS = r'[D\)\]]'
+SAD_MOUTHS = r'[\(\[]'
+TONGUE = r'[pP]'
+OTHER_MOUTHS = r'[doO]'
 
 HAPPY_RE =  mycompile( '(\^_\^|' + NORMAL_EYES + NOSE_AREA + HAPPY_MOUTHS + ')')
 SAD_RE = mycompile(NORMAL_EYES + NOSE_AREA + SAD_MOUTHS)
@@ -24,9 +28,9 @@ TONGUE_RE = mycompile(NORMAL_EYES + NOSE_AREA + TONGUE)
 OTHER_RE = mycompile( '('+NORMAL_EYES+'|'+WINK+')'  + NOSE_AREA + OTHER_MOUTHS )
 
 EMOTICON_S = (
-    "("+NORMAL_EYES+"|"+WINK+")"+ NOSE_AREA + 
-    "("+TONGUE+"|"+OTHER_MOUTHS+"|"+SAD_MOUTHS+"|"+HAPPY_MOUTHS+")" +
-    r"\S"
+    "("+NORMAL_EYES+"|"+WINK+")" +
+    NOSE_AREA + 
+    "("+TONGUE+"|"+OTHER_MOUTHS+"|"+SAD_MOUTHS+"|"+HAPPY_MOUTHS+")"
 )
 EMOTICON_RE = mycompile(EMOTICON_S)
 
@@ -56,5 +60,5 @@ def analyze_tweet(text):
   #return "NA"
 
 #if __name__=='__main__':
-#  for line in util.counter(  sys.stdin  ):
+#  for line in util.counter(  sys.stdin  ):  # anyall.org/util.py
 #    print(analyze_tweet(line.strip()), line.strip(), sep="\t")

@@ -1,18 +1,23 @@
 """ Terminal coloring via ANSI escape codes """
 
 def color(s, *codes):
+  if len(codes)==0: raise Exception("what color, yo?")
+  if len(codes)>1: codes = sorted(codes, key=code_precedence)
   for code in codes:
     s = CODES[code] + s
   s += CODES['reset']
   return s
 
+def code_precedence(code):
+  if code=='bold': return 10
+  else: return 100
 # adapted from http://dotfiles.org/~sd/.irbrc
 CODES = dict(
   black    = "\033[0;30m",
   gray     = "\033[1;30m",
   lgray    = "\033[0;37m",
-  white    =  "\033[1;37m",
-  red      ="\033[0;31m",
+  white    = "\033[1;37m",
+  red      = "\033[0;31m",
   lred     = "\033[1;31m",
   green    = "\033[0;32m",
   lgreen   = "\033[1;32m",

@@ -5,10 +5,18 @@ import util
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 def flatten(iter):
   return list(itertools.chain(*iter))
+def regex_or(items):
+  r = '|'.join(items)
+  r = '(' + r + ')'
+  return r
+def pos_lookahead(r):
+  return '(?=' + r + ')'
 
-URL_S = r'''https?://\S+'''
-PUNCT_S = '''[“".?!,:;]+'''
-ENTITY_S = '&(amp|lt|gt|quot);'
+
+URL = r'''https?://\S+'''
+URL_RE = mycompile("(%s)" % URL)
+PUNCT = '''[“".?!,:;]+'''
+ENTITY = '&(amp|lt|gt|quot);'
 
 TIMELIKE = r'\d+:\d+'
 NUMNUM = r'\d+\.\d+'
@@ -20,20 +28,21 @@ def regexify_abbrev(a):
   return "".join(dotted)
 ABBREVS = [regexify_abbrev(a) for a in ABBREVS1]
 
-ARBITRARY_ABBREV = r'''([A-Z]\.){3,99}'''
+BOUNDARY_NOT_DOT = regex_or([r'\s', '[“"?!,:;]', ENTITY])
+aa1 = r'''([A-Za-z]\.){2,}''' + pos_lookahead(BOUNDARY_NOT_DOT)
+aa2 = r'''([A-Za-z]\.){1,}[A-Za-z]''' + pos_lookahead(BOUNDARY_NOT_DOT)
+ARBITRARY_ABBREV = regex_or([aa1,aa2])
 
 PROTECT_THESE = [
     emoticons.EMOTICON_S,
-    URL_S,
-    ENTITY_S,
+    URL,
+    ENTITY,
     TIMELIKE,
     NUMNUM,
-    PUNCT_S,
+    PUNCT,
     ARBITRARY_ABBREV,
 ]
-PROTECT_THESE += ABBREVS
-PROTECT_S = "|".join(PROTECT_THESE)
-PROTECT_RE = mycompile(PROTECT_S)
+PROTECT_RE = mycompile(regex_or(PROTECT_THESE))
 
 
 class Tokenization(list):
