@@ -16,47 +16,40 @@ def fetch(url):
 SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
 #SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
 
-def yield_results(q, pages=10, rpp=100):   # pages=range(1,16)
+def yield_results(q, pages=10, rpp=100, hash_fn=None):
   url = SEARCH_URL + "&" + urllib.urlencode(dict(q=q, rpp=rpp))
-  pages = range(1,pages+1)
+  pages = range(1,pages+1) # pages=range(1,16)
+  seen_ids = set()
+  seen_hashes = set()
   for page in pages:
-  #for page in [1]:
-    #print>>sys.stderr, "SEARCH page %d " % page,
     url2 = url + "&page=%d" % page
     print>>sys.stderr, "\nSEARCH %s " % url2,
     json = fetch(url2)
     j = simplejson.load(json)
     if not j['results']: break
     for i,r in enumerate(j['results']):
+      # Skip identical tweets by message ID
+      if r['id'] in seen_ids: continue
+      seen_ids.add(r['id'])
+      # Check other kinds of equality
+      if hash_fn:
+        hash = hash_fn(r)
+        if hash in seen_hashes: continue
+        seen_hashes.add(hash)
       d = time.strptime(r['created_at'].replace(" +0000",""), "%a, %d %b %Y %H:%M:%S")
-      #print time.strftime("%Y-%m-%dT%H:%M:%S",d) + "\t" + r['text'].replace("\n"," ")
       r['created_at'] = datetime(*d[:7])
       print>>sys.stderr, ("%s" % i),
       yield r
-      #yield {'created_at':datetime(*d[:7]), 'text':r['text']}
-      #yield {'created_at':time.strftime("%Y-%m-%dT%H:%M:%S",d), 'text':r['text']}
-      #min_datetime = min(min_datetime,  datetime(*d[:7]))
 
+def tweet_identity(result):
+  return result['text']
 
-#while True:
-#
-#  if need_date_restriction:
-#    query2 = query + " until:" + min_datetime.strftime("%Y-%m-%d")
-#  else: 
-#    query2 = query
-#  url = "http://search.twitter.com/search.json?q=%s&rpp=100" % (urllib2.quote(query2),)
-#  print>>sys.stderr, "*** ",url
-#
-#  for page in range(1,16):
-#  #for page in [1]:
-#    #print>>sys.stderr, "page %d" % page
-#    json = fetch(url + "&page=%d" % page)
-#    j = simplejson.load(json)
-#    if not j['results']: break
-#    for r in j['results']:
-#      d = time.strptime(r['created_at'].replace(" +0000",""), "%a, %d %b %Y %H:%M:%S")
-#      print time.strftime("%Y-%m-%dT%H:%M:%S",d) + "\t" + r['text'].replace("\n"," ")
-#      min_datetime = min(min_datetime,  datetime(*d[:7]))
-#  
-#  need_date_restriction = True
-#  min_datetime = min_datetime - timedelta(days=1)
+def tweet_identity_url_norm(result):
+  return re.compile(twokenize.URL_S).subn('[URL]', result['text'])[0]
+
+def user_and_tweet_identity(result):
+  # Safest, should be default
+  return result['text'] + ':' + result['from_user']
+
+def user_and_tweet_identity_url_norm(result):
+  return re.compile(twokenize.URL_S).subn('[URL]', result['text'])[0] + ':' + result['from_user']

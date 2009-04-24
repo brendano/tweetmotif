@@ -94,14 +94,11 @@ def prebaked_iter(filename):
     yield simplejson.loads(line)
 
 def do_search(lc, q=None, prebaked=None, pages=5):
-  seen_ids = set()
   assert q or prebaked
   if prebaked: tweet_iter = prebaked_iter(prebaked)
-  elif q: tweet_iter = search.yield_results(q,pages)
+  elif q: tweet_iter = search.yield_results(q,pages,hash_fn=search.tweet_identity)
 
   for i,r in enumerate(tweet_iter):
-    if r['id'] in seen_ids: continue
-    seen_ids.add(r['id'])
     lc.add_tweet(r)
 
 URL_RE = re.compile("(%s)" % twokenize.URL_S)
