@@ -93,14 +93,6 @@ def prebaked_iter(filename):
   for line in fileinput.input(filename):
     yield simplejson.loads(line)
 
-def do_search(lc, q=None, prebaked=None, pages=5):
-  assert q or prebaked
-  if prebaked: tweet_iter = prebaked_iter(prebaked)
-  elif q: tweet_iter = search.yield_results(q,pages,hash_fn=search.tweet_identity)
-
-  for i,r in enumerate(tweet_iter):
-    lc.add_tweet(r)
-
 URL_RE = re.compile("(%s)" % twokenize.URL_S)
 
 def nice_tweet(tweet, q_toks, topic_ngram):
@@ -127,7 +119,7 @@ def single_query(q, topic_label, pages=1, exclude=()):
   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
   exclude = set(exclude)
   yield "<ul>"
-  for tweet in search.yield_results(q, pages):
+  for tweet in search.deduped_results(q, pages, hash_fn=search.user_and_text_identity):
     if tweet['id'] in exclude: continue
     tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
     yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
@@ -185,7 +177,10 @@ def my_app(environ, start_response):
   if not opts.prebaked and not opts.q:
     return
 
-  do_search(lc, q=opts.q, prebaked=opts.prebaked, pages=opts.pages)
+  if opts.prebaked: tweet_iter = prebaked_iter(opts.prebaked)
+  elif opts.q: tweet_iter = search.deduped_results(opts.q, pages=opts.pages, hash_fn=search.user_and_text_identity)  #hash_fn=search.tweet_identity)
+
+  lc.fill_from_tweet_iter(tweet_iter)
 
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
 

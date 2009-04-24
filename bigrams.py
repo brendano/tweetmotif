@@ -19,7 +19,25 @@ punc_re = re.compile(r'''^[^a-zA-Z0-9_@]+$''')
 #  return non_word.sub(' ', text).split()
 
 stopwords = set(open("stopwords").read().split())
-stopwords_as_unigrams = set(open("stopwords_as_unigrams").read().split())
+stopwords_as_unigrams = set(open("stopwords_only_as_unigrams").read().split())
+stopwords = stopwords | set(open("super_stopwords").read().split())
+
+def analyze_tweet(tweet):
+  toks = tokenize_and_clean(tweet['text'], alignments=True)
+  tweet['toks'] = toks
+
+def tokenize_and_clean(msg, alignments):
+  if alignments: 
+    toks = twokenize.tokenize(msg)
+  else:          
+    toks = twokenize.simple_tokenize(msg)
+  for i in range(len(toks)):
+    toks[i] = toks[i].lower()
+  inds = [i for i in range(len(toks)) if not punc_re.search(toks[i])]
+  if alignments: 
+    return toks.subset(inds)
+  else:
+    return [toks[i] for i in inds]
 
 
 def unigrams(tokens):
@@ -51,19 +69,6 @@ def output_ngram_counts(ngram_counts, min_count=1):
       if join_flag:
         ngram = ' '.join(ngram)
       print "%s\t%s" % ("*" * (count/histogram_bucket), ngram)
-
-def tokenize_and_clean(msg, alignments):
-  if alignments: 
-    toks = twokenize.tokenize(msg)
-  else:          
-    toks = twokenize.simple_tokenize(msg)
-  for i in range(len(toks)):
-    toks[i] = toks[i].lower()
-  inds = [i for i in range(len(toks)) if not punc_re.search(toks[i])]
-  if alignments: 
-    return toks.subset(inds)
-  else:
-    return [toks[i] for i in inds]
 
 def collect_statistics_into_model(text_iter, lang_model):
   for line in util.counter( text_iter ):
