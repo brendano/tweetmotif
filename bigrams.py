@@ -21,9 +21,9 @@ def analyze_tweet(tweet):
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 # junk tokens contribute no information and can be ignored
 #JunkTok = mycompile(r'''^[^a-zA-Z0-9_@]+$''')
-JunkTok = mycompile(r'''^[.,]+$''')
+JunkTok = mycompile(r'''^$''')
 # dont make n-grams across phrase boundary markers.
-PhraseBoundaryTok = r'''[“"'?!:;-]+ | %s '''  % twokenize.Entity
+PhraseBoundaryTok = r'''[.,“"'?!:;-]+ | %s '''  % twokenize.Entity
 PhraseBoundaryTok = re.compile('^('+PhraseBoundaryTok+')$', re.U|re.X)
 
 def tokenize_and_clean(msg, alignments):
@@ -69,8 +69,8 @@ def unigram_stopword_filter(unigrams):
       ug[0] not in stopwords and
       not PhraseBoundaryTok.search(ug[0]) 
   ]
-  if set(unigrams) - set(ret):
-    print "dropping unigram stopwords", " ".join(sorted(x[0] for x in (set(unigrams) - set(ret))))
+  #if set(unigrams) - set(ret):
+  #  print "dropping unigram stopwords", " ".join(sorted(x[0] for x in (set(unigrams) - set(ret))))
   return ret
 
 def ngram_stopword_filter(ngrams):
@@ -81,8 +81,8 @@ def ngram_stopword_filter(ngrams):
        not PhraseBoundaryTok.search(ng[-1]) and
        not any(PhraseBoundaryTok.search(inner_tok) for inner_tok in ng[1:-1])
   ]
-  for reject in set(ngrams) - set(ret):
-    print "dropping stopword-implicated", reject
+  #for reject in set(ngrams) - set(ret):
+  #  print "dropping stopword-implicated", reject
   return ret
 
 filtered_unigrams = util.chaincompose(unigrams, unigram_stopword_filter)
