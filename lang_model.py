@@ -142,7 +142,7 @@ if __name__=='__main__':
   #model = make_memcache_model("data/the_en_tweets")
   #model.save_info()
 
-  make_tokyo_model("data/the_en_tweets")
+  make_tokyo_model("data/all_background")
 
   #print "pickle"
   #for x in util.counter([1]): model.save_pickle()

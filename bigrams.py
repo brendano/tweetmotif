@@ -107,9 +107,9 @@ def collect_statistics_into_model(text_iter, lang_model):
   for line in util.counter( text_iter ):
     toks = tokenize_and_clean(line, alignments=False)
     lang_model.info['big_n'] += len(toks)
-    for unigram in unigrams(toks):
+    for unigram in filtered_unigrams(toks):
       lang_model.add('unigram', unigram)
-    for bigram in bigrams(toks):
+    for bigram in filtered_bigrams(toks):
       lang_model.add('bigram', bigram)
 
 
