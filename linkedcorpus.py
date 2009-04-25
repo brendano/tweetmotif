@@ -12,14 +12,14 @@ class LinkedCorpus:
   def add_tweet(self, tweet):
     toks = tweet['toks']
     self.model.info['big_n'] += len(toks)
-    for unigram in set(bigrams.unigrams(toks)):
+    for unigram in set(bigrams.filtered_unigrams(toks)):
       self.model.add('unigram',unigram)
       self.index[unigram].append(tweet)
-    for bigram in set(bigrams.bigrams(toks)):
+    for bigram in set(bigrams.filtered_bigrams(toks)):
       self.model.add('bigram',bigram)
       self.index[bigram].append(tweet)
-    for ngram in set(bigrams.multi_ngrams(toks, n_and_up=3)):
-      pass
+    #for ngram in set(bigrams.multi_ngrams(toks, n_and_up=3)):
+    #  pass
 
   def fill_from_tweet_iter(self, tweet_iter, hash_fn=None):
     for tweet in tweet_iter:

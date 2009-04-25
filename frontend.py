@@ -118,7 +118,7 @@ def single_query(q, topic_label, pages=1, exclude=()):
   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
   exclude = set(exclude)
   yield "<ul>"
-  for tweet in search.deduped_results(q, pages, hash_fn=search.user_and_text_identity):
+  for tweet in search.deduped_results(q, pages=pages, hash_fn=search.user_and_text_identity):
     if tweet['id'] in exclude: continue
     tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
     yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)

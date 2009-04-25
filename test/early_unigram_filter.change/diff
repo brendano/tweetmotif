@@ -1,0 +1,11 @@
+--- linkedcorpus_old.py	2009-04-24 21:08:52.000000000 -0700
++++ linkedcorpus_new.py	2009-04-24 21:08:44.000000000 -0700
+@@ -12,7 +12,7 @@
+   def add_tweet(self, tweet):
+     toks = tweet['toks']
+     self.model.info['big_n'] += len(toks)
+-    for unigram in set(bigrams.unigrams(toks)):
++    for unigram in set(bigrams.filtered_unigrams(toks)):
+       self.model.add('unigram',unigram)
+       self.index[unigram].append(tweet)
+     for bigram in set(bigrams.bigrams(toks)):

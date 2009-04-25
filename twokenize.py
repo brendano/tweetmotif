@@ -13,36 +13,36 @@ def pos_lookahead(r):
   return '(?=' + r + ')'
 
 
-URL = r'''https?://\S+'''
-URL_RE = mycompile("(%s)" % URL)
-PUNCT = '''[“".?!,:;]+'''
-ENTITY = '&(amp|lt|gt|quot);'
+Url = r'''https?://\S+'''
+Url_RE = mycompile("(%s)" % Url)
+Punct = '''[“".?!,:;]+'''
+Entity = '&(amp|lt|gt|quot);'
 
-TIMELIKE = r'\d+:\d+'
-NUMNUM = r'\d+\.\d+'
-ABBREVS1 = ['am','pm','us','usa','ie','eg']
+Timelike = r'\d+:\d+'
+NumNum = r'\d+\.\d+'
+Abbrevs1 = ['am','pm','us','usa','ie','eg']
 def regexify_abbrev(a):
   chars = list(a)
   icase = ["[%s%s]" % (c,c.upper()) for c in chars]
   dotted = [r'%s\.' % x for x in icase]
   return "".join(dotted)
-ABBREVS = [regexify_abbrev(a) for a in ABBREVS1]
+Abbrevs = [regexify_abbrev(a) for a in Abbrevs1]
 
-BOUNDARY_NOT_DOT = regex_or([r'\s', '[“"?!,:;]', ENTITY])
-aa1 = r'''([A-Za-z]\.){2,}''' + pos_lookahead(BOUNDARY_NOT_DOT)
-aa2 = r'''([A-Za-z]\.){1,}[A-Za-z]''' + pos_lookahead(BOUNDARY_NOT_DOT)
-ARBITRARY_ABBREV = regex_or([aa1,aa2])
+BoundaryNotDot = regex_or([r'\s', '[“"?!,:;]', Entity])
+aa1 = r'''([A-Za-z]\.){2,}''' + pos_lookahead(BoundaryNotDot)
+aa2 = r'''([A-Za-z]\.){1,}[A-Za-z]''' + pos_lookahead(BoundaryNotDot)
+ArbitraryAbbrev = regex_or([aa1,aa2])
 
-PROTECT_THESE = [
+ProtectThese = [
     emoticons.EMOTICON_S,
-    URL,
-    ENTITY,
-    TIMELIKE,
-    NUMNUM,
-    PUNCT,
-    ARBITRARY_ABBREV,
+    Url,
+    Entity,
+    Timelike,
+    NumNum,
+    Punct,
+    ArbitraryAbbrev,
 ]
-PROTECT_RE = mycompile(regex_or(PROTECT_THESE))
+Protect_RE = mycompile(regex_or(ProtectThese))
 
 
 class Tokenization(list):
@@ -97,8 +97,8 @@ def simple_tokenize(text):
   goods = []
   bads = []
   i = 0
-  if PROTECT_RE.search(s):
-    for m in PROTECT_RE.finditer(s):
+  if Protect_RE.search(s):
+    for m in Protect_RE.finditer(s):
       goods.append( (i,m.start()) )
       bads.append(m.span())
       i = m.end()
@@ -121,20 +121,20 @@ def simple_tokenize(text):
 
 WS_RE = mycompile(r'\s+')
 def squeeze_whitespace(s):
-  new_string,n = WS_RE.subn(" ",s)
+  new_string = WS_RE.sub(" ",s)
   return new_string.strip()
 
-EDGE_PUNCT      = r"""['"([\)\]]"""   # alignment failures. hm.
-#NOT_EDGE_PUNCT = r"""[^'"([\)\]]"""
-NOT_EDGE_PUNCT = r"""[a-zA-Z0-9]"""
-EDGE_PUNCT_LEFT  = r"""(\s|^)(%s+)(%s)""" % (EDGE_PUNCT, NOT_EDGE_PUNCT)
-EDGE_PUNCT_RIGHT =   r"""(%s)(%s+)(\s|$)""" % (NOT_EDGE_PUNCT, EDGE_PUNCT)
-EDGE_PUNCT_LEFT_RE = mycompile(EDGE_PUNCT_LEFT)
-EDGE_PUNCT_RIGHT_RE= mycompile(EDGE_PUNCT_RIGHT)
+EdgePunct      = r"""['"([\)\]]"""   # alignment failures. hm.
+#NotEdgePunct = r"""[^'"([\)\]]"""
+NotEdgePunct = r"""[a-zA-Z0-9]"""
+EdgePunctLeft  = r"""(\s|^)(%s+)(%s)""" % (EdgePunct, NotEdgePunct)
+EdgePunctRight =   r"""(%s)(%s+)(\s|$)""" % (NotEdgePunct, EdgePunct)
+EdgePunctLeft_RE = mycompile(EdgePunctLeft)
+EdgePunctRight_RE= mycompile(EdgePunctRight)
 
 def edge_punct_munge(s):
-  s = EDGE_PUNCT_LEFT_RE.subn( r"\1\2 \3", s)[0]
-  s = EDGE_PUNCT_RIGHT_RE.subn(r"\1 \2\3", s)[0]
+  s = EdgePunctLeft_RE.sub( r"\1\2 \3", s)
+  s = EdgePunctRight_RE.sub(r"\1 \2\3", s)
   return s
 
 

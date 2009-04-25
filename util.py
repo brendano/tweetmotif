@@ -87,6 +87,21 @@ def write_tsv(data, filename):
 
 ##########  Misc
 
+def compose(*fns):
+  f1 = fns[-1]
+  for f in reversed(fns[:-1]):
+    f2 = compose2(f,f1)
+    f1 = f2
+  return f1
+
+def compose2(f,g):
+  return lambda *a,**k: f(g(*a,**k))
+
+def chaincompose(*fns):
+  " more natural ordering than traditional compose() "
+  return compose(*list(reversed(fns)))
+
+# TODO remove in favor of sane_re.py?
 def fancy_sub(s, pat, repl_fn=lambda m: ">> %s <<" % m.group()):
   """ like ruby String.gsub() when passing in a block """
   ret = StringIO()

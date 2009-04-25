@@ -33,13 +33,16 @@ def yield_results(q, pages=10, rpp=100):
 
 
 import bigrams
-from twokenize import URL_RE
+from twokenize import Url_RE
 
 def deduped_results(q, pages=10,rpp=100, hash_fn=None):
+  tweet_iter = yield_results(q,pages=pages,rpp=rpp)
+  return dedupe_tweets(tweet_iter, hash_fn=hash_fn)
+
+def dedupe_tweets(tweet_iter, hash_fn):
   seen_ids = set()
   seen_hashes = set()
-
-  for tweet in yield_results(q,pages=pages,rpp=rpp):
+  for tweet in tweet_iter:
     # Skip identical tweets by message ID
     if tweet['id'] in seen_ids: continue
     seen_ids.add(tweet['id'])
@@ -60,11 +63,11 @@ def text_identity(tweet):
   return tweet['text']
 
 def text_identity_url_norm(tweet):
-  return URL_RE.subn('[URL]', tweet['text'])[0]
+  return Url_RE.sub('[URL]', tweet['text'])
 
 def user_and_text_identity(tweet):
   # Safest, should be default
   return tweet['text'] + ':' + tweet['from_user']
 
 def user_and_text_identity_url_norm(tweet):
-  return URL_RE.subn('[URL]', tweet['text'])[0] + ':' + tweet['from_user']
+  return Url_RE.sub('[URL]', tweet['text']) + ':' + tweet['from_user']

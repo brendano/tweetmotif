@@ -1,0 +1,4 @@
+/d/twi/twi % cat data/happenings|grep ' &amp; '| python ranking.py happenings /dev/stdin|chunk RESULTS.. > res_before_early_unigram_stopword_filter
+Done at iter 140, 0s total  (713 iter/sec)
+/d/twi/twi % cat data/happenings|grep ' &amp; '| python ranking.py happenings /dev/stdin|chunk RESULTS.. > res_after_early_unigram_stopword_filter
+/d/twi/twi % diff -u res_before_early_unigram_stopword_filter res_after_early_unigram_stopword_filter > topic_ranking.change
