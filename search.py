@@ -14,7 +14,7 @@ def fetch(url):
   return urllib2.urlopen(url)
 
 SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
-SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
+#SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
 
 def yield_results(q, pages=10, rpp=100):
   url = SEARCH_URL + "&" + urllib.urlencode(dict(q=q, rpp=rpp))
