@@ -1,4 +1,5 @@
 import twokenize,util,re,bigrams
+from copy import copy
 
 #norm_re = re.compile(r'[^a-zA-Z0-9_@]')
 norm_re = re.compile(r'^[^a-zA-Z0-9_@]+')
