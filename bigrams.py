@@ -60,6 +60,7 @@ stopwords                  = read_set("stopwords_dir/normal_stopwords")
 stopwords_only_as_unigrams = read_set("stopwords_dir/only_as_unigrams")
 super_stopwords            = read_set("stopwords_dir/super_stopwords")
 rightside_stopwords        = read_set("stopwords_dir/rightside_stopwords")
+leftside_stopwords         = read_set("stopwords_dir/leftside_stopwords")
 
 
 def unigram_stopword_filter(unigrams):
@@ -76,10 +77,12 @@ def unigram_stopword_filter(unigrams):
 def ngram_stopword_filter(ngrams):
   ret = [ng for ng in ngrams
     if ng[0] not in super_stopwords and
-       ng[-1] not in super_stopwords and
-       not PhraseBoundaryTok.search(ng[0]) and
-       not PhraseBoundaryTok.search(ng[-1]) and
-       not any(PhraseBoundaryTok.search(inner_tok) for inner_tok in ng[1:-1])
+      ng[0] not in leftside_stopwords and 
+      ng[-1] not in super_stopwords and
+      ng[-1] not in rightside_stopwords and
+      not PhraseBoundaryTok.search(ng[0]) and
+      not PhraseBoundaryTok.search(ng[-1]) and
+      not any(PhraseBoundaryTok.search(inner_tok) for inner_tok in ng[1:-1])
   ]
   #for reject in set(ngrams) - set(ret):
   #  print "dropping stopword-implicated", reject

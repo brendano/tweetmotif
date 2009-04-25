@@ -53,7 +53,7 @@ def dedupe_tweets(tweet_iter, hash_fn):
     if hash_fn:
       hash = hash_fn(tweet)
       if hash in seen_hashes:
-        print "rejecting dupe", tweet
+        print "rejecting dupe", tweet['id']
         continue
       seen_hashes.add(hash)
 

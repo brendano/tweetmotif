@@ -4,9 +4,11 @@ td { font-size: 12pt}
 ul { font-size:11pt }
 .topic_hl { font-weight:bold; color: darkblue; }
 .q_hl { font-weight:bold; color: darkred }
-a.t { color: black }
+a:hover { text-decoration: underline }
+text.a { color: black; text-decoration:none }
 a.m { color: #444 }
-a.at { color: #444 }
+a.at { color: #444; text-decoration: none }
+a:hover.at { text-decoration: underline }
 input#q { color: darkred }
 .topic_label { cursor:pointer;cursor:hand; color:darkblue }
 .topic_label.sel { background: yellow }
