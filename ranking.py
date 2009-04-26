@@ -35,44 +35,31 @@ def rank_and_filter1(linkedcorpus, background_model, q, type='bigram'):
     yield util.Struct(ngram=ngram, label=topic_label, tweets=tweets, ratio=ratio)
     #yield ngram, topic_label, tweets
 
+def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
+  n_topics = topic_dict_list[n-1]
+  n_1_topics = topic_dict_list[n-2]
+  if n_1_g in n_1_topics and \
+        test_weak_dominance(n_topics[n_g], n_1_topics[n_1_g]):
+    print "killing %s since it's dominated by %s" % (n_1_g, n_g)
+    del n_1_topics[n_1_g]
+
 def rank_and_filter2(linkedcorpus, background_model, q):
   # topic deduping
   unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'unigram'))
   bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'bigram'))
   trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'trigram'))
+  topics = [ unigram_topics, bigram_topics, trigram_topics ]
   #print trigram_topics
   #print "STOP"
   #trigram_topics = dict()
-  def ug_in_bg_check(bg,ug):
-    if ug in unigram_topics and test_weak_dominance(bigram_topics[bg], unigram_topics[ug]):
-      print "killing %s since it's dominated by %s" % (ug, bg)
-      del unigram_topics[ug]
-  def bg_overlap_check(bg, direction):
-    if direction == 'left':
-      wildcard = (None, bg[0])
-    else:
-      wildcard = (bg[1], None)
-    if wildcard in linkedcorpus.bigram_index:
-      for overlap_bg in linkedcorpus.bigram_index[wildcard]:
-        if overlap_bg not in bigram_topics or not test_weak_dominance(bigram_topics[bg], bigram_topics[overlap_bg]):
-          continue
-        if direction == 'left':
-          trigram = (overlap_bg[0], bg[0], bg[1])
-        else:
-          trigram = (bg[0], bg[1], overlap_bg[1])
-        if trigram in trigram_topics:
-          continue
-        print "Adding trigram %s, %s, %s for dominated bigram %s, %s" % (trigram + overlap_bg)
-        trigram_topic = copy(bigram_topics[overlap_bg])
-        trigram_topic.ngram = trigram
-        trigram_topic.label = ' '.join(trigram)
-        trigram_topic.ratio = 10000 * (trigram_topic.ratio + 1)
-        trigram_topics[trigram] = trigram_topic
   for bg in bigram_topics:
-    ug_in_bg_check(bg, (bg[0],))
-    ug_in_bg_check(bg, (bg[1],))
+    n_1_g_in_n_g_check(bg, (bg[0],), 2, topics)
+    n_1_g_in_n_g_check(bg, (bg[1],), 2, topics)
     #bg_overlap_check(bg, 'left')
     #bg_overlap_check(bg, 'right')
+  for tg in trigram_topics:
+    n_1_g_in_n_g_check(tg, (tg[0],tg[1]), 3, topics)
+    n_1_g_in_n_g_check(tg, (tg[1],tg[2]), 3, topics)
   return {'unigram':unigram_topics, 'bigram':bigram_topics, 'trigram':trigram_topics}
 
 def score_topic(topic):
@@ -124,3 +111,28 @@ if __name__=='__main__':
     #for tweet in topic.tweets: print "",tweet['text']
 
 
+#################################################################
+# Dangerous: was a closure in rank_and_filter2
+#################################################################
+
+def bg_overlap_check(bg, direction):
+  if direction == 'left':
+    wildcard = (None, bg[0])
+  else:
+    wildcard = (bg[1], None)
+  if wildcard in linkedcorpus.bigram_index:
+    for overlap_bg in linkedcorpus.bigram_index[wildcard]:
+      if overlap_bg not in bigram_topics or not test_weak_dominance(bigram_topics[bg], bigram_topics[overlap_bg]):
+        continue
+      if direction == 'left':
+        trigram = (overlap_bg[0], bg[0], bg[1])
+      else:
+        trigram = (bg[0], bg[1], overlap_bg[1])
+      if trigram in trigram_topics:
+        continue
+      print "Adding trigram %s, %s, %s for dominated bigram %s, %s" % (trigram + overlap_bg)
+      trigram_topic = copy(bigram_topics[overlap_bg])
+      trigram_topic.ngram = trigram
+      trigram_topic.label = ' '.join(trigram)
+      trigram_topic.ratio = 10000 * (trigram_topic.ratio + 1)
+      trigram_topics[trigram] = trigram_topic
