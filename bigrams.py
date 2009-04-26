@@ -46,6 +46,9 @@ def unigrams(tokens):
 def bigrams(tokens):
   return ngrams(tokens,2)
 
+def triigrams(tokens):
+  return ngrams(tokens,3)
+
 def multi_ngrams(tokens, n_and_up):
   ret = []
   for k in range(n_and_up, len(tokens)):
@@ -90,6 +93,7 @@ def ngram_stopword_filter(ngrams):
 
 filtered_unigrams = util.chaincompose(unigrams, unigram_stopword_filter)
 filtered_bigrams  = util.chaincompose(bigrams, ngram_stopword_filter)
+filtered_trigrams  = util.chaincompose(trigrams, ngram_stopword_filter)
 filtered_multi_ngrams  = util.chaincompose(multi_ngrams, ngram_stopword_filter)
 
 
@@ -114,6 +118,8 @@ def collect_statistics_into_model(text_iter, lang_model):
       lang_model.add('unigram', unigram)
     for bigram in filtered_bigrams(toks):
       lang_model.add('bigram', bigram)
+    for trigram in filtered_trigrams(toks):
+      lang_model.add('trigram', trigram)
 
 
 def compare_models(collection_model, background_model, ngram_type, min_count=1):

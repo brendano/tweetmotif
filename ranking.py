@@ -39,14 +39,38 @@ def rank_and_filter2(linkedcorpus, background_model, q):
   # topic deduping
   unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'unigram'))
   bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'bigram'))
-  def check(bg,ug):
+  trigram_topics = dict()
+  def ug_in_bg_check(bg,ug):
     if ug in unigram_topics and test_weak_dominance(bigram_topics[bg], unigram_topics[ug]):
       print "killing %s since it's dominated by %s" % (ug, bg)
       del unigram_topics[ug]
+  def bg_overlap_check(bg, direction):
+    if direction == 'left':
+      wildcard = (None, bg[0])
+    else:
+      wildcard = (bg[1], None)
+    if wildcard in linkedcorpus.bigram_index:
+      for overlap_bg in linkedcorpus.bigram_index[wildcard]:
+        if overlap_bg not in bigram_topics or not test_weak_dominance(bigram_topics[bg], bigram_topics[overlap_bg]):
+          continue
+        if direction == 'left':
+          trigram = (overlap_bg[0], bg[0], bg[1])
+        else:
+          trigram = (bg[0], bg[1], overlap_bg[1])
+        if trigram in trigram_topics:
+          continue
+        print "Adding trigram %s, %s, %s for dominated bigram %s, %s" % (trigram + overlap_bg)
+        trigram_topic = copy(bigram_topics[overlap_bg])
+        trigram_topic.ngram = trigram
+        trigram_topic.label = ' '.join(trigram)
+        trigram_topic.ratio = 10000 * (trigram_topic.ratio + 1)
+        trigram_topics[trigram] = trigram_topic
   for bg in bigram_topics:
-    check(bg, (bg[0],))
-    check(bg, (bg[1],))
-  return {'unigram':unigram_topics, 'bigram':bigram_topics}
+    ug_in_bg_check(bg, (bg[0],))
+    ug_in_bg_check(bg, (bg[1],))
+    bg_overlap_check(bg, 'left')
+    bg_overlap_check(bg, 'right')
+  return {'unigram':unigram_topics, 'bigram':bigram_topics, 'trigram':trigram_topics}
 
 def score_topic(topic):
   return topic.ratio
@@ -56,14 +80,13 @@ def score_topic(topic):
 def rank_and_filter3(linkedcorpus, background_model, q):
   # apply final topic ranking
   r = rank_and_filter2(linkedcorpus, background_model, q)
-  all_topics = r['unigram'].values() + r['bigram'].values()
+  all_topics = r['unigram'].values() + r['bigram'].values() + r['trigram'].values()
   all_topics.sort(key=score_topic, reverse=True)
   return all_topics
 
 def test_weak_dominance(topic1, topic2):
   def ids(topic): return (tw['id'] for tw in topic.tweets)
   return set(ids(topic1)) >= set(ids(topic2))
-
 
 def prebaked_iter(filename):
   for line in util.counter(open(filename)):
