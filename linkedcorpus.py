@@ -21,6 +21,9 @@ class LinkedCorpus:
       self.index[bigram].append(tweet)
       self.bigram_index[bigram[0], None].append(bigram)
       self.bigram_index[None, bigram[1]].append(bigram)
+    for trigram in set(bigrams.filtered_trigrams(toks)):
+      self.model.add('trigram',trigram)
+      self.index[trigram].append(tweet)
     #for ngram in set(bigrams.multi_ngrams(toks, n_and_up=3)):
     #  pass
 

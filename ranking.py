@@ -15,7 +15,7 @@ def rank_and_filter1(linkedcorpus, background_model, q, type='bigram'):
   q_toks = map(tok_norm, q_toks)
   q_toks_set = set(q_toks)
   stopwords = bigrams.stopwords - q_toks_set
-  for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type,3):
+  for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type,1):
     norm_ngram = [tok_norm(t) for t in ngram]
     #if set(norm_ngram) <= bigrams.stopwords:
     #  print "reject stopwords", norm_ngram
@@ -39,7 +39,10 @@ def rank_and_filter2(linkedcorpus, background_model, q):
   # topic deduping
   unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'unigram'))
   bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'bigram'))
-  trigram_topics = dict()
+  trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'trigram'))
+  #print trigram_topics
+  #print "STOP"
+  #trigram_topics = dict()
   def ug_in_bg_check(bg,ug):
     if ug in unigram_topics and test_weak_dominance(bigram_topics[bg], unigram_topics[ug]):
       print "killing %s since it's dominated by %s" % (ug, bg)
@@ -68,8 +71,8 @@ def rank_and_filter2(linkedcorpus, background_model, q):
   for bg in bigram_topics:
     ug_in_bg_check(bg, (bg[0],))
     ug_in_bg_check(bg, (bg[1],))
-    bg_overlap_check(bg, 'left')
-    bg_overlap_check(bg, 'right')
+    #bg_overlap_check(bg, 'left')
+    #bg_overlap_check(bg, 'right')
   return {'unigram':unigram_topics, 'bigram':bigram_topics, 'trigram':trigram_topics}
 
 def score_topic(topic):
@@ -115,6 +118,7 @@ if __name__=='__main__':
   res = rank_and_filter3(lc, background_model, q)
   print 'RESULTS'
   for topic in res:
+    #if len(topic.ngram)==3: print "%s\t%s\t%s" % (topic.label, topic.ratio, len(topic.tweets))
     print "%s\t%s\t%s" % (topic.label, topic.ratio, len(topic.tweets))
     #print ansi.color(topic.label,'bold','blue'), "(%s)" % len(topic.tweets)
     #for tweet in topic.tweets: print "",tweet['text']

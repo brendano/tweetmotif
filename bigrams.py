@@ -46,7 +46,7 @@ def unigrams(tokens):
 def bigrams(tokens):
   return ngrams(tokens,2)
 
-def triigrams(tokens):
+def trigrams(tokens):
   return ngrams(tokens,3)
 
 def multi_ngrams(tokens, n_and_up):
@@ -84,8 +84,7 @@ def ngram_stopword_filter(ngrams):
       ng[-1] not in super_stopwords and
       ng[-1] not in rightside_stopwords and
       not PhraseBoundaryTok.search(ng[0]) and
-      not PhraseBoundaryTok.search(ng[-1]) and
-      not any(PhraseBoundaryTok.search(inner_tok) for inner_tok in ng[1:-1])
+      not PhraseBoundaryTok.search(ng[-1])
   ]
   #for reject in set(ngrams) - set(ret):
   #  print "dropping stopword-implicated", reject

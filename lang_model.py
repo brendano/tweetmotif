@@ -10,7 +10,7 @@ os.environ['LD_LIBRARY_PATH'] = "platform/%s:%s" % (sys.platform, os.environ.get
 
 class LocalLM:
   def __init__(self):
-    self.counts = {'unigram': defaultdict(int), 'bigram':defaultdict(int)}
+    self.counts = {'unigram': defaultdict(int), 'bigram':defaultdict(int), 'trigram':defaultdict(int)}
     self.info = {'big_n':0}
   def add(self, type, ngram):
     self.counts[type][ngram] += 1
@@ -43,7 +43,9 @@ class TokyoLM:
     flag = 'r' if readonly else 'c'
     self.counts = {
         'unigram': TokyoNgramProxy(open_tc("%s/unigram.hdb" % filename, flag)),
-        'bigram':  TokyoNgramProxy(open_tc("%s/bigram.hdb"  % filename, flag)),}
+        'bigram':  TokyoNgramProxy(open_tc("%s/bigram.hdb"  % filename, flag)),
+        'trigram':  TokyoNgramProxy(open_tc("%s/trigram.hdb"  % filename, flag)),
+        }
     self.info = KVIntProxy(open_tc("%s/info.hdb" % filename, flag))
 
   def sync(self):
@@ -133,7 +135,7 @@ def make_tokyo_model(text_filename):
   #model = BDBLM()
   #model = LocalLM()
   iter = fileinput.input(text_filename)
-  iter = occasional(iter, lambda: model.sync())
+  #iter = occasional(iter, lambda: model.sync())
   bigrams.collect_statistics_into_model(iter, model)
   model.sync()
   return model

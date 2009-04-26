@@ -96,6 +96,8 @@ def prebaked_iter(filename):
 from sane_re import *
 At = _R(r'(@)(\w+)')
 
+
+
 def nice_tweet(tweet, q_toks, topic_ngram):
   link = "http://twitter.com/%s/status/%s" % (tweet['from_user'],tweet['id'])
   s = ""
