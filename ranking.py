@@ -15,7 +15,7 @@ def rank_and_filter1(linkedcorpus, background_model, q, type='bigram'):
   q_toks = map(tok_norm, q_toks)
   q_toks_set = set(q_toks)
   stopwords = bigrams.stopwords - q_toks_set
-  for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type,1):
+  for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type, min_count=3):
     norm_ngram = [tok_norm(t) for t in ngram]
     #if set(norm_ngram) <= bigrams.stopwords:
     #  print "reject stopwords", norm_ngram
