@@ -72,7 +72,13 @@ def rank_and_filter3(linkedcorpus, background_model, q):
   r = rank_and_filter2(linkedcorpus, background_model, q)
   all_topics = r['unigram'].values() + r['bigram'].values() + r['trigram'].values()
   all_topics.sort(key=score_topic, reverse=True)
-  return all_topics
+  tweet_ids_in_topics = set()
+  for t in all_topics:
+    tweet_ids_in_topics |= set(tw['id'] for tw in t.tweets)
+  leftover_ids = set(linkedcorpus.tweets_by_id.iterkeys()) - tweet_ids_in_topics
+  leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_ids]
+  return util.Struct(topics=all_topics, leftover_tweets=leftover_tweets)
+  #return all_topics
 
 def test_weak_dominance(topic1, topic2):
   def ids(topic): return (tw['id'] for tw in topic.tweets)
@@ -104,11 +110,13 @@ if __name__=='__main__':
 
   res = rank_and_filter3(lc, background_model, q)
   print 'RESULTS'
-  for topic in res:
+  for topic in res.topics:
     #if len(topic.ngram)==3: print "%s\t%s\t%s" % (topic.label, topic.ratio, len(topic.tweets))
     print "%s\t%s\t%s" % (topic.label, topic.ratio, len(topic.tweets))
     #print ansi.color(topic.label,'bold','blue'), "(%s)" % len(topic.tweets)
     #for tweet in topic.tweets: print "",tweet['text']
+  if res.leftover_tweets:
+    print "%d leftover tweets" % len(res.leftover_tweets)
 
 
 #################################################################

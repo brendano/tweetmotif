@@ -1,4 +1,6 @@
 from pprint import pprint
+from datetime import datetime,timedelta
+import time
 from copy import copy
 import util
 import re
@@ -151,6 +153,39 @@ def topic_fragment(q_toks, topic):
   del topic['tweets']
   return topic
 
+def nice_date(d):
+  return d.strftime("%Y-%m-%dT%H:%M:%S")
+
+def nice_unitted_num(n,sing,plur=None):
+  if n==1: return "%d %s" % (n,sing)
+  plur = plur or sing+"s"
+  return "%d %s" % (n,plur)
+
+def nice_datespan(d1,d2):
+  if d2<d1: d1,d2=d2,d1
+  #if (datetime.utcnow() - d2) < timedelta(hours=4):
+  #  s = "now"
+  #else:
+  #  s = d2.strftime("%Y-%m-%dT%H:%M:%S")
+  #s += " back to "
+  s = "over the last "
+  delt = datetime.utcnow()-d1
+  x = []
+  if delt.days:
+    x.append(nice_unitted_num(delt.days, "day"))
+    if delt.seconds > 60*60: 
+      x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
+  else:
+    x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
+  s += ', '.join(x)
+  #s += " ago"
+  return s
+
+
+
+  
+  return "%s back to %s" % (d2.strftime("%Y-%m-%dT%H:%M:%S"), d1.strftime("%Y-%m-%dT%H:%M:%S"))
+
 def my_app(environ, start_response):
   status = '200 OK'
   response_headers = [('Content-type','text/html')]
@@ -190,15 +225,30 @@ def my_app(environ, start_response):
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
 
   if not opts.simple:
-    yield "<table><tr><th>topics <th>tweets"
+    yield "<table><tr>"
+    yield "<th>topics"
+    if lc.tweets_by_id:
+      earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+      latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+      s=  "for %d tweets" % len(lc.tweets_by_id)
+      s+= " from %s" % nice_datespan(earliest,latest)
+      yield " <small>%s</small>" % s
+
+
+    yield "<th>tweets"
     yield "<tr><td valign=top id=topic_list>"
-    topics = ranking.rank_and_filter3(lc, background_model, opts.q)
+    res = ranking.rank_and_filter3(lc, background_model, opts.q)
+    topics = res.topics
     if len(topics) > opts.max_topics:
       print "throwing out %d topics" % (len(topics)-opts.max_topics)
       topics = topics[:opts.max_topics]
+    if res.leftover_tweets:
+      topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
     topic_labels = ("""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in topics)
     #for x in topic_labels: yield x
     for x in table_byrow(list(topic_labels), ncol=opts.ncol): yield x
+    #if res.leftover_tweets:
+    #  yield "%d extra tweets without topics" % len(res.leftover_tweets)
 
     yield "<td valign=top>"
     yield "<div id=tweets>"

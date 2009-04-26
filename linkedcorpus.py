@@ -9,8 +9,10 @@ class LinkedCorpus:
     self.model = lang_model.LocalLM()
     self.index = defaultdict(list)
     self.bigram_index = defaultdict(list)
+    self.tweets_by_id = {}
 
   def add_tweet(self, tweet):
+    self.tweets_by_id[tweet['id']] = tweet
     toks = tweet['toks']
     self.model.info['big_n'] += len(toks)
     for unigram in set(bigrams.filtered_unigrams(toks)):
