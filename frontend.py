@@ -129,7 +129,12 @@ def nice_tweet(tweet, q_toks, topic_ngram):
     user = subtweet['from_user']
     link = "http://twitter.com/%s/status/%s" % (user, subtweet['id'])
     s += " "
-    s += "<a class=m target=_blank href='%s'>%s</a>" % (link, user)
+    #print repr(link)
+    #"" + link
+    #print repr(user)
+    #"" + user
+    # calling encode() here makes NO SENSE AT ALL why do we need it?
+    s += "<a class=m target=_blank href='%s'>%s</a>" % (util.stringify(link), util.stringify(user))
   s += "</span>"
   return s
 
@@ -326,6 +331,7 @@ def app_stringify(iter):
     yield util.stringify(x, 'utf8', 'xmlcharrefreplace')
 
 if __name__=='__main__':
+  import util; util.fix_stdio()
   #background_model = lang_model.MemcacheLM()
   background_model = lang_model.TokyoLM()
 
