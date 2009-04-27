@@ -2,13 +2,13 @@ from pprint import pprint
 from datetime import datetime,timedelta
 import time
 from copy import copy
-import util
 import re
 import sys
 import os
 import fileinput
 import simplejson
 import cgi
+import util
 import search
 import linkedcorpus
 import lang_model
@@ -54,7 +54,7 @@ def type_clean(val,type):
   return type(val)
 
 class Opts(util.Struct):
-  " modelled on trollop.rubyforge.org and gist.github.com/5682"
+  " modelled on trollop.rubyforge.org and gist.github.com/5682 "
   def __init__(self, environ, *optlist):
     vars = cgi.parse_qs(environ['QUERY_STRING'])
     for opt in optlist:
@@ -106,7 +106,9 @@ def nice_tweet(tweet, q_toks, topic_ngram):
   s += "<span class=text>"
   hl_spec = {topic_ngram: ("<span class=topic_hl>","</span>")}
   for ug in set(bigrams.unigrams(q_toks)):
-    if ug[0] in bigrams.stopwords: continue
+    #print "******* HL",
+    #print ug
+    if ug[0] in bigrams.super_stopwords: continue
     if ug[0] in topic_ngram: continue
     hl_spec[ug] = ("<span class=q_hl>","</span>")
   text = highlighter.highlight(tweet['toks'], hl_spec)
@@ -148,7 +150,6 @@ def topic_fragment(q_toks, topic):
   for tweet in topic['tweets']:
     h+="<li>" + nice_tweet(tweet, q_toks, topic.ngram)
   h+="</ul>"
-
   topic['tweets_html'] = h
   del topic['tweets']
   return topic
@@ -168,23 +169,27 @@ def nice_datespan(d1,d2):
   #else:
   #  s = d2.strftime("%Y-%m-%dT%H:%M:%S")
   #s += " back to "
-  s = "over the last "
-  delt = datetime.utcnow()-d1
+  s = "spanning "
+  delt = d2-d1
+  s += nice_timedelta(delt)
+  return s
+
+def nice_timedelta(delt):
   x = []
-  if delt.days:
+  if delt.days > 0:
     x.append(nice_unitted_num(delt.days, "day"))
     if delt.seconds > 60*60: 
       x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
-  else:
+  elif delt.seconds > 60*60:
     x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
-  s += ', '.join(x)
-  #s += " ago"
+  elif delt.seconds > 60:
+    x.append(nice_unitted_num(int(delt.seconds/60), "minute"))
+  else:
+    x.append(nice_unitted_num(delt.seconds, "second"))
+  s = ', '.join(x)
   return s
+  #return "%s back to %s" % (d2.strftime("%Y-%m-%dT%H:%M:%S"), d1.strftime("%Y-%m-%dT%H:%M:%S"))
 
-
-
-  
-  return "%s back to %s" % (d2.strftime("%Y-%m-%dT%H:%M:%S"), d1.strftime("%Y-%m-%dT%H:%M:%S"))
 
 def my_app(environ, start_response):
   status = '200 OK'
@@ -231,7 +236,8 @@ def my_app(environ, start_response):
       earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
       latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
       s=  "for %d tweets" % len(lc.tweets_by_id)
-      s+= " from %s" % nice_datespan(earliest,latest)
+      #s+= " from %s" % nice_datespan(earliest,latest)
+      s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
       yield " <small>%s</small>" % s
 
 
