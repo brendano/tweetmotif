@@ -239,9 +239,9 @@ def my_app(environ, start_response):
   if opts.prebaked: 
     tweet_iter = prebaked_iter(opts.prebaked)
   elif opts.q: 
-    #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity)
+    tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity)
     #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity_url_norm)
-    tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.text_identity_url_norm)
+    #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.text_identity_url_norm)
   tweet_iter = search.group_multitweets(tweet_iter)
 
   lc.fill_from_tweet_iter(tweet_iter)
