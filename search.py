@@ -1,44 +1,87 @@
 import simplejson
+import util
 from copy import copy
 import urllib2,urllib,sys,pprint,cgi,time
 from datetime import datetime,timedelta
 from collections import defaultdict
 
-import socket; socket.setdefaulttimeout(2) # http://www.voidspace.org.uk/python/articles/urllib2.shtml
-#import timeout_urllib2; timeout_urllib2.sethttptimeout(2.0)
+#import socket
+import socket
+# socket.setdefaulttimeout(1) # http://www.voidspace.org.uk/python/articles/urllib2.shtml
+import timeout_urllib2; timeout_urllib2.sethttptimeout(1.0)
 
-def fetch(url):
-  for i in range(2):
-    try: return urllib2.urlopen(url)
-    except (urllib2.HTTPError, urllib2.URLError), e:
-      print type(e), e
+def fetch(url, printer=None, retries=1):
+  for i in range(retries):
+    try:
+      return urllib2.urlopen(url)
+    #except (urllib2.HTTPError, urllib2.URLError), e:
+    #except urllib2.URLError, e:
+    except (urllib2.URLError, timeout_urllib2.Error, socket.error), e:
+      if printer: printer("RETRY after %s %s" % (type(e), e))
       pass
   return urllib2.urlopen(url)
 
 SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
 #SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
 
-def yield_results(q, pages=10, rpp=100):
-  url = SEARCH_URL + "&" + urllib.urlencode(dict(q=q, rpp=rpp))
+def serial_search(q, pages=10, rpp=100):
   pages = range(1,pages+1) # pages=range(1,16)
   for page in pages:
-    url2 = url + "&page=%d" % page
-    print "SEARCH %s " % url2
-    json = fetch(url2)
-    j = simplejson.load(json)   # should i/o protect
-    if not j['results']: break
-    for i,r in enumerate(j['results']):
-      d = time.strptime(r['created_at'].replace(" +0000",""), "%a, %d %b %Y %H:%M:%S")
-      r['created_at'] = datetime(*d[:7])
-      #print>>sys.stderr, ("%s" % i),
-      yield r
+    page_results = list(search_page(q,page,rpp))
+    for r in page_results: yield r
+    #if page_results==[]: break
+
+def parallel_search(q, pages=10, rpp=100):
+  from threading import Thread
+  #pages = range(1,pages+1) # pages=range(1,16)
+  task_results = [[]] * pages
+  def task(page):
+    def _task():
+      task_results[page-1] = search_page(q,page=page,rpp=rpp)
+    return _task
+  threads = [Thread(target=task(page)) for page in range(1,pages+1)]
+  #print task_results
+  #print threads
+  for t in threads: t.start()
+  for t in threads: t.join()
+  #print [len(t) for t in task_results ]
+  results = util.flatten(task_results)
+  results.sort(key=lambda tweet: tweet['id'], reverse=True)
+  return results
+
+def search_page(q, page, rpp):
+  url = SEARCH_URL + "&" + urllib.urlencode(dict(q=q, rpp=rpp, page=page))
+  def _print(s):
+    print ("SEARCH page %2d: " % page), s
+  _print(url)
+  try:
+    json_fp = fetch(url, _print)
+    _print(json_fp.headers.dict['status'])
+    j = simplejson.load(json_fp)
+  except urllib2.HTTPError, e:
+    if e.code == 404:
+      _print("FAILURE on HTTP error %s STATUS %s" % (e, e.code))
+      return []
+    else:
+      raise e
+  except (urllib2.URLError, timeout_urllib2.Error, socket.error), e:
+    _print("FAILURE on %s %s" % (type(e), e))
+    return []
+  #_print("max id",j['max_id']," num results", len(j['results']))
+  results = []
+  for i,r in enumerate(j['results']):
+    d = time.strptime(r['created_at'].replace(" +0000",""), "%a, %d %b %Y %H:%M:%S")
+    r['created_at'] = datetime(*d[:7])
+    results.append(r)
+  return results
 
 
 import bigrams
 from twokenize import Url_RE
 
 def cleaned_results(q, pages=10,rpp=100, key_fn=None):
-  tweet_iter = yield_results(q,pages=pages,rpp=rpp)
+  #tweet_iter = serial_search(q,pages=pages,rpp=rpp)
+  tweet_iter = parallel_search(q,pages=pages,rpp=rpp)
   tweet_iter = dedupe_tweets(tweet_iter, key_fn=key_fn)
   #tweet_iter = group_multitweets(tweet_iter)
   return tweet_iter
@@ -105,7 +148,7 @@ def group_multitweets(tweet_iter, key_fn=lambda tw: tw['text'], preserve=('text'
 if __name__=='__main__':
   q = sys.argv[1]
   pages = 10
-  tweet_iter = yield_results(q)
+  tweet_iter = serial_search(q)
   #tweet_iter = dedupe_tweets(tweet_iter, user_and_text_identity_url_norm)
   tweet_iter = dedupe_tweets(tweet_iter, text_identity_url_norm)
   for tweet in tweet_iter:

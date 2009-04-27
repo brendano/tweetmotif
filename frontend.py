@@ -211,7 +211,7 @@ def my_app(environ, start_response):
 
   opts = Opts(environ,
       opt('q', default=''),
-      opt('pages', default=2),
+      opt('pages', default=10),
       opt('prebaked', default=''),
       opt('split', default=0),
       opt('simple', default=0),

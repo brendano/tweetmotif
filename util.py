@@ -115,6 +115,9 @@ def fancy_sub(s, pat, repl_fn=lambda m: ">> %s <<" % m.group()):
     ret.write(s[last:])
   return ret.getvalue()
 
+def flatten(iter):
+  return list(itertools.chain(*iter))
+
 def fullgroupby(seq, key):
   """groups items by key; seq's ordering doesn't matter.  unlike itertools.groupby and unlike unix uniq, but like sql group by."""
   dec = [ (key(x),x) for x in seq ]
