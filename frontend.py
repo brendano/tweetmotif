@@ -1,5 +1,6 @@
 from pprint import pprint
 from datetime import datetime,timedelta
+from collections import defaultdict
 import time
 from copy import copy
 import re
@@ -101,7 +102,6 @@ At = _R(r'(@)(\w+)')
 
 
 def nice_tweet(tweet, q_toks, topic_ngram):
-  link = "http://twitter.com/%s/status/%s" % (tweet['from_user'],tweet['id'])
   s = ""
   s += "<span class=text>"
   hl_spec = {topic_ngram: ("<span class=topic_hl>","</span>")}
@@ -114,12 +114,23 @@ def nice_tweet(tweet, q_toks, topic_ngram):
   text = highlighter.highlight(tweet['toks'], hl_spec)
   text = twokenize.Url_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
   #text = twokenize.AT_RE.subn(r'<a class=at target=_blank href="\1">\1</a>
-  text = At.sub(text, r'@<a class=at target=_blank href="http://twitter.com/\2">\2</a>')
+  text = At.gsub(text, r'@<a class=at target=_blank href="http://twitter.com/\2">\2</a>')
   s += text
   s += "</span>"
-  s += " "
-  #s += "<a class=m href='%s'>msg</a>" % link
-  s += "<a class=m target=_blank href='%s'>%s</a>" % (link,tweet['from_user'])
+  
+  s += " &nbsp; "
+  s += "<span class=authors>"
+  if 'orig_tweets' in tweet:
+    s += "%d sources:" % len(tweet['orig_tweets'])
+    subtweets = tweet['orig_tweets']
+  else:
+    subtweets = (tweet,)
+  for subtweet in subtweets:
+    user = subtweet['from_user']
+    link = "http://twitter.com/%s/status/%s" % (user, subtweet['id'])
+    s += " "
+    s += "<a class=m target=_blank href='%s'>%s</a>" % (link, user)
+  s += "</span>"
   return s
 
 def single_query(q, topic_label, pages=1, exclude=()):
@@ -128,7 +139,9 @@ def single_query(q, topic_label, pages=1, exclude=()):
   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
   exclude = set(exclude)
   yield "<ul>"
-  for tweet in search.deduped_results(q, pages=pages, hash_fn=search.user_and_text_identity):
+  tweets = search.cleaned_results(q, pages=pages, key_fn=search.user_and_text_identity)
+  tweets = search.group_multitweets(tweets)
+  for tweet in tweets:
     if tweet['id'] in exclude: continue
     tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
     yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
@@ -208,6 +221,7 @@ def my_app(environ, start_response):
       )
 
   if opts.single_query:
+    # the requery
     opts2 = Opts(environ, opt('q',str), opt('topic_label',str), opt('exclude',default=''))
     opts2.exclude = [int(x) for x in opts2.exclude.split()]
     for x in single_query(**opts2):
@@ -222,8 +236,13 @@ def my_app(environ, start_response):
   if not opts.prebaked and not opts.q:
     return
 
-  if opts.prebaked: tweet_iter = prebaked_iter(opts.prebaked)
-  elif opts.q: tweet_iter = search.deduped_results(opts.q, pages=opts.pages, hash_fn=search.user_and_text_identity)  #hash_fn=search.tweet_identity)
+  if opts.prebaked: 
+    tweet_iter = prebaked_iter(opts.prebaked)
+  elif opts.q: 
+    #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity)
+    #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity_url_norm)
+    tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.text_identity_url_norm)
+  tweet_iter = search.group_multitweets(tweet_iter)
 
   lc.fill_from_tweet_iter(tweet_iter)
 
@@ -233,13 +252,14 @@ def my_app(environ, start_response):
     yield "<table><tr>"
     yield "<th>topics"
     if lc.tweets_by_id:
-      earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
-      latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
-      s=  "for %d tweets" % len(lc.tweets_by_id)
-      #s+= " from %s" % nice_datespan(earliest,latest)
-      s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
-      yield " <small>%s</small>" % s
-
+      # HACK i'm confused why theyre not all in tweets_by_id
+      try:
+        earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues() if 'created_at' in tw)
+        #latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+        s=  "for %d tweets" % len(lc.tweets_by_id)
+        s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
+        yield " <small>%s</small>" % s
+      except ValueError: pass
 
     yield "<th>tweets"
     yield "<tr><td valign=top id=topic_list>"
@@ -253,8 +273,6 @@ def my_app(environ, start_response):
     topic_labels = ("""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in topics)
     #for x in topic_labels: yield x
     for x in table_byrow(list(topic_labels), ncol=opts.ncol): yield x
-    #if res.leftover_tweets:
-    #  yield "%d extra tweets without topics" % len(res.leftover_tweets)
 
     yield "<td valign=top>"
     yield "<div id=tweets>"
@@ -301,10 +319,6 @@ def my_app(environ, start_response):
       for s in simple_show_topic(topic):
         yield s
         #yield cgi.escape(simplejson.dumps(topic_fragment(q_toks,topic)))
-
-
-
-
 
 
 def app_stringify(iter):

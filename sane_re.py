@@ -23,10 +23,10 @@ def _S(string):
   
 class _Ss(str):
   """ wrap a string, endowing it with regex methods """
-  def sub(self, regex, replacement):
+  def gsub(self, regex, replacement):
     """ like py re.sub or ruby String.gsub """
-    return sub(self, _R(regex), replacement)
-  replace = sub
+    return gsub(self, _R(regex), replacement)
+  replace = gsub
   def match(self, regex):
     """ like py re.search """
     return match(self, _R(regex))
@@ -57,7 +57,7 @@ class _Ss(str):
     regex = _R(regex)
     def color_a_match(m):
       return ansi.color(m[group],'backblack','lgray')
-    print self.sub(regex, color_a_match)
+    print self.gsub(regex, color_a_match)
     groups_per_pos = [[] for i in range(len(self))]
     for m in self.matches(regex):
       for g in range(regex.groups+1):
@@ -72,7 +72,7 @@ class _Ss(str):
       sys.stdout.write("\n")
       if all(len(x)==0 for x in groups_per_pos): break
 
-def sub(string, regex, replacement):
+def gsub(string, regex, replacement):
   "string and regex need to be sane_re.{_S,_R} wrappers"
   if isinstance(replacement, FunctionType):
     return fancy_sub(string, regex.sre, replacement)
@@ -107,8 +107,8 @@ class _R:
       self.orig = arg
     else: raise Exception
   def __getattr__(self,name): return getattr(self.sre,name)
-  def sub(regex,string,replacement): return sub(_S(string),regex,replacement)
-  replace=sub
+  def gsub(regex,string,replacement): return gsub(_S(string),regex,replacement)
+  replace = gsub
   def match(regex,string): return match(_S(string), regex)
   def split(regex,string,maxsplit=0): return _S(string).split(regex,maxsplit=maxsplit)
   def matches(regex,string,group=None): return _S(string).matches(regex,group=group)
@@ -152,7 +152,7 @@ class Match:
     else: raise TypeError
   def __str__(self):
     return "<Match %d:%d>" % self.span
-  __repr__=__str__
+  __repr__ = __str__
 
 
 flag_mappings = {

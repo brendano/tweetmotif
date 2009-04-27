@@ -9,6 +9,7 @@ a { text-decoration:none}
 a.t { color: #444; }
 a.m { color: #333; font-size: 10pt }
 a.at { color: #444 }
+.authors { font-size: 9pt }
 input#q { color: darkred }
 .topic_label { cursor:pointer;cursor:hand; color:darkblue }
 .topic_label.sel { background: yellow }

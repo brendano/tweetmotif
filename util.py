@@ -2,6 +2,7 @@
 
 from __future__ import division
 import sys, time, math, itertools, csv, codecs, re, operator
+from collections import defaultdict
 #import numpy
 from StringIO import StringIO
 

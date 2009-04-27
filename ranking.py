@@ -40,7 +40,7 @@ def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
   n_1_topics = topic_dict_list[n-2]
   if n_1_g in n_1_topics and \
         test_weak_dominance(n_topics[n_g], n_1_topics[n_1_g]):
-    print "killing %s since it's dominated by %s" % (n_1_g, n_g)
+    print "%dgram %s dominated by %dgram %s" % (n-1, n_1_g, n,n_g)
     del n_1_topics[n_1_g]
 
 def rank_and_filter2(linkedcorpus, background_model, q):
@@ -100,7 +100,12 @@ if __name__=='__main__':
 
   lc = linkedcorpus.LinkedCorpus()
   tweets = prebaked_iter(prebaked)
-  tweets = search.dedupe_tweets(tweets, hash_fn=search.user_and_text_identity)
+  tweets = search.dedupe_tweets(tweets, key_fn=search.user_and_text_identity)
+  tweets=list(tweets)
+  print "%d tweets" % len(tweets)
+  tweets = list(search.group_multitweets(tweets))
+  print "%d tweets after multigrouping" % len(tweets)
+  print "MARK"
   lc.fill_from_tweet_iter(tweets)
 
   import lang_model, ansi

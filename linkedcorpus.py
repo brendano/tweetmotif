@@ -26,10 +26,11 @@ class LinkedCorpus:
     for trigram in set(bigrams.filtered_trigrams(toks)):
       self.model.add('trigram',trigram)
       self.index[trigram].append(tweet)
+    #self.tweets_by_text.append(tweet)
     #for ngram in set(bigrams.multi_ngrams(toks, n_and_up=3)):
     #  pass
 
-  def fill_from_tweet_iter(self, tweet_iter, hash_fn=None):
+  def fill_from_tweet_iter(self, tweet_iter):
     for tweet in tweet_iter:
       self.add_tweet(tweet)
 
