@@ -62,11 +62,11 @@ function requery(topic_label) {
       topics[topic_label].requery_tweets_html = data
       $("#tweets_more").html(data)
     },
-error: function(xhr, text, error) {
-  $("img.loading").attr("src","http://anyall.org/twistatic/ajax-loader-stopped.gif")
-  console.log(text)
-  console.log(xhr)
-}
+    error: function(xhr, text, error) {
+      $("img.loading").attr("src","http://anyall.org/twistatic/ajax-loader-stopped.gif")
+      console.log(text)
+      console.log(xhr)
+    }
 })
   // $.get(".", {single_query:1, q:$.query().q, topic_label:topic_label},
   // function(data,text) { 

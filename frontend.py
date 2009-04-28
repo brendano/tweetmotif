@@ -1,4 +1,5 @@
 from pprint import pprint
+import sane_re
 from datetime import datetime,timedelta
 from collections import defaultdict
 import time
@@ -31,7 +32,7 @@ def page_header():
   <script src="%(STATIC)s/jquery.query-2.1.3.js"></script>
   <LINK REL ="STYLESHEET" TYPE="text/css" HREF="%(STATIC)s/css.css">
 
-  <h1>omg twitter</h1>
+  <h1>twitter topics <small>(final name t.b.d.)</small></h1>
   """ % globals()
 
 def safehtml(x):
@@ -99,6 +100,16 @@ def prebaked_iter(filename):
 from sane_re import *
 At = _R(r'(@)(\w+)')
 
+Url_RE = sane_re._R(twokenize.Url_RE)
+def linkify(text, klass):
+  #m = Url_RE.match(text)
+  def f(m):
+    if m[1].startswith("http"): url = m[1]
+    else: url = "http://" + m[1]
+    return m.sre.expand(r'<a class="%s" href="%s">\1</a>' % (klass,url))
+  return Url_RE.gsub(text, f)
+
+
 
 
 def nice_tweet(tweet, q_toks, topic_ngram):
@@ -112,7 +123,8 @@ def nice_tweet(tweet, q_toks, topic_ngram):
     if ug[0] in topic_ngram: continue
     hl_spec[ug] = ("<span class=q_hl>","</span>")
   text = highlighter.highlight(tweet['toks'], hl_spec)
-  text = twokenize.Url_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
+  text = linkify(text, klass='t')
+  #text = twokenize.Url_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
   #text = twokenize.AT_RE.subn(r'<a class=at target=_blank href="\1">\1</a>
   text = At.gsub(text, r'@<a class=at target=_blank href="http://twitter.com/\2">\2</a>')
   s += text
@@ -143,11 +155,17 @@ def single_query(q, topic_label, pages=1, exclude=()):
   q = '''%s "%s"''' % (q,topic_label)
   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
   exclude = set(exclude)
-  yield "<ul>"
   tweets = search.cleaned_results(q, pages=pages, key_fn=search.user_and_text_identity)
   tweets = search.group_multitweets(tweets)
+  tweets = list(tw for tw in tweets if tw['id'] not in exclude)
+  try:
+    earliest = min(tw['created_at'] for tw in tweets if 'created_at' in tw)
+    yield "<div class=more_tweets>more tweets through the last %s</div>" % nice_timedelta(datetime.utcnow() - earliest)
+    print "NUMBER %d" % len(tweets)
+  except ValueError: pass
+
+  yield "<ul>"
   for tweet in tweets:
-    if tweet['id'] in exclude: continue
     tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
     yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
   yield "</ul>"
@@ -180,24 +198,24 @@ def nice_unitted_num(n,sing,plur=None):
   plur = plur or sing+"s"
   return "%d %s" % (n,plur)
 
-def nice_datespan(d1,d2):
-  if d2<d1: d1,d2=d2,d1
-  #if (datetime.utcnow() - d2) < timedelta(hours=4):
-  #  s = "now"
-  #else:
-  #  s = d2.strftime("%Y-%m-%dT%H:%M:%S")
-  #s += " back to "
-  s = "spanning "
-  delt = d2-d1
-  s += nice_timedelta(delt)
-  return s
+#def nice_datespan(d1,d2):
+#  if d2<d1: d1,d2=d2,d1
+#  #if (datetime.utcnow() - d2) < timedelta(hours=4):
+#  #  s = "now"
+#  #else:
+#  #  s = d2.strftime("%Y-%m-%dT%H:%M:%S")
+#  #s += " back to "
+#  s = "spanning "
+#  delt = d2-d1
+#  s += nice_timedelta(delt)
+#  return s
 
 def nice_timedelta(delt):
   x = []
   if delt.days > 0:
     x.append(nice_unitted_num(delt.days, "day"))
-    if delt.seconds > 60*60: 
-      x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
+    #if delt.seconds > 60*60 and delt.days <= 1:
+    #  x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
   elif delt.seconds > 60*60:
     x.append(nice_unitted_num(int(delt.seconds/60/60), "hour"))
   elif delt.seconds > 60:

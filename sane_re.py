@@ -51,13 +51,14 @@ class _Ss(str):
       regex = args
       group = 0
     return match(self, _R(regex))[group]
-  def show_match(self, regex, group=0):
+  def show_match(self, regex, group=0, numbers=True):
     """ for testing """
     import ansi,sys
     regex = _R(regex)
     def color_a_match(m):
       return ansi.color(m[group],'backblack','lgray')
     print self.gsub(regex, color_a_match)
+    if not numbers: return
     groups_per_pos = [[] for i in range(len(self))]
     for m in self.matches(regex):
       for g in range(regex.groups+1):
@@ -105,14 +106,14 @@ class _R:
       bin_flags |= flag_convert(flags)
       self.sre = re.compile(arg,bin_flags)
       self.orig = arg
-    else: raise Exception
+    else: raise TypeError
   def __getattr__(self,name): return getattr(self.sre,name)
   def gsub(regex,string,replacement): return gsub(_S(string),regex,replacement)
   replace = gsub
   def match(regex,string): return match(_S(string), regex)
   def split(regex,string,maxsplit=0): return _S(string).split(regex,maxsplit=maxsplit)
   def matches(regex,string,group=None): return _S(string).matches(regex,group=group)
-  def show_match(regex,string,group=0): return _S(string).show_match(regex,group=group)
+  def show_match(regex,string,**kwargs): return _S(string).show_match(regex,**kwargs)
   def __str__(self): 
     if self.orig: return '/' + self.orig + '/'
     return "<_R with %s>" % repr(self.sre)

@@ -5,18 +5,37 @@ import util
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 def flatten(iter):
   return list(itertools.chain(*iter))
-def regex_or(items):
+def regex_or(*items):
   r = '|'.join(items)
   r = '(' + r + ')'
   return r
 def pos_lookahead(r):
   return '(?=' + r + ')'
+def neg_lookahead(r):
+  return '(?!' + r + ')'
+def optional(r):
+  return '(%s)?' % r
 
 
-Url = r'''https?://\S+'''
-Url_RE = mycompile("(%s)" % Url)
-Punct = '''[“".?!,:;]+'''
+PunctChars = '[“".?!,:;]'
+Punct = '%s+' % PunctChars
 Entity = '&(amp|lt|gt|quot);'
+
+UrlStart1 = regex_or('https?://', r'www\.')
+CommonTLDs = regex_or('com','co\\.uk','org','net','info','ca')
+UrlStart2 = r'[a-z0-9\.-]+?' + r'\.' + CommonTLDs + pos_lookahead(r'[/ \W\b]')
+UrlBody = r'\S*?'  # * not + for case of:  "go to bla.com." -- don't want period
+UrlExtraCrapBeforeEnd = '%s+?' % regex_or(PunctChars, Entity)
+UrlEnd = regex_or( r'\.\.+', r'\s', '$')
+Url = (r'\b' + regex_or(UrlStart1, UrlStart2) + UrlBody + 
+        pos_lookahead( optional(UrlExtraCrapBeforeEnd) + UrlEnd)
+)
+#Url = r'\b' + UrlStart + r'\S+?' + pos_lookahead( optional(UrlExtraCrapBeforeEnd) + UrlEnd)
+#Url = r'\b' + UrlStart + r'\S+?' + pos_lookahead(UrlEnd)
+
+# the simplest!
+#Url = r'''https?://\S+'''
+Url_RE = re.compile("(%s)" % Url, re.U|re.I)
 
 Timelike = r'\d+:\d+'
 NumNum = r'\d+\.\d+'
@@ -28,10 +47,10 @@ def regexify_abbrev(a):
   return "".join(dotted)
 Abbrevs = [regexify_abbrev(a) for a in Abbrevs1]
 
-BoundaryNotDot = regex_or([r'\s', '[“"?!,:;]', Entity])
+BoundaryNotDot = regex_or(r'\s', '[“"?!,:;]', Entity)
 aa1 = r'''([A-Za-z]\.){2,}''' + pos_lookahead(BoundaryNotDot)
 aa2 = r'''([A-Za-z]\.){1,}[A-Za-z]''' + pos_lookahead(BoundaryNotDot)
-ArbitraryAbbrev = regex_or([aa1,aa2])
+ArbitraryAbbrev = regex_or(aa1,aa2)
 
 ProtectThese = [
     emoticons.EMOTICON_S,
@@ -42,7 +61,7 @@ ProtectThese = [
     Punct,
     ArbitraryAbbrev,
 ]
-Protect_RE = mycompile(regex_or(ProtectThese))
+Protect_RE = mycompile(regex_or(*ProtectThese))
 
 
 class Tokenization(list):

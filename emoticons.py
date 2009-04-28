@@ -20,6 +20,7 @@ SAD_MOUTHS = r'[\(\[]'
 TONGUE = r'[pP]'
 OTHER_MOUTHS = r'[doO]'
 
+# bug, last 3 should be paren'd .. right? ..
 HAPPY_RE =  mycompile( '(\^_\^|' + NORMAL_EYES + NOSE_AREA + HAPPY_MOUTHS + ')')
 SAD_RE = mycompile(NORMAL_EYES + NOSE_AREA + SAD_MOUTHS)
 
