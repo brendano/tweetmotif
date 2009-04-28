@@ -32,7 +32,7 @@ def page_header():
   <script src="%(STATIC)s/jquery.query-2.1.3.js"></script>
   <LINK REL ="STYLESHEET" TYPE="text/css" HREF="%(STATIC)s/css.css">
 
-  <h1>twitter topics <small>(final name t.b.d.)</small></h1>
+  <div><b>twitter themes/topics/clusters summarization explorer thingamajigger</b></div>
   """ % globals()
 
 def safehtml(x):
@@ -235,7 +235,7 @@ def the_app(environ, start_response):
 
   opts = Opts(environ,
       opt('q', default=''),
-      opt('pages', default=10),
+      opt('pages', default=2),
       opt('prebaked', default=''),
       opt('split', default=0),
       opt('simple', default=0),
