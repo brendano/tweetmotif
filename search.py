@@ -8,7 +8,7 @@ from collections import defaultdict
 #import socket
 import socket
 # socket.setdefaulttimeout(1) # http://www.voidspace.org.uk/python/articles/urllib2.shtml
-import timeout_urllib2; timeout_urllib2.sethttptimeout(1.0)
+import timeout_urllib2; timeout_urllib2.sethttptimeout(4.0)
 
 def fetch(url, printer=None, retries=1):
   for i in range(retries):

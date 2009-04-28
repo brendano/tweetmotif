@@ -5,7 +5,6 @@ import util
 import fileinput
 
 sys.path.insert(0, "platform/%s" % sys.platform)
-#sys.path.insert(0, "/d/twi/twi/platform/darwin")
 # linux only
 os.environ['LD_LIBRARY_PATH'] = "platform/%s:%s" % (sys.platform, os.environ.get('LD_LIBRARY_PATH'))
 

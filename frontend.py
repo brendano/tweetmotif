@@ -41,8 +41,6 @@ def safehtml(x):
 type_builtin = type
 def opt(name, type=None, default=None):
   o = util.Struct(name=name, type=type, default=default)
-  print>>sys.stderr, o
-  print>>sys.stderr, repr(o.name), repr(o.default), repr(o.type)
   if type is None:
     if default is not None:
       o.type = type_builtin(default)
