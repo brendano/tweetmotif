@@ -1,3 +1,5 @@
+from copy import copy
+
 def highlight(toks, ngrams_and_tags):
   ret = []
 
@@ -9,12 +11,17 @@ def highlight(toks, ngrams_and_tags):
       if i in ends: ret += ngrams_and_tags[ngram][1]
       if i in starts: ret += ngrams_and_tags[ngram][0]
     ret += toks.text[i]
+  for ngram,(starts,ends) in ngram_alignments.iteritems():
+    if len(toks.text) in ends:
+      ret += ngrams_and_tags[ngram][1]
   return "".join(ret)
 
 def simple_highlight(toks, ngram, start="<b>", end="</b>"):
   return highlight(toks, {ngram: (start,end)})
 
 def compute_highlight_alignments(toks, ngram):
+  toks = copy(toks)
+  toks.append("!END")
   ngram = list(ngram)
   K = len(ngram)
   matching_positions = [i for i in range(len(toks) - K) if ngram==toks[i:(i+K)]]
