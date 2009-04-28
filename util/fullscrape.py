@@ -28,6 +28,7 @@ while True:
   else: 
     query2 = query
   url = "http://search.twitter.com/search.json?lang=en&q=%s&rpp=100" % (urllib2.quote(query2),)
+  #url = "http://search.twitter.com/search.json?q=%s&rpp=100" % (urllib2.quote(query2),)
   print>>sys.stderr, "*** ",url
 
   for page in range(1,16):

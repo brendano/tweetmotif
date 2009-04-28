@@ -38,11 +38,14 @@ def page_header():
 def safehtml(x):
   return cgi.escape(str(x),quote=True)
 
+type_builtin = type
 def opt(name, type=None, default=None):
   o = util.Struct(name=name, type=type, default=default)
+  print>>sys.stderr, o
+  print>>sys.stderr, repr(o.name), repr(o.default), repr(o.type)
   if type is None:
     if default is not None:
-      o.type = __builtins__.type(default)
+      o.type = type_builtin(default)
     else: 
       o.type = str #raise Exception("need type for %s" % name)
   if o.type==bool: o.type=int
@@ -106,7 +109,7 @@ def linkify(text, klass):
   def f(m):
     if m[1].startswith("http"): url = m[1]
     else: url = "http://" + m[1]
-    return m.sre.expand(r'<a class="%s" href="%s">\1</a>' % (klass,url))
+    return m.sre.expand(r'<a class="%s" target="_blank" href="%s">\1</a>' % (klass,url))
   return Url_RE.gsub(text, f)
 
 
@@ -161,7 +164,6 @@ def single_query(q, topic_label, pages=1, exclude=()):
   try:
     earliest = min(tw['created_at'] for tw in tweets if 'created_at' in tw)
     yield "<div class=more_tweets>more tweets through the last %s</div>" % nice_timedelta(datetime.utcnow() - earliest)
-    print "NUMBER %d" % len(tweets)
   except ValueError: pass
 
   yield "<ul>"
@@ -227,7 +229,8 @@ def nice_timedelta(delt):
   #return "%s back to %s" % (d2.strftime("%Y-%m-%dT%H:%M:%S"), d1.strftime("%Y-%m-%dT%H:%M:%S"))
 
 
-def my_app(environ, start_response):
+def the_app(environ, start_response):
+  global_init()
   status = '200 OK'
   response_headers = [('Content-type','text/html')]
   start_response(status, response_headers)
@@ -308,6 +311,7 @@ def my_app(environ, start_response):
     for t in topics:  t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
     bigass = dict((t.label, topic_fragment(q_toks,t)) for t in topics)
     yield "topics = "
+    #f=open("/tmp/tmp",'w'); f.write(repr(bigass)); f.close()
     yield simplejson.dumps(bigass)
     yield ";"
     yield "load_default_topic();"
@@ -348,14 +352,17 @@ def app_stringify(iter):
   for x in iter:
     yield util.stringify(x, 'utf8', 'xmlcharrefreplace')
 
-if __name__=='__main__':
-  import util; util.fix_stdio()
-  #background_model = lang_model.MemcacheLM()
+def global_init():
+  global background_model
   background_model = lang_model.TokyoLM()
 
+application = util.chaincompose(the_app, app_stringify)
+
+if __name__=='__main__':
+  import util; util.fix_stdio()
   from wsgiref.simple_server import make_server, demo_app
   #httpd = make_server('', 8000, demo_app)
-  httpd = make_server('', 8000, lambda e,s: app_stringify(my_app(e,s)))
+  httpd = make_server('', 8000, application)
   print "Serving HTTP on port 8000..."
   httpd.serve_forever()
 

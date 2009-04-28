@@ -21,7 +21,8 @@ def fetch(url, printer=None, retries=1):
       pass
   return urllib2.urlopen(url)
 
-SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
+#SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
+SEARCH_URL = "http://search.twitter.com/search.json?"
 #SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
 
 def serial_search(q, pages=10, rpp=100):
@@ -82,9 +83,17 @@ from twokenize import Url_RE
 def cleaned_results(q, pages=10,rpp=100, key_fn=None):
   #tweet_iter = serial_search(q,pages=pages,rpp=rpp)
   tweet_iter = parallel_search(q,pages=pages,rpp=rpp)
+  tweet_iter = english_filter(tweet_iter)
   tweet_iter = dedupe_tweets(tweet_iter, key_fn=key_fn)
   #tweet_iter = group_multitweets(tweet_iter)
   return tweet_iter
+
+def english_filter(tweet_iter):
+  for tw in tweet_iter:
+    if tw.get('iso_language_code') != 'en':
+      print "dropping non-english tweet, lang %s  id %s"  % (tw.get('iso_language_code'), tw['id'])
+      continue
+    yield tw
 
 def dedupe_tweets(tweet_iter, key_fn):
   seen_ids = set()
