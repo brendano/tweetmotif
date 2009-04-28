@@ -18,7 +18,7 @@ NOSE_AREA = r'(|o|O|-)'   ## rather tight precision, \S might be reasonable...
 HAPPY_MOUTHS = r'[D\)\]]'
 SAD_MOUTHS = r'[\(\[]'
 TONGUE = r'[pP]'
-OTHER_MOUTHS = r'[doO]'
+OTHER_MOUTHS = r'[doO/\\]'
 
 # bug, last 3 should be paren'd .. right? ..
 HAPPY_RE =  mycompile( '(\^_\^|' + NORMAL_EYES + NOSE_AREA + HAPPY_MOUTHS + ')')
@@ -63,3 +63,4 @@ def analyze_tweet(text):
 #if __name__=='__main__':
 #  for line in util.counter(  sys.stdin  ):  # anyall.org/util.py
 #    print(analyze_tweet(line.strip()), line.strip(), sep="\t")
+
