@@ -139,8 +139,8 @@ def simple_tokenize(text):
     goods.append( (m.end(), len(s)) )
   else:
     goods = [ (0, len(s)) ]
-  print goods
-  print bads
+  #print goods
+  #print bads
   assert len(bads)+1 == len(goods)
 
   goods = [s[i:j] for i,j in goods]

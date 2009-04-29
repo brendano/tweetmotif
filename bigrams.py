@@ -24,7 +24,7 @@ mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 #JunkTok = mycompile(r'''^[^a-zA-Z0-9_@]+$''')
 JunkTok = mycompile(r'''^$''')
 # dont make n-grams across phrase boundary markers.
-PhraseBoundaryTok = regex_or(r'''[.,“"'?!:;-]+''', twokenize.Entity)
+PhraseBoundaryTok = regex_or(r'''[.,“"'?!:;|-]+''', twokenize.Entity)
 PhraseBoundaryTok = mycompile('^'+PhraseBoundaryTok+'$')
 EdgePunctTok = mycompile('^' + twokenize.EdgePunct + '+$')
 
