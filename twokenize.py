@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
+""" tokenizer for tweets!  might be appropriate for other social media dialects too.
+general philosophy is to throw as little out as possible.
+development philosophy: every time you change a rule, do a diff of this
+program's output on ~100k tweets.  if you iterate through many possible rules
+and only accept the ones that seeem to result in good diffs, it's a sort of
+statistical learning with in-the-loop human evaluation :)
+"""
+
+__author__="brendan o'connor (anyall.org)"
+
 import re,sys
 import emoticons
 import util
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
-def flatten(iter):
-  return list(itertools.chain(*iter))
 def regex_or(*items):
   r = '|'.join(items)
   r = '(' + r + ')'
@@ -21,20 +29,21 @@ PunctChars = '[“".?!,:;]'
 Punct = '%s+' % PunctChars
 Entity = '&(amp|lt|gt|quot);'
 
+# one-liner URL recognition:
+#Url = r'''https?://\S+'''
+
+# more complex version:
 UrlStart1 = regex_or('https?://', r'www\.')
 CommonTLDs = regex_or('com','co\\.uk','org','net','info','ca')
 UrlStart2 = r'[a-z0-9\.-]+?' + r'\.' + CommonTLDs + pos_lookahead(r'[/ \W\b]')
 UrlBody = r'\S*?'  # * not + for case of:  "go to bla.com." -- don't want period
 UrlExtraCrapBeforeEnd = '%s+?' % regex_or(PunctChars, Entity)
 UrlEnd = regex_or( r'\.\.+', r'\s', '$')
-Url = (r'\b' + regex_or(UrlStart1, UrlStart2) + UrlBody + 
-        pos_lookahead( optional(UrlExtraCrapBeforeEnd) + UrlEnd)
-)
-#Url = r'\b' + UrlStart + r'\S+?' + pos_lookahead( optional(UrlExtraCrapBeforeEnd) + UrlEnd)
-#Url = r'\b' + UrlStart + r'\S+?' + pos_lookahead(UrlEnd)
+Url = (r'\b' + 
+    regex_or(UrlStart1, UrlStart2) + 
+    UrlBody + 
+    pos_lookahead( optional(UrlExtraCrapBeforeEnd) + UrlEnd))
 
-# the simplest!
-#Url = r'''https?://\S+'''
 Url_RE = re.compile("(%s)" % Url, re.U|re.I)
 
 Timelike = r'\d+:\d+'
@@ -143,8 +152,9 @@ def squeeze_whitespace(s):
   new_string = WS_RE.sub(" ",s)
   return new_string.strip()
 
-EdgePunct      = r"""['"([\)\]]"""   # alignment failures. hm.
-#NotEdgePunct = r"""[^'"([\)\]]"""
+# fun: copy and paste outta http://en.wikipedia.org/wiki/Smart_quotes
+EdgePunct      = r"""[  ' " “ ” ‘ ’ < > « » { } ( \) [ \]  ]""".replace(' ','')
+#NotEdgePunct = r"""[^'"([\)\]]"""  # alignment failures?
 NotEdgePunct = r"""[a-zA-Z0-9]"""
 EdgePunctLeft  = r"""(\s|^)(%s+)(%s)""" % (EdgePunct, NotEdgePunct)
 EdgePunctRight =   r"""(%s)(%s+)(\s|$)""" % (NotEdgePunct, EdgePunct)
@@ -157,7 +167,6 @@ def edge_punct_munge(s):
   return s
 
 
-SPLITTER_RE = mycompile(r'[^a-zA-Z0-9_@]+')
 def unprotected_tokenize(s):
   return s.split()
 
