@@ -61,6 +61,10 @@ aa1 = r'''([A-Za-z]\.){2,}''' + pos_lookahead(BoundaryNotDot)
 aa2 = r'''([A-Za-z]\.){1,}[A-Za-z]''' + pos_lookahead(BoundaryNotDot)
 ArbitraryAbbrev = regex_or(aa1,aa2)
 
+assert '-' != '―'
+Separators = regex_or('--+', '―')
+Decorations = r' [  ♫   ]+ '.replace(' ','')
+
 ProtectThese = [
     emoticons.Emoticon,
     Url,
@@ -69,6 +73,8 @@ ProtectThese = [
     NumNum,
     Punct,
     ArbitraryAbbrev,
+    Separators,
+    Decorations,
 ]
 Protect_RE = mycompile(regex_or(*ProtectThese))
 
@@ -133,8 +139,8 @@ def simple_tokenize(text):
     goods.append( (m.end(), len(s)) )
   else:
     goods = [ (0, len(s)) ]
-  #print goods
-  #print bads
+  print goods
+  print bads
   assert len(bads)+1 == len(goods)
 
   goods = [s[i:j] for i,j in goods]
