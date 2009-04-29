@@ -48,6 +48,8 @@ Url_RE = re.compile("(%s)" % Url, re.U|re.I)
 
 Timelike = r'\d+:\d+'
 NumNum = r'\d+\.\d+'
+NumberWithCommas = r'(\d+,)+?\d{3}' + pos_lookahead(regex_or('[^,]','$'))
+
 Abbrevs1 = ['am','pm','us','usa','ie','eg']
 def regexify_abbrev(a):
   chars = list(a)
@@ -71,6 +73,7 @@ ProtectThese = [
     Entity,
     Timelike,
     NumNum,
+    NumberWithCommas,
     Punct,
     ArbitraryAbbrev,
     Separators,
