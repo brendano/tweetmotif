@@ -1,4 +1,5 @@
 import twokenize,util,re,bigrams
+import itertools
 from copy import copy
 
 #norm_re = re.compile(r'[^a-zA-Z0-9_@]')
@@ -77,7 +78,8 @@ def rank_and_filter3(linkedcorpus, background_model, q):
     tweet_ids_in_topics |= set(tw['id'] for tw in t.tweets)
   leftover_ids = set(linkedcorpus.tweets_by_id.iterkeys()) - tweet_ids_in_topics
   leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_ids]
-  return util.Struct(topics=all_topics, leftover_tweets=leftover_tweets)
+  #return util.Struct(topics=all_topics, leftover_tweets=leftover_tweets)
+  return Topics(topics=all_topics, leftover_tweets=leftover_tweets, linkedcorpus=linkedcorpus)
   #return all_topics
 
 def test_weak_dominance(topic1, topic2):
@@ -87,6 +89,17 @@ def test_weak_dominance(topic1, topic2):
 def prebaked_iter(filename):
   for line in util.counter(open(filename)):
     yield simplejson.loads(line)
+
+class Topics:
+  def __init__(self, **kwargs):
+    self.__dict__.update(kwargs)
+  def cutoff_topics(self, num_left):
+    self.topics = self.topics[:num_left]
+    tweets_left = set(itertools.chain(*( ((tw['id'] for tw in topic['tweets']) for topic in self.topics) )))
+    new_leftover_ids = set(self.linkedcorpus.tweets_by_id) - tweets_left - set(tw['id'] for tw in self.leftover_tweets)
+    self.leftover_tweets += (self.linkedcorpus.tweets_by_id[i] for i in new_leftover_ids)
+
+
 
 if __name__=='__main__':
   import simplejson

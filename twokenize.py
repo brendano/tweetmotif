@@ -53,7 +53,7 @@ aa2 = r'''([A-Za-z]\.){1,}[A-Za-z]''' + pos_lookahead(BoundaryNotDot)
 ArbitraryAbbrev = regex_or(aa1,aa2)
 
 ProtectThese = [
-    emoticons.Emoticon_S,
+    emoticons.Emoticon,
     Url,
     Entity,
     Timelike,

@@ -297,13 +297,12 @@ def the_app(environ, start_response):
     yield "<th>tweets"
     yield "<tr><td valign=top id=topic_list>"
     res = ranking.rank_and_filter3(lc, background_model, opts.q)
-    topics = res.topics
-    if len(topics) > opts.max_topics:
-      print "throwing out %d topics" % (len(topics)-opts.max_topics)
-      topics = topics[:opts.max_topics]
+    if len(res.topics) > opts.max_topics:
+      print "throwing out %d topics" % (len(res.topics)-opts.max_topics)
+      res.cutoff_topics(opts.max_topics)
     if res.leftover_tweets:
-      topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
-    topic_labels = ("""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in topics)
+      res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
+    topic_labels = ("""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics)
     #for x in topic_labels: yield x
     for x in table_byrow(list(topic_labels), ncol=opts.ncol): yield x
 
@@ -315,8 +314,8 @@ def the_app(environ, start_response):
     yield "</div>"
     yield "</table>"
     yield "<script>"
-    for t in topics:  t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
-    bigass = dict((t.label, topic_fragment(q_toks,t)) for t in topics)
+    for t in res.topics:  t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
+    bigass = dict((t.label, topic_fragment(q_toks,t)) for t in res.topics)
     yield "topics = "
     #f=open("/tmp/tmp",'w'); f.write(repr(bigass)); f.close()
     yield simplejson.dumps(bigass)
