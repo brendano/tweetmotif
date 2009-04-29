@@ -12,7 +12,7 @@ __author__ = "Brendan O'Connor (anyall.org, brenocon@gmail.com)"
 __version__= "april 2009"
 __all__=['_S','_R']
 import re, _sre
-import util
+import util  # anyall.org/util.py
 from StringIO import StringIO
 from types import FunctionType
 RegexType = type(re.compile("bla"))

@@ -1,6 +1,8 @@
-""" emoticon recognition via patterns.  tested on english twitter, but probably works for other social media dialects. """
+""" emoticon recognition via patterns.  tested on english-language twitter, but
+probably works for other social media dialects. """
 
 __author__ = "Brendan O'Connor (anyall.org, brenocon@gmail.com)"
+__version__= "april 2009"
 
 #from __future__ import print_function
 import re,sys
@@ -10,46 +12,45 @@ mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 #SMILEY = mycompile(r'[:=].{0,1}[\)dpD]')
 #MULTITOK_SMILEY = mycompile(r' : [\)dp]')
 
-NORMAL_EYES = r'[:=]'
-WINK = r'[;]'
+NormalEyes = r'[:=]'
+Wink = r'[;]'
 
-NOSE_AREA = r'(|o|O|-)'   ## rather tight precision, \S might be reasonable...
+NoseArea = r'(|o|O|-)'   ## rather tight precision, \S might be reasonable...
 
-HAPPY_MOUTHS = r'[D\)\]]'
-SAD_MOUTHS = r'[\(\[]'
-TONGUE = r'[pP]'
-OTHER_MOUTHS = r'[doO/\\]'
+HappyMouths = r'[D\)\]]'
+SadMouths = r'[\(\[]'
+Tongue = r'[pP]'
+OtherMouths = r'[doO/\\]'  # remove forward slash if http://'s aren't cleaned
 
-# bug, last 3 should be paren'd .. right? ..
-HAPPY_RE =  mycompile( '(\^_\^|' + NORMAL_EYES + NOSE_AREA + HAPPY_MOUTHS + ')')
-SAD_RE = mycompile(NORMAL_EYES + NOSE_AREA + SAD_MOUTHS)
+Happy_RE =  mycompile( '(\^_\^|' + NormalEyes + NoseArea + HappyMouths + ')')
+Sad_RE = mycompile(NormalEyes + NoseArea + SadMouths)
 
-WINK_RE = mycompile(WINK + NOSE_AREA + HAPPY_MOUTHS)
-TONGUE_RE = mycompile(NORMAL_EYES + NOSE_AREA + TONGUE)
-OTHER_RE = mycompile( '('+NORMAL_EYES+'|'+WINK+')'  + NOSE_AREA + OTHER_MOUTHS )
+Wink_RE = mycompile(Wink + NoseArea + HappyMouths)
+Tongue_RE = mycompile(NormalEyes + NoseArea + Tongue)
+Other_RE = mycompile( '('+NormalEyes+'|'+Wink+')'  + NoseArea + OtherMouths )
 
-EMOTICON_S = (
-    "("+NORMAL_EYES+"|"+WINK+")" +
-    NOSE_AREA + 
-    "("+TONGUE+"|"+OTHER_MOUTHS+"|"+SAD_MOUTHS+"|"+HAPPY_MOUTHS+")"
+Emoticon = (
+    "("+NormalEyes+"|"+Wink+")" +
+    NoseArea + 
+    "("+Tongue+"|"+OtherMouths+"|"+SadMouths+"|"+HappyMouths+")"
 )
-EMOTICON_RE = mycompile(EMOTICON_S)
+Emoticon_RE = mycompile(Emoticon)
 
-#EMOTICON_RE = "|".join([HAPPY_RE,SAD_RE,WINK_RE,TONGUE_RE,OTHER_RE])
-#EMOTICON_RE = mycompile(EMOTICON_RE)
+#Emoticon_RE = "|".join([Happy_RE,Sad_RE,Wink_RE,Tongue_RE,Other_RE])
+#Emoticon_RE = mycompile(Emoticon_RE)
 
 def analyze_tweet(text):
-  h= HAPPY_RE.search(text)
-  s= SAD_RE.search(text)
+  h= Happy_RE.search(text)
+  s= Sad_RE.search(text)
   if h and s: return "BOTH_HS"
   if h: return "HAPPY"
   if s: return "SAD"
   return "NA"
 
   # more complex & harder, so disabled for now
-  #w= WINK_RE.search(text)
-  #t= TONGUE_RE.search(text)
-  #a= OTHER_RE.search(text)
+  #w= Wink_RE.search(text)
+  #t= Tongue_RE.search(text)
+  #a= Other_RE.search(text)
   #h,w,s,t,a = [bool(x) for x in [h,w,s,t,a]]
   #if sum([h,w,s,t,a])>1: return "MULTIPLE"
   #if sum([h,w,s,t,a])==1:
@@ -60,7 +61,9 @@ def analyze_tweet(text):
   #  if t: return "TONGUE"
   #return "NA"
 
-#if __name__=='__main__':
-#  for line in util.counter(  sys.stdin  ):  # anyall.org/util.py
-#    print(analyze_tweet(line.strip()), line.strip(), sep="\t")
+if __name__=='__main__':
+  for line in sys.stdin:
+    import sane_re
+    sane_re._S(line[:-1]).show_match(Emoticon_RE, numbers=False)
+    #print(analyze_tweet(line.strip()), line.strip(), sep="\t")
 
