@@ -24,11 +24,11 @@ def rank_and_filter1(linkedcorpus, background_model, q, type='bigram'):
     #  print "reject unigram stopword", norm_ngram
     #  continue
     if set(norm_ngram) <= q_toks_set:
-      print "reject query-subsumed", norm_ngram
+      #print "reject query-subsumed", norm_ngram
       continue
     #if len(linkedcorpus.index[ngram]) <= 2: continue
     if len(norm_ngram)>1 and norm_ngram[-1] in stopwords: 
-      print "reject effective n-1gram", norm_ngram
+      #print "reject effective n-1gram", norm_ngram
       continue
     topic_label = " ".join(ngram)
     tweets = linkedcorpus.index[ngram]
@@ -40,7 +40,7 @@ def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
   n_1_topics = topic_dict_list[n-2]
   if n_1_g in n_1_topics and \
         test_weak_dominance(n_topics[n_g], n_1_topics[n_1_g]):
-    print "%dgram %s dominated by %dgram %s" % (n-1, n_1_g, n,n_g)
+    #print "%dgram %s dominated by %dgram %s" % (n-1, n_1_g, n,n_g)
     del n_1_topics[n_1_g]
 
 def rank_and_filter2(linkedcorpus, background_model, q):

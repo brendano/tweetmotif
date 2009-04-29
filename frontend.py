@@ -1,4 +1,5 @@
 from pprint import pprint
+import cPickle as pickle
 import sane_re
 from datetime import datetime,timedelta
 from collections import defaultdict
@@ -46,13 +47,13 @@ def opt(name, type=None, default=None):
       o.type = type_builtin(default)
     else: 
       o.type = str #raise Exception("need type for %s" % name)
-  if o.type==bool: o.type=int
+  #if o.type==bool: o.type=int
   return o
 
 def type_clean(val,type):
   if type==bool:
-    if val in ['0','f','false','False','no','n']: return False
-    if val in ['1','t','true','True','yes','n']: return True
+    if val in (False,0,'0','f','false','False','no','n'): return False
+    if val in (True,1,'1','t','true','True','yes','y'): return True
     raise Exception("bad bool value %s" % repr(val))
   return type(val)
 
@@ -241,6 +242,8 @@ def the_app(environ, start_response):
       opt('simple', default=0),
       opt('max_topics', default=50),
       opt('ncol', default=3),
+      opt('save', default=False),
+      opt('load', default=False),
       opt('single_query', default=0),
       )
 
@@ -262,8 +265,14 @@ def the_app(environ, start_response):
 
   if opts.prebaked: 
     tweet_iter = prebaked_iter(opts.prebaked)
-  elif opts.q: 
-    tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity)
+  elif opts.q:
+    tweets_file = 'save_%s_tweets' % opts.q
+    tweet_iter = search.cleaned_results(opts.q, 
+        pages = opts.pages, 
+        key_fn = search.user_and_text_identity, 
+        save = tweets_file if opts.save else None,
+        load = tweets_file if opts.load else None
+        )
     #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity_url_norm)
     #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.text_identity_url_norm)
   tweet_iter = search.group_multitweets(tweet_iter)
@@ -363,4 +372,3 @@ if __name__=='__main__':
   httpd = make_server('', 8000, application)
   print "Serving HTTP on port 8000..."
   httpd.serve_forever()
-

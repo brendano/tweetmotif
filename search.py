@@ -71,22 +71,44 @@ def search_page(q, page, rpp):
   #_print("max id",j['max_id']," num results", len(j['results']))
   results = []
   for i,r in enumerate(j['results']):
-    d = time.strptime(r['created_at'].replace(" +0000",""), "%a, %d %b %Y %H:%M:%S")
-    r['created_at'] = datetime(*d[:7])
+    tweet_json2py(r)
     results.append(r)
   return results
+
+def tweet_json2py(json_tweet):
+  d = time.strptime(json_tweet['created_at'].replace(" +0000",""), "%a, %d %b %Y %H:%M:%S")
+  json_tweet['created_at'] = datetime(*d[:7])
 
 
 import bigrams
 from twokenize import Url_RE
 
-def cleaned_results(q, pages=10,rpp=100, key_fn=None):
-  #tweet_iter = serial_search(q,pages=pages,rpp=rpp)
-  tweet_iter = parallel_search(q,pages=pages,rpp=rpp)
+def cleaned_results(q, pages=10,rpp=100, key_fn=None, save=None, load=None):
+  if not load:
+    tweet_iter = parallel_search(q,pages=pages,rpp=rpp)
+  else:
+    print "LOADING TWEETS FROM %s" % load
+    tweet_iter = load_tweets(load)
+  if save:
+    print "SAVING TWEETS TO %s" % save
+    tweet_iter = save_tweets(tweet_iter, filename=save)
   tweet_iter = english_filter(tweet_iter)
   tweet_iter = dedupe_tweets(tweet_iter, key_fn=key_fn)
   #tweet_iter = group_multitweets(tweet_iter)
   return tweet_iter
+
+import cPickle as pickle
+
+def load_tweets(filename):
+  tweets = pickle.load(open(filename))
+  return tweets
+
+def save_tweets(tweet_iter, filename):
+  tweets = list(tweet_iter)
+  f = open(filename, 'w')
+  pickle.dump(tweets, f)
+  f.close()
+  return tweets
 
 def english_filter(tweet_iter):
   for tw in tweet_iter:
