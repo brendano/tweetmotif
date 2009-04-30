@@ -1,8 +1,9 @@
 import marshal, urllib2, base64, binascii, struct, os, sys
-import simplejson
 from collections import defaultdict
-import util
 import fileinput
+import simplejson
+import util
+import tchelpers
 
 sys.path.insert(0, "platform/%s" % sys.platform)
 # linux only
@@ -26,27 +27,16 @@ class LocalLM:
     import cPickle as pickle
     return pickle.load(open(filename))
 
-def open_tc(filename,flag='c'):
-  import pytc
-  db = pytc.HDB()
-  if flag=='c':
-    bflag = pytc.HDBOCREAT|pytc.HDBOWRITER|pytc.HDBOREADER|pytc.HDBONOLCK
-  elif flag=='r':
-    bflag = pytc.HDBOREADER|pytc.HDBONOLCK
-  else: raise Exception("need flag")
-  db.open(filename, bflag)
-  return db
-
 class TokyoLM:
   def __init__(self, filename="background_model.tc", readonly=True):
     os.system("mkdir -p %s" % filename)
     flag = 'r' if readonly else 'c'
     self.counts = {
-        'unigram': TokyoNgramProxy(open_tc("%s/unigram.hdb" % filename, flag)),
-        'bigram':  TokyoNgramProxy(open_tc("%s/bigram.hdb"  % filename, flag)),
-        'trigram':  TokyoNgramProxy(open_tc("%s/trigram.hdb"  % filename, flag)),
+        'unigram': TokyoNgramProxy(tchelpers.open_tc("%s/unigram.hdb" % filename, flag)),
+        'bigram':  TokyoNgramProxy(tchelpers.open_tc("%s/bigram.hdb"  % filename, flag)),
+        'trigram':  TokyoNgramProxy(tchelpers.open_tc("%s/trigram.hdb"  % filename, flag)),
         }
-    self.info = KVIntProxy(open_tc("%s/info.hdb" % filename, flag))
+    self.info = KVIntProxy(tchelpers.open_tc("%s/info.hdb" % filename, flag))
 
   def sync(self):
     for name,db in self.counts.iteritems(): db.sync()

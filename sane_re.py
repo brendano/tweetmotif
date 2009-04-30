@@ -50,7 +50,8 @@ class _Ss(str):
     else:
       regex = args
       group = 0
-    return match(self, _R(regex))[group]
+    m = match(self, _R(regex))
+    return m and m[group]
   def show_match(self, regex, group=0, numbers=True):
     """ for testing """
     import ansi,sys

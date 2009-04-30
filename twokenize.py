@@ -142,12 +142,12 @@ def simple_tokenize(text):
     goods.append( (m.end(), len(s)) )
   else:
     goods = [ (0, len(s)) ]
-  #print goods
-  #print bads
   assert len(bads)+1 == len(goods)
 
   goods = [s[i:j] for i,j in goods]
   bads  = [s[i:j] for i,j in bads]
+  #print goods
+  #print bads
   goods = [unprotected_tokenize(x) for x in goods]
   res = []
   for i in range(len(bads)):
@@ -183,6 +183,7 @@ if __name__=='__main__':
   import ansi
   util.fix_stdio()
   for line in sys.stdin:
-    print ansi.color(line.strip(),'red')
-    print ansi.color(" ".join(tokenize(line.strip())),'blue','bold')
+    print " ".join(tokenize(line[:-1]))
+    #print ansi.color(line.strip(),'red')
+    #print ansi.color(" ".join(tokenize(line.strip())),'blue','bold')
 

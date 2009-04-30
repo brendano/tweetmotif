@@ -34,3 +34,18 @@ class LinkedCorpus:
     for tweet in tweet_iter:
       self.add_tweet(tweet)
 
+#if __name__=='__main__':
+#  import cPickle as pickle
+#  lc = LinkedCorpus()
+#  for tweet in pickle.load(open(sys.argv[1])):
+#    bigrams.analyze_tweet(tweet)
+#    lc.add_tweet(tweet)
+
+#import bigrams,linkedcorpus
+#import cPickle as pickle
+#def go():
+#  lc = linkedcorpus.LinkedCorpus()
+#  for tweet in pickle.load(open("save_the_tweets")):
+#    bigrams.analyze_tweet(tweet)
+#    lc.add_tweet(tweet)
+#

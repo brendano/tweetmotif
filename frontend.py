@@ -19,6 +19,7 @@ import bigrams
 import ranking
 import twokenize
 import highlighter
+import tchelpers
 
 if os.popen("hostname").read().strip()=='btoc.local':
   STATIC = "http://localhost/d/twi/twi/static"
@@ -111,10 +112,20 @@ def linkify(text, klass):
     return m.sre.expand(r'<a class="%s" target="_blank" href="%s">\1</a>' % (klass,url))
   return Url_RE.gsub(text, f)
 
-
-
+nice_tweet_cache = tchelpers.open("nice_tweets.tch")
 
 def nice_tweet(tweet, q_toks, topic_ngram):
+  key = pickle.dumps( (tweet, q_toks, topic_ngram) )
+  if key in nice_tweet_cache:
+    #print "nice_tweet CACHE HIT"
+    return nice_tweet_cache[key]
+  else:
+    #print "NEW nice_tweet"
+    nt = _nice_tweet(tweet,q_toks,topic_ngram)
+    nice_tweet_cache[key] = nt
+    return nt
+
+def _nice_tweet(tweet, q_toks, topic_ngram):
   s = ""
   s += "<span class=text>"
   hl_spec = {topic_ngram: ("<span class=topic_hl>","</span>")}

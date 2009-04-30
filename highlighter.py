@@ -1,4 +1,6 @@
 from copy import copy
+import tchelpers
+
 
 def highlight(toks, ngrams_and_tags):
   ret = []

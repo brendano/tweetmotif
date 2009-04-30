@@ -24,6 +24,7 @@ def fetch(url, printer=None, retries=1):
 #SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
 SEARCH_URL = "http://search.twitter.com/search.json?"
 #SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
+#SEARCH_URL = "http://localhost:8500/" + SEARCH_URL
 
 def serial_search(q, pages=10, rpp=100):
   pages = range(1,pages+1) # pages=range(1,16)
@@ -57,7 +58,7 @@ def search_page(q, page, rpp):
   _print(url)
   try:
     json_fp = fetch(url, _print)
-    _print(json_fp.headers.dict['status'])
+    if 'status' in json_fp.headers.dict: _print(json_fp.headers.dict['status'])
     j = simplejson.load(json_fp)
   except urllib2.HTTPError, e:
     if e.code == 404:
@@ -131,7 +132,7 @@ def dedupe_tweets(tweet_iter, key_fn):
     if key_fn:
       hash = key_fn(tweet)
       if hash in seen_hashes:
-        print "rejecting dupe", tweet['id']
+        #print "rejecting dupe", tweet['id']
         continue
       seen_hashes.add(hash)
 
@@ -169,7 +170,7 @@ def group_multitweets(tweet_iter, key_fn=lambda tw: tw['text'], preserve=('text'
     multitweet['id'] = " ".join([str(tw['id']) for tw in tweets])
     multitweet['multi'] = True
     multitweets[key] = (multitweet,)
-    print "multitweet", multitweet['id']
+    #print "multitweet", multitweet['id']
   index.update(multitweets)
   for k,tweets_singleton in index.iteritems():
     assert len(tweets_singleton)==1

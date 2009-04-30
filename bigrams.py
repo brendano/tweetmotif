@@ -9,13 +9,23 @@ from __future__ import division
 import sys
 import re
 import fileinput
+import cPickle as pickle
 from collections import defaultdict
 import twokenize
 import lang_model
 import util
 
+import tchelpers
+tok_cache = tchelpers.IntKeyWrapper(tchelpers.open_tc("toks.tch"))
+
 def analyze_tweet(tweet):
-  toks = tokenize_and_clean(tweet['text'], alignments=True)
+  if tweet['id'] in tok_cache:
+    #print "CACHE HIT    %s" % tweet['text']
+    toks = pickle.loads(tok_cache[tweet['id']])
+  else:
+    #print "NEW ANALYSIS %s" % tweet['text']
+    toks = tokenize_and_clean(tweet['text'], alignments=True)
+    tok_cache[tweet['id']] = pickle.dumps(toks)
   tweet['toks'] = toks
 
 from twokenize import regex_or
@@ -193,8 +203,8 @@ if __name__=='__main__':
   collection_model = lang_model.LocalLM()
   collect_statistics_into_model(open(sys.argv[1]), collection_model)
   type='unigram'
-  for ratio,ngram in compare_models(collection_model, background_model, type, 1):
-    print "%s\t%s\t%s\t%s" % (ratio, ngram, collection_model.counts[type][ngram], background_model.counts[type][ngram])
+  #for ratio,ngram in compare_models(collection_model, background_model, type, 1):
+  #  print "%s\t%s\t%s\t%s" % (ratio, ngram, collection_model.counts[type][ngram], background_model.counts[type][ngram])
 
   #output_ngram_counts(unigram_counts, 100)
   #output_ngram_counts(bigram_counts, 20)

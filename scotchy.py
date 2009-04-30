@@ -27,9 +27,10 @@ if sys.argv[1] == 'record':
 elif sys.argv[1] == 'play':
   print "SCOTCH: loading records from %s" % filename
   record_holder = pickle.load(open(filename))
-  for record in record_holder:
-    new_response = record.refeed(frontend.application)
-    #print new_response.content_list
+  for x in [1,2,3,4,5]:
+    for record in record_holder:
+      new_response = record.refeed(frontend.application)
+      #print new_response.content_list
   print "END"
 
 
