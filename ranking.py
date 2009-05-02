@@ -1,3 +1,4 @@
+from __future__ import division
 import twokenize,util,re,bigrams
 import itertools
 from copy import copy
@@ -78,17 +79,12 @@ def rank_and_filter3(linkedcorpus, background_model, q):
     tweet_ids_in_topics |= set(tw['id'] for tw in t.tweets)
   leftover_ids = set(linkedcorpus.tweets_by_id.iterkeys()) - tweet_ids_in_topics
   leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_ids]
-  #return util.Struct(topics=all_topics, leftover_tweets=leftover_tweets)
   return Topics(topics=all_topics, leftover_tweets=leftover_tweets, linkedcorpus=linkedcorpus)
   #return all_topics
 
 def test_weak_dominance(topic1, topic2):
   def ids(topic): return (tw['id'] for tw in topic.tweets)
   return set(ids(topic1)) >= set(ids(topic2))
-
-def prebaked_iter(filename):
-  for line in util.counter(open(filename)):
-    yield simplejson.loads(line)
 
 class Topics:
   def __init__(self, **kwargs):
@@ -99,7 +95,55 @@ class Topics:
     new_leftover_ids = set(self.linkedcorpus.tweets_by_id) - tweets_left - set(tw['id'] for tw in self.leftover_tweets)
     self.leftover_tweets += (self.linkedcorpus.tweets_by_id[i] for i in new_leftover_ids)
 
+def rank_and_filter4(lc, background_model, q, max_topics):
+  # topic pruning
+  assert max_topics
+  res = rank_and_filter3(lc, background_model, q)
+  if len(res.topics) > max_topics:
+    print "throwing out %d topics" % (len(res.topics) - max_topics)
+    res.cutoff_topics(max_topics)
+  if res.leftover_tweets:
+    res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
+  return res
 
+def topic_xp(topic, lc):
+  pairs = {}
+  for i in range(len(topic.tweets)):
+    for j in range(i+1, len(topic.tweets)):
+      t1 = topic.tweets[i]
+      t2 = topic.tweets[j]
+      set1 = t1['bigrams'] | t1['unigrams']
+      set2 = t2['bigrams'] | t2['unigrams']
+      #x = len(t1['bigrams'] & t2['bigrams']) + len(t1['unigrams'] & t2['unigrams'])
+      #y = len(t1['bigrams'] | t2['bigrams']) + len(t1['unigrams'] | t2['unigrams'])
+      pairs[t1['id'],t2['id']] = (set1,set2)
+  items = pairs.items()
+  scorer = lambda x,y: len(x&y) / len(x|y)   # jaccard
+  scorer = lambda x,y: 2*len(x&y) / (len(x)+len(y))  # dice
+  items.sort(key= lambda (ids,(x,y)): -scorer(x,y))
+  import ansi
+  for (id1,id2),(x,y) in items:
+    nums = "%.3f" % scorer(x,y)
+    t1,t2 = lc.tweets_by_id[id1], lc.tweets_by_id[id2]
+    f = twokenize.squeeze_whitespace
+    s1,s2 = ["%s %s" % (ansi.color(t['from_user'],'green') + " "*(15-len(t['from_user'])), f(t['text'])) for t in [t1,t2]]
+    print "%-8s %s\n%-8s %s" % (nums, s1, " ", s2)
+    #pairs[t1['id'],t2['id']] = 
+
+def topic_pair_report(res,lc):
+  import ansi
+  for topic in res.topics:
+    print
+    print ansi.color("*** Topic: ",'blue'), ansi.color(repr(topic.ngram),'bold')
+    if len(topic.tweets)>50:
+      print "skipping"
+    else:
+      topic_xp(topic,lc)
+
+
+def prebaked_iter(filename):
+  for line in util.counter(open(filename)):
+    yield simplejson.loads(line)
 
 if __name__=='__main__':
   import simplejson

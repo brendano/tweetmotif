@@ -19,6 +19,8 @@ import tchelpers
 tok_cache = tchelpers.IntKeyWrapper(tchelpers.open_tc("toks.tch"))
 
 def analyze_tweet(tweet):
+  # tweet['toks'] = tokenize_and_clean(tweet['text'], alignments=True); return   # turn off caching
+
   if tweet['id'] in tok_cache:
     #print "CACHE HIT    %s" % tweet['text']
     toks = pickle.loads(tok_cache[tweet['id']])

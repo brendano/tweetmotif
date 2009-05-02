@@ -1,10 +1,8 @@
 from copy import copy
-import tchelpers
 
 
 def highlight(toks, ngrams_and_tags):
   ret = []
-
   ngram_alignments = {}
   for ngram in ngrams_and_tags:
     ngram_alignments[tuple(ngram)] = compute_highlight_alignments(toks, ngram)

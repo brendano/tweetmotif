@@ -11,6 +11,7 @@ def color(s, *codes):
 def code_precedence(code):
   if code=='bold': return 10
   else: return 100
+
 # adapted from http://dotfiles.org/~sd/.irbrc
 CODES = dict(
   black    = "\033[0;30m",

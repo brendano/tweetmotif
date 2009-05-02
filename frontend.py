@@ -163,18 +163,18 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
   s += "</span>"
   return s
 
-def single_query(q, topic_label, pages=1, exclude=()):
+def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
   q_toks = bigrams.tokenize_and_clean(q, alignments=False)
   q = '''%s "%s"''' % (q,topic_label)
   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
   exclude = set(exclude)
-  tweets = search.cleaned_results(q, pages=pages, key_fn=search.user_and_text_identity)
+  tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
   tweets = search.group_multitweets(tweets)
   tweets = list(tw for tw in tweets if tw['id'] not in exclude)
-  try:
-    earliest = min(tw['created_at'] for tw in tweets if 'created_at' in tw)
-    yield "<div class=more_tweets>more tweets through the last %s</div>" % nice_timedelta(datetime.utcnow() - earliest)
-  except ValueError: pass
+  #try:
+  #  earliest = min(tw['created_at'] for tw in tweets if 'created_at' in tw)
+  #  yield "<div class=more_tweets>more tweets through the last %s</div>" % nice_timedelta(datetime.utcnow() - earliest)
+  #except ValueError: pass
 
   yield "<ul>"
   for tweet in tweets:
@@ -182,7 +182,7 @@ def single_query(q, topic_label, pages=1, exclude=()):
     yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
   yield "</ul>"
 
-def table_byrow(items, ncol=3):
+def table_byrow(items, ncol):
   yield "<table>"
   for i,x in enumerate(items):
     if i%ncol == 0:
@@ -248,7 +248,6 @@ def the_app(environ, start_response):
   opts = Opts(environ,
       opt('q', default=''),
       opt('pages', default=2),
-      opt('prebaked', default=''),
       opt('split', default=0),
       opt('simple', default=0),
       opt('max_topics', default=50),
@@ -270,71 +269,62 @@ def the_app(environ, start_response):
   yield form_area(opts)
   
   lc = linkedcorpus.LinkedCorpus()
+  tweets_file = 'save_%s_tweets' % opts.q
 
-  if not opts.prebaked and not opts.q:
-    return
-
-  if opts.prebaked: 
-    tweet_iter = prebaked_iter(opts.prebaked)
-  elif opts.q:
-    tweets_file = 'save_%s_tweets' % opts.q
-    tweet_iter = search.cleaned_results(opts.q, 
-        pages = opts.pages, 
-        key_fn = search.user_and_text_identity, 
-        save = tweets_file if opts.save else None,
-        load = tweets_file if opts.load else None
-        )
-    #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.user_and_text_identity_url_norm)
-    #tweet_iter = search.cleaned_results(opts.q, pages=opts.pages, key_fn=search.text_identity_url_norm)
+  tweet_iter = search.cleaned_results(opts.q, 
+      pages = opts.pages, 
+      key_fn = search.user_and_text_identity, 
+      save = tweets_file if opts.save else None,
+      load = tweets_file if opts.load else None
+      )
   tweet_iter = search.group_multitweets(tweet_iter)
-
   lc.fill_from_tweet_iter(tweet_iter)
 
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
 
-  if not opts.simple:
-    yield "<table><tr>"
-    yield "<th>topics"
-    if lc.tweets_by_id:
-      # HACK i'm confused why theyre not all in tweets_by_id
-      try:
-        earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues() if 'created_at' in tw)
-        #latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
-        s=  "for %d tweets" % len(lc.tweets_by_id)
-        s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
-        yield " <small>%s</small>" % s
-      except ValueError: pass
-
-    yield "<th>tweets"
-    yield "<tr><td valign=top id=topic_list>"
-    res = ranking.rank_and_filter3(lc, background_model, opts.q)
-    if len(res.topics) > opts.max_topics:
-      print "throwing out %d topics" % (len(res.topics)-opts.max_topics)
-      res.cutoff_topics(opts.max_topics)
-    if res.leftover_tweets:
-      res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
-    topic_labels = ("""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics)
-    #for x in topic_labels: yield x
-    for x in table_byrow(list(topic_labels), ncol=opts.ncol): yield x
-
-    yield "<td valign=top>"
-    yield "<div id=tweets>"
-    yield "click on a topic on the left please"
-    yield "</div>"
-    yield "<div id=tweets_more>"
-    yield "</div>"
-    yield "</table>"
-    yield "<script>"
-    for t in res.topics:  t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
-    bigass = dict((t.label, topic_fragment(q_toks,t)) for t in res.topics)
-    yield "topics = "
-    #f=open("/tmp/tmp",'w'); f.write(repr(bigass)); f.close()
-    yield simplejson.dumps(bigass)
-    yield ";"
-    yield "load_default_topic();"
-    yield "</script>"
+  if opts.simple:
+    for x in simple_output(lc,background_model, opts): yield x
     return
 
+  yield "<table><tr>"
+  yield "<th>topics"
+  if lc.tweets_by_id:
+    # HACK i'm confused why theyre not all in tweets_by_id
+    try:
+      earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues() if 'created_at' in tw)
+      #latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+      s=  "for %d tweets" % len(lc.tweets_by_id)
+      s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
+      yield " <small>%s</small>" % s
+    except ValueError: pass
+
+  yield "<th>tweets"
+  yield "<tr><td valign=top id=topic_list>"
+  #res = ranking.rank_and_filter3(lc, background_model, opts.q)
+  res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
+  topic_labels = ["""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics]
+  #for x in topic_labels: yield x
+  for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
+
+  yield "<td valign=top>"
+  yield "<div id=tweets>"
+  yield "click on a topic on the left please"
+  yield "</div>"
+  yield "<div id=tweets_more>"
+  yield "</div>"
+  yield "</table>"
+  yield "<script>"
+  for t in res.topics:  t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
+  bigass = dict((t.label, topic_fragment(q_toks,t)) for t in res.topics)
+  yield "topics = "
+  #f=open("/tmp/tmp",'w'); f.write(repr(bigass)); f.close()
+  yield simplejson.dumps(bigass)
+  yield ";"
+  yield "load_default_topic();"
+  yield "</script>"
+
+
+def simple_output(lc,background_model, opts):
   def simple_show_topic(topic):
     s = "<b>%s</b> &nbsp; <small>(%s)</small>" % (topic.label, len(topic.tweets))
     yield s
@@ -359,7 +349,8 @@ def the_app(environ, start_response):
     yield "</td>"
     yield "</table>"
   elif not opts.split:
-    for topic in ranking.rank_and_filter3(lc, background_model, opts.q):
+    res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
+    for topic in res:
       for s in simple_show_topic(topic):
         yield s
         #yield cgi.escape(simplejson.dumps(topic_fragment(q_toks,topic)))

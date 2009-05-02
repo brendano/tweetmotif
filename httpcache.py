@@ -4,17 +4,11 @@ import os,sys
 import timeout_urllib2; timeout_urllib2.sethttptimeout(4.0)
 from sane_re import *
 
+import tchelpers
 
-sys.path.insert(0,'platform/'+sys.platform)
-import pytc
-def open_tc(filename):
-  db = pytc.HDB()
-  bflag = pytc.HDBOCREAT|pytc.HDBOWRITER|pytc.HDBOREADER|pytc.HDBONOLCK
-  db.open(filename, bflag)
-  return db
-
-data_by_url = open_tc("httpcache.tc/data_by_url.tch")
-last_updaate = open_tc("httpcache.tc/last_update.tch")
+os.system("mkdir -p httpcache.tc")
+data_by_url = tchelpers.open("httpcache.tc/data_by_url.tch")
+last_updaate = tchelpers.open("httpcache.tc/last_update.tch")
 
 
 def application(environ, start_response):

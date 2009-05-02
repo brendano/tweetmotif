@@ -32,9 +32,9 @@ class TokyoLM:
     os.system("mkdir -p %s" % filename)
     flag = 'r' if readonly else 'c'
     self.counts = {
-        'unigram': TokyoNgramProxy(tchelpers.open_tc("%s/unigram.hdb" % filename, flag)),
-        'bigram':  TokyoNgramProxy(tchelpers.open_tc("%s/bigram.hdb"  % filename, flag)),
-        'trigram':  TokyoNgramProxy(tchelpers.open_tc("%s/trigram.hdb"  % filename, flag)),
+        'unigram': TokyoNgramProxy(tchelpers.open("%s/unigram.hdb" % filename, flag)),
+        'bigram':  TokyoNgramProxy(tchelpers.open("%s/bigram.hdb"  % filename, flag)),
+        'trigram':  TokyoNgramProxy(tchelpers.open("%s/trigram.hdb"  % filename, flag)),
         }
     self.info = KVIntProxy(tchelpers.open_tc("%s/info.hdb" % filename, flag))
 

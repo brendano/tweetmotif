@@ -5,6 +5,7 @@ import bigrams
 import lang_model
 
 class LinkedCorpus:
+  " Hold tweets & indexes .. that is, ngrams are 'linked' to their tweets. "
   def __init__(self):
     self.model = lang_model.LocalLM()
     self.index = defaultdict(list)
@@ -15,10 +16,16 @@ class LinkedCorpus:
     self.tweets_by_id[tweet['id']] = tweet
     toks = tweet['toks']
     self.model.info['big_n'] += len(toks)
-    for unigram in set(bigrams.filtered_unigrams(toks)):
+
+    the_unigrams = set(bigrams.filtered_unigrams(toks))
+    tweet['unigrams'] = the_unigrams
+    for unigram in the_unigrams:
       self.model.add('unigram',unigram)
       self.index[unigram].append(tweet)
-    for bigram in set(bigrams.filtered_bigrams(toks)):
+
+    the_bigrams = set(bigrams.filtered_bigrams(toks))
+    tweet['bigrams'] = the_bigrams
+    for bigram in the_bigrams:
       self.model.add('bigram',bigram)
       self.index[bigram].append(tweet)
       self.bigram_index[bigram[0], None].append(bigram)
