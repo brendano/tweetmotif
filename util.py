@@ -144,6 +144,8 @@ def uniq_c(seq):
 
 class Struct(dict):
   def __getattr__(self, a):
+    if a.startswith('__'):
+      raise AttributeError
     return self[a]
   def __setattr__(self, a, v):
     self[a] = v

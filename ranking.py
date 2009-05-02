@@ -135,7 +135,7 @@ def topic_pair_report(res,lc):
   for topic in res.topics:
     print
     print ansi.color("*** Topic: ",'blue'), ansi.color(repr(topic.ngram),'bold')
-    if len(topic.tweets)>50:
+    if len(topic.tweets)>100:
       print "skipping"
     else:
       topic_xp(topic,lc)

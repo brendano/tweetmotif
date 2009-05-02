@@ -130,8 +130,6 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
   s += "<span class=text>"
   hl_spec = {topic_ngram: ("<span class=topic_hl>","</span>")}
   for ug in set(bigrams.unigrams(q_toks)):
-    #print "******* HL",
-    #print ug
     if ug[0] in bigrams.super_stopwords: continue
     if ug[0] in topic_ngram: continue
     hl_spec[ug] = ("<span class=q_hl>","</span>")
@@ -193,14 +191,15 @@ def table_byrow(items, ncol):
   yield "</table>"
 
 def topic_fragment(q_toks, topic):
-  topic = copy(topic)
+  # topic = copy(topic)
   h = "<ul>"
   for tweet in topic['tweets']:
     h+="<li>" + nice_tweet(tweet, q_toks, topic.ngram)
   h+="</ul>"
-  topic['tweets_html'] = h
-  del topic['tweets']
-  return topic
+  return h
+  # topic['tweets_html'] = h
+  # del topic['tweets']
+  # return topic
 
 def nice_date(d):
   return d.strftime("%Y-%m-%dT%H:%M:%S")
@@ -242,8 +241,6 @@ def nice_timedelta(delt):
 def the_app(environ, start_response):
   global_init()
   status = '200 OK'
-  response_headers = [('Content-type','text/html')]
-  start_response(status, response_headers)
 
   opts = Opts(environ,
       opt('q', default=''),
@@ -255,7 +252,11 @@ def the_app(environ, start_response):
       opt('save', default=False),
       opt('load', default=False),
       opt('single_query', default=0),
+      opt('format', default='dev')
       )
+
+  response_headers = [('Content-type','text/html')]
+  start_response(status, response_headers)
 
   if opts.single_query:
     # the requery
@@ -265,12 +266,8 @@ def the_app(environ, start_response):
       yield x
     return
 
-  yield page_header()
-  yield form_area(opts)
-  
   lc = linkedcorpus.LinkedCorpus()
   tweets_file = 'save_%s_tweets' % opts.q
-
   tweet_iter = search.cleaned_results(opts.q, 
       pages = opts.pages, 
       key_fn = search.user_and_text_identity, 
@@ -279,9 +276,23 @@ def the_app(environ, start_response):
       )
   tweet_iter = search.group_multitweets(tweet_iter)
   lc.fill_from_tweet_iter(tweet_iter)
-
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
+  print q_toks
+  #res = ranking.rank_and_filter3(lc, background_model, opts.q)
+  res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
+  for t in res.topics:
+    t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
+    t['tweets_html'] = topic_fragment(q_toks,t)
+  if opts.format == 'pickle':
+    yield pickle.dumps(res)
+    # bigass_topic_list = [dict(label=t.label, tweets_html=) for t in res.topics ]
+    # yield pickle.dumps(bigass_topic_list)
+    return
 
+
+  yield page_header()
+  yield form_area(opts)
+  
   if opts.simple:
     for x in simple_output(lc,background_model, opts): yield x
     return
@@ -300,10 +311,13 @@ def the_app(environ, start_response):
 
   yield "<th>tweets"
   yield "<tr><td valign=top id=topic_list>"
-  #res = ranking.rank_and_filter3(lc, background_model, opts.q)
-  res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
+
   topic_labels = ["""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics]
-  #for x in topic_labels: yield x
+
+  for t in res.topics:
+    for tw in t.tweets:
+      if 'created_at' in tw: del tw['created_at']
+  bigass_topic_dict = dict((t.label, dict(label=t.label, tweets_html=t.tweets_html)) for t in res.topics)
   for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
 
   yield "<td valign=top>"
@@ -314,11 +328,9 @@ def the_app(environ, start_response):
   yield "</div>"
   yield "</table>"
   yield "<script>"
-  for t in res.topics:  t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
-  bigass = dict((t.label, topic_fragment(q_toks,t)) for t in res.topics)
+
   yield "topics = "
-  #f=open("/tmp/tmp",'w'); f.write(repr(bigass)); f.close()
-  yield simplejson.dumps(bigass)
+  yield simplejson.dumps(bigass_topic_dict)
   yield ";"
   yield "load_default_topic();"
   yield "</script>"
