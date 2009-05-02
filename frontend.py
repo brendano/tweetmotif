@@ -92,6 +92,7 @@ def form_area(opts):
   ret += " split?" + opts.input('split')
   ret += " max topics" + opts.input('max_topics')
   ret += " ncol" + opts.input('ncol')
+  ret += " smoothing" + opts.input('smoothing')
   ret += " <input type=submit>"
   ret += "</form>"
   return ret
@@ -257,7 +258,8 @@ def the_app(environ, start_response):
       opt('save', default=False),
       opt('load', default=False),
       opt('single_query', default=0),
-      opt('format', default='dev')
+      opt('format', default='dev'),
+      opt('smoothing', default='mle')
       )
 
   response_headers = [('Content-type','text/html')]
@@ -282,8 +284,7 @@ def the_app(environ, start_response):
   tweet_iter = search.group_multitweets(tweet_iter)
   lc.fill_from_tweet_iter(tweet_iter)
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
-  #res = ranking.rank_and_filter3(lc, background_model, opts.q)
-  res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
+  res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics, smoothing=opts.smoothing)
   for t in res.topics:
     t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
     t['tweets_html'] = topic_fragment(q_toks,t)
@@ -343,39 +344,6 @@ def the_app(environ, start_response):
   yield ";"
   yield "load_default_topic();"
   yield "</script>"
-
-
-def simple_output(lc,background_model, opts):
-  def simple_show_topic(topic):
-    s = "<b>%s</b> &nbsp; <small>(%s)</small>" % (topic.label, len(topic.tweets))
-    yield s
-    yield "<ul>"
-    for i,tweet in enumerate(topic.tweets):
-      if i > 20: break
-      yield "<li>"
-      yield nice_tweet(tweet, q_toks, topic.ngram)
-    yield "</ul>"
-
-  if opts.split:
-    def show_results(type):
-      for topic in ranking.rank_and_filter1(lc, background_model, opts.q, type={'unigram':1, 'bigram':2, 'trigram':3}):
-        for s in simple_show_topic(topic): yield s
-    yield "<table><tr><th>unigrams <th>bigrams"
-    yield "<tr>"
-    yield "<td valign=top>"
-    for s in show_results('unigram'): yield s
-    yield "</td>"
-    yield "<td valign=top>"
-    for s in show_results('bigram'): yield s
-    yield "</td>"
-    yield "</table>"
-  elif not opts.split:
-    res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
-    for topic in res:
-      for s in simple_show_topic(topic):
-        yield s
-        #yield cgi.escape(simplejson.dumps(topic_fragment(q_toks,topic)))
-
 
 def app_stringify(iter):
   for x in iter:

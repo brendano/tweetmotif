@@ -10,12 +10,12 @@ def tok_norm(tok):
   if len(s)>=1: return s
   return tok
 
-def rank_and_filter1(linkedcorpus, background_model, q, n=2):
+def rank_and_filter1(linkedcorpus, background_model, q, n=2, smoothing=None):
   q_toks = bigrams.tokenize_and_clean(q, alignments=False)
   q_toks = map(tok_norm, q_toks)
   q_toks_set = set(q_toks)
   stopwords = bigrams.stopwords - q_toks_set
-  for ratio,ngram in linkedcorpus.model.compare_with_bg_model(background_model, n, min_count=3):
+  for ratio,ngram in linkedcorpus.model.compare_with_bg_model(background_model, n, min_count=3, smoothing_algorithm=smoothing):
     norm_ngram = [tok_norm(t) for t in ngram]
     #if set(norm_ngram) <= bigrams.stopwords:
     #  print "reject stopwords", norm_ngram
@@ -43,11 +43,11 @@ def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
     #print "%dgram %s dominated by %dgram %s" % (n-1, n_1_g, n,n_g)
     del n_1_topics[n_1_g]
 
-def rank_and_filter2(linkedcorpus, background_model, q):
+def rank_and_filter2(linkedcorpus, background_model, q, smoothing=None):
   # topic deduping
-  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 1))
-  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 2))
-  trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 3))
+  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 1, smoothing=smoothing))
+  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 2, smoothing=smoothing))
+  trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 3, smoothing=smoothing))
   topics = [ unigram_topics, bigram_topics, trigram_topics ]
   #print trigram_topics
   #print "STOP"
@@ -67,9 +67,9 @@ def score_topic(topic):
   #a = 1 if len(topic.ngram)==1 else 1.5
   #return topic.ratio * a
 
-def rank_and_filter3(linkedcorpus, background_model, q):
+def rank_and_filter3(linkedcorpus, background_model, q, smoothing=None):
   # apply final topic ranking
-  r = rank_and_filter2(linkedcorpus, background_model, q)
+  r = rank_and_filter2(linkedcorpus, background_model, q, smoothing=smoothing)
   all_topics = r['unigram'].values() + r['bigram'].values() + r['trigram'].values()
   all_topics.sort(key=score_topic, reverse=True)
   tweet_ids_in_topics = set()
@@ -93,10 +93,10 @@ class Topics:
     new_leftover_ids = set(self.linkedcorpus.tweets_by_id) - tweets_left - set(tw['id'] for tw in self.leftover_tweets)
     self.leftover_tweets += (self.linkedcorpus.tweets_by_id[i] for i in new_leftover_ids)
 
-def rank_and_filter4(lc, background_model, q, max_topics):
+def rank_and_filter4(lc, background_model, q, max_topics, smoothing=None):
   # topic pruning
   assert max_topics
-  res = rank_and_filter3(lc, background_model, q)
+  res = rank_and_filter3(lc, background_model, q, smoothing=smoothing)
   if len(res.topics) > max_topics:
     print "throwing out %d topics" % (len(res.topics) - max_topics)
     res.cutoff_topics(max_topics)
@@ -167,7 +167,7 @@ if __name__=='__main__':
   import lang_model, ansi
   background_model = lang_model.TokyoLM(readonly=True)
 
-  res = rank_and_filter3(lc, background_model, q)
+  res = rank_and_filter3(lc, background_model, q, smoothing='mle')
   print 'RESULTS'
   for topic in res.topics:
     #if len(topic.ngram)==3: print "%s\t%s\t%s" % (topic.label, topic.ratio, len(topic.tweets))
