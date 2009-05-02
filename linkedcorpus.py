@@ -20,18 +20,19 @@ class LinkedCorpus:
     the_unigrams = set(bigrams.filtered_unigrams(toks))
     tweet['unigrams'] = the_unigrams
     for unigram in the_unigrams:
-      self.model.add('unigram',unigram)
+      self.model.add(unigram)
       self.index[unigram].append(tweet)
 
     the_bigrams = set(bigrams.filtered_bigrams(toks))
     tweet['bigrams'] = the_bigrams
     for bigram in the_bigrams:
-      self.model.add('bigram',bigram)
+      self.model.add(bigram)
       self.index[bigram].append(tweet)
       self.bigram_index[bigram[0], None].append(bigram)
       self.bigram_index[None, bigram[1]].append(bigram)
+
     for trigram in set(bigrams.filtered_trigrams(toks)):
-      self.model.add('trigram',trigram)
+      self.model.add(trigram)
       self.index[trigram].append(tweet)
     #self.tweets_by_text.append(tweet)
     #for ngram in set(bigrams.multi_ngrams(toks, n_and_up=3)):
@@ -41,18 +42,17 @@ class LinkedCorpus:
     for tweet in tweet_iter:
       self.add_tweet(tweet)
 
-#if __name__=='__main__':
-#  import cPickle as pickle
-#  lc = LinkedCorpus()
-#  for tweet in pickle.load(open(sys.argv[1])):
-#    bigrams.analyze_tweet(tweet)
-#    lc.add_tweet(tweet)
-
-#import bigrams,linkedcorpus
-#import cPickle as pickle
-#def go():
-#  lc = linkedcorpus.LinkedCorpus()
-#  for tweet in pickle.load(open("save_the_tweets")):
-#    bigrams.analyze_tweet(tweet)
-#    lc.add_tweet(tweet)
-#
+if __name__=='__main__':
+  import cPickle as pickle
+  import search
+  bg_model = lang_model.TokyoLM(readonly=True)
+  lc = LinkedCorpus()
+  tweet_iter = search.cleaned_results("chrysler",
+      pages = 2, 
+      key_fn = search.user_and_text_identity, 
+      save = None,
+      load = None
+      )
+  lc.fill_from_tweet_iter(tweet_iter)
+  for ratio, ngram in lc.model.compare_with_bg_model(bg_model, 1, min_count=3):
+    print "%s\t%s" % ('_'.join(ngram), ratio)

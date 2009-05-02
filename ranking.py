@@ -10,14 +10,12 @@ def tok_norm(tok):
   if len(s)>=1: return s
   return tok
 
-def rank_and_filter1(linkedcorpus, background_model, q, type='bigram'):
-  # topic extraction
-  #q_toks = [tok_norm(t) for t in twokenize.tokenize(q)]
+def rank_and_filter1(linkedcorpus, background_model, q, n=2):
   q_toks = bigrams.tokenize_and_clean(q, alignments=False)
   q_toks = map(tok_norm, q_toks)
   q_toks_set = set(q_toks)
   stopwords = bigrams.stopwords - q_toks_set
-  for ratio,ngram in bigrams.compare_models(linkedcorpus.model, background_model,type, min_count=3):
+  for ratio,ngram in linkedcorpus.model.compare_with_bg_model(background_model, n, min_count=3):
     norm_ngram = [tok_norm(t) for t in ngram]
     #if set(norm_ngram) <= bigrams.stopwords:
     #  print "reject stopwords", norm_ngram
@@ -47,9 +45,9 @@ def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
 
 def rank_and_filter2(linkedcorpus, background_model, q):
   # topic deduping
-  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'unigram'))
-  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'bigram'))
-  trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 'trigram'))
+  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 1))
+  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 2))
+  trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 3))
   topics = [ unigram_topics, bigram_topics, trigram_topics ]
   #print trigram_topics
   #print "STOP"
@@ -167,8 +165,6 @@ if __name__=='__main__':
 
   import lang_model, ansi
   background_model = lang_model.TokyoLM(readonly=True)
-  #for topic_ngram, topic_label, tweets in rank_and_filter(lc, background_model, q, type='bigram'):
-  #for topic in rank_and_filter2(lc, background_model, q, type='bigram'):
 
   res = rank_and_filter3(lc, background_model, q)
   print 'RESULTS'

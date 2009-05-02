@@ -356,7 +356,7 @@ def simple_output(lc,background_model, opts):
 
   if opts.split:
     def show_results(type):
-      for topic in ranking.rank_and_filter1(lc, background_model, opts.q, type=type):
+      for topic in ranking.rank_and_filter1(lc, background_model, opts.q, type={'unigram':1, 'bigram':2, 'trigram':3}):
         for s in simple_show_topic(topic): yield s
     yield "<table><tr><th>unigrams <th>bigrams"
     yield "<tr>"

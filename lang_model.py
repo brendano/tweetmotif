@@ -1,3 +1,4 @@
+from __future__ import division
 import marshal, urllib2, base64, binascii, struct, os, sys
 from collections import defaultdict
 import fileinput
@@ -9,12 +10,48 @@ sys.path.insert(0, "platform/%s" % sys.platform)
 # linux only
 os.environ['LD_LIBRARY_PATH'] = "platform/%s:%s" % (sys.platform, os.environ.get('LD_LIBRARY_PATH'))
 
-class LocalLM:
+class LMCommon:
+  def compare_with_bg_model(self, bg_model, n, min_count=1):
+    ngrams_with_ratios = [ (self.likelihood_ratio(ngram, bg_model), ngram)
+                           for ngram in self.ngrams_by_type[n] ]
+    ngrams_with_ratios.sort(reverse=True)
+    for ratio, ngram in ngrams_with_ratios:
+      if self.counts[ngram] < min_count:
+        continue
+      yield ratio, ngram
+
+  def likelihood_ratio(self, ngram, bg_model):
+    # This is where experimentation can happen:
+    # * change probability estimate
+    # * change ratio computation
+    bg_prob_estimate = bg_model.mle(ngram)
+    if bg_prob_estimate == 0:
+      return 0
+    else:
+      return self.mle(ngram)/bg_prob_estimate
+
+  def mle(self, ngram):
+    big_n = self.info["big_n"]
+    count = self.counts[ngram]
+    return count/big_n
+
+  def pseudocounted_ratio(self, num,denom, a=0.1):
+    return (num+a) / (denom+a)
+
+class LocalLM(LMCommon):
   def __init__(self):
-    self.counts = {'unigram': defaultdict(int), 'bigram':defaultdict(int), 'trigram':defaultdict(int)}
+    self.counts = defaultdict(int)
     self.info = {'big_n':0}
-  def add(self, type, ngram):
-    self.counts[type][ngram] += 1
+    self.ngrams_by_type = [None, set(), set(), set()]
+
+  def add(self, ngram):
+    if not self.counts.has_key(ngram):
+      self.ngrams_by_type[len(ngram)].add(ngram)
+    self.counts[ngram] += 1
+
+  def ngram_type_count(self, n):
+    return len(self.ngrams_by_type[n])
+
   def save_pickle(self, filename="background_model.pickle"):
     import cPickle as pickle
     self.save_whole_thing(filename,pickle.dump)
@@ -27,27 +64,30 @@ class LocalLM:
     import cPickle as pickle
     return pickle.load(open(filename))
 
-class TokyoLM:
+class TokyoLM(LMCommon):
   def __init__(self, filename="background_model.tc", readonly=True):
     os.system("mkdir -p %s" % filename)
     flag = 'r' if readonly else 'c'
-    self.counts = {
-        'unigram': TokyoNgramProxy(tchelpers.open("%s/unigram.hdb" % filename, flag)),
-        'bigram':  TokyoNgramProxy(tchelpers.open("%s/bigram.hdb"  % filename, flag)),
-        'trigram':  TokyoNgramProxy(tchelpers.open("%s/trigram.hdb"  % filename, flag)),
-        }
+    self.counts = TokyoNgramProxy(tchelpers.open("%s/ngram_counts.hdb" % filename, flag))
     self.info = KVIntProxy(tchelpers.open_tc("%s/info.hdb" % filename, flag))
 
   def sync(self):
-    for name,db in self.counts.iteritems(): db.sync()
+    self.counts.sync()
     self.info.sync()
   def close(self):
-    for name,db in self.counts.iteritems(): db.close()
+    self.counts.close()
     self.info.close()
 
-  def add(self, type, ngram):
-    #self.counts[type][ngram] += 1
-    self.counts[type].addint("_".join(ngram),1)
+  def add(self, ngram):
+    ngram_as_string = "_".join(ngram)
+    if not self.counts.has_key(ngram_as_string):
+      self.info[{ 1:'unigram_type_count', 2:'bigram_type_count',
+                  3:'trigram_type_count'}[len(ngram)]] += 1
+    self.counts.addint(ngram_as_string,1)
+
+  def ngram_type_count(self, n):
+    return self.info[{ 1:'unigram_type_count', 2:'bigram_type_count',
+                       3:'trigram_type_count'}[len(ngram)]]
 
 class TokyoNgramProxy:
   # tokyo has a counting primitive, tc.addint() that works in 4-byte long ints.
@@ -141,3 +181,18 @@ if __name__=='__main__':
 
 
 ###################################
+
+  #coll_ngrams_and_mle_prob_ratio = map(lambda (b,p): (b, pseudocounted_ratio(p, bkgnd_ngram_counts[b]/bkgnd_N)), coll_ngrams_and_counts)  # pseudocount smoothing is crappy because causes ties.  how about good-turing or kneser-ney?
+
+
+
+  #ngrams = [ngram for ngram,count in coll_ngrams_and_counts]
+  #counts = [count for ngram,count in coll_ngrams_and_counts]
+  #mle_probs = [c/coll_N for c in counts]
+  #mle_prob_ratio = [compute_ratio(mle_probs[i], bkgnd_ngram_counts[ngrams[i]]) for i in range(len(ngrams))]
+  #inds = range(len(ngrams))
+  #inds.sort(key=lambda i: mle_prob_ratio[i], reverse=True)
+  #for i in inds:
+  #  if counts[i] < min_count: continue
+  #  yield mle_prob_ratio[i], ngrams[i]
+
