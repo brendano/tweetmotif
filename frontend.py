@@ -115,6 +115,8 @@ def linkify(text, klass):
 nice_tweet_cache = tchelpers.open("nice_tweets.tch")
 
 def nice_tweet(tweet, q_toks, topic_ngram):
+  return _nice_tweet(tweet,q_toks,topic_ngram)  # disable cache
+
   key = pickle.dumps( (tweet, q_toks, topic_ngram) )
   if key in nice_tweet_cache:
     #print "nice_tweet CACHE HIT"
@@ -127,22 +129,22 @@ def nice_tweet(tweet, q_toks, topic_ngram):
 
 def _nice_tweet(tweet, q_toks, topic_ngram):
   s = ""
-  s += "<span class=text>"
-  hl_spec = {topic_ngram: ("<span class=topic_hl>","</span>")}
+  s += '<span class="text">'
+  hl_spec = {topic_ngram: ('<span class="topic_hl">','</span>')}
   for ug in set(bigrams.unigrams(q_toks)):
     if ug[0] in bigrams.super_stopwords: continue
     if ug[0] in topic_ngram: continue
-    hl_spec[ug] = ("<span class=q_hl>","</span>")
+    hl_spec[ug] = ('<span class="q_hl">','</span>')
   text = highlighter.highlight(tweet['toks'], hl_spec)
   text = linkify(text, klass='t')
   #text = twokenize.Url_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
   #text = twokenize.AT_RE.subn(r'<a class=at target=_blank href="\1">\1</a>
-  text = At.gsub(text, r'@<a class=at target=_blank href="http://twitter.com/\2">\2</a>')
+  text = At.gsub(text, r'@<a class="at" target="_blan"k href="http://twitter.com/\2">\2</a>')
   s += text
   s += "</span>"
   
   s += " &nbsp; "
-  s += "<span class=authors>"
+  s += '<span class="authors">'
   if 'orig_tweets' in tweet:
     s += "%d sources:" % len(tweet['orig_tweets'])
     subtweets = tweet['orig_tweets']
@@ -157,8 +159,8 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
     #print repr(user)
     #"" + user
     # calling encode() here makes NO SENSE AT ALL why do we need it?
-    s += "<a class=m target=_blank href='%s'>%s</a>" % (util.stringify(link), util.stringify(user))
-  s += "</span>"
+    s += '<a class="m" target="_blank" href="%s">%s</a>' % (util.stringify(link), util.stringify(user))
+  s += '</span>'
   return s
 
 def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
@@ -200,6 +202,9 @@ def topic_fragment(q_toks, topic):
   # topic['tweets_html'] = h
   # del topic['tweets']
   # return topic
+
+def nice_tweet_list(q_toks, topic):
+  return [nice_tweet(tweet, q_toks, topic.ngram) for tweet in topic['tweets']]
 
 def nice_date(d):
   return d.strftime("%Y-%m-%dT%H:%M:%S")
@@ -277,12 +282,12 @@ def the_app(environ, start_response):
   tweet_iter = search.group_multitweets(tweet_iter)
   lc.fill_from_tweet_iter(tweet_iter)
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
-  print q_toks
   #res = ranking.rank_and_filter3(lc, background_model, opts.q)
   res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics)
   for t in res.topics:
     t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
     t['tweets_html'] = topic_fragment(q_toks,t)
+    t['nice_tweets'] = nice_tweet_list(q_toks,t)
   if opts.format == 'pickle':
     yield pickle.dumps(res)
     # bigass_topic_list = [dict(label=t.label, tweets_html=) for t in res.topics ]
@@ -312,12 +317,8 @@ def the_app(environ, start_response):
   yield "<th>tweets"
   yield "<tr><td valign=top id=topic_list>"
 
-  topic_labels = ["""<span class=topic_label onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics]
+  topic_labels = ["""<span class="topic_label" onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics]
 
-  for t in res.topics:
-    for tw in t.tweets:
-      if 'created_at' in tw: del tw['created_at']
-  bigass_topic_dict = dict((t.label, dict(label=t.label, tweets_html=t.tweets_html, tweet_ids=t.tweet_ids)) for t in res.topics)
   for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
 
   yield "<td valign=top>"
@@ -330,6 +331,12 @@ def the_app(environ, start_response):
   yield "<script>"
 
   yield "topics = "
+  bigass_topic_dict = dict((t.label, dict(
+    label=t.label, 
+    tweets_html=t.tweets_html, 
+    tweet_ids=t.tweet_ids,
+  )) for t in res.topics)
+
   yield simplejson.dumps(bigass_topic_dict)
   yield ";"
   yield "load_default_topic();"
