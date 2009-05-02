@@ -45,14 +45,16 @@ class LinkedCorpus:
 if __name__=='__main__':
   import cPickle as pickle
   import search
+  q = sys.argv[1]
+  smoothing = sys.argv[2]
   bg_model = lang_model.TokyoLM(readonly=True)
   lc = LinkedCorpus()
-  tweet_iter = search.cleaned_results("chrysler",
+  tweet_iter = search.cleaned_results(q,
       pages = 2, 
       key_fn = search.user_and_text_identity, 
       save = None,
       load = None
       )
   lc.fill_from_tweet_iter(tweet_iter)
-  for ratio, ngram in lc.model.compare_with_bg_model(bg_model, 1, min_count=3):
+  for ratio, ngram in lc.model.compare_with_bg_model(bg_model, 3, min_count=3, smoothing_algorithm=smoothing):
     print "%s\t%s" % ('_'.join(ngram), ratio)

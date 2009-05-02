@@ -11,28 +11,41 @@ sys.path.insert(0, "platform/%s" % sys.platform)
 os.environ['LD_LIBRARY_PATH'] = "platform/%s:%s" % (sys.platform, os.environ.get('LD_LIBRARY_PATH'))
 
 class LMCommon:
-  def compare_with_bg_model(self, bg_model, n, min_count=1):
-    ngrams_with_ratios = [ (self.likelihood_ratio(ngram, bg_model), ngram)
-                           for ngram in self.ngrams_by_type[n] ]
+  def compare_with_bg_model(self, bg_model, n, min_count=1,
+                            smoothing_algorithm='mle'):
+    ngrams_with_ratios = [
+      (self.likelihood_ratio(ngram, bg_model, smoothing_algorithm), ngram)
+      for ngram in self.ngrams_by_type[n]
+    ]
     ngrams_with_ratios.sort(reverse=True)
     for ratio, ngram in ngrams_with_ratios:
       if self.counts[ngram] < min_count:
         continue
       yield ratio, ngram
 
-  def likelihood_ratio(self, ngram, bg_model):
+  def likelihood_ratio(self, ngram, bg_model, smoothing_algorithm='mle'):
     # This is where experimentation can happen:
     # * change probability estimate
     # * change ratio computation
-    bg_prob_estimate = bg_model.mle(ngram)
+
+    fn = getattr(bg_model, smoothing_algorithm)
+    bg_prob_estimate = fn(ngram)
     if bg_prob_estimate == 0:
       return 0
     else:
-      return self.mle(ngram)/bg_prob_estimate
+      fn = getattr(self, smoothing_algorithm)
+      self_prob_estimate = fn(ngram)
+      return self_prob_estimate/bg_prob_estimate
 
   def mle(self, ngram):
     big_n = self.info["big_n"]
     count = self.counts[ngram]
+    return count/big_n
+
+  def laplace(self, ngram):
+    n = len(ngram)
+    big_n = self.info["big_n"] + self.ngram_type_count(n)
+    count = self.counts[ngram] + 1
     return count/big_n
 
   def pseudocounted_ratio(self, num,denom, a=0.1):
@@ -87,7 +100,7 @@ class TokyoLM(LMCommon):
 
   def ngram_type_count(self, n):
     return self.info[{ 1:'unigram_type_count', 2:'bigram_type_count',
-                       3:'trigram_type_count'}[len(ngram)]]
+                       3:'trigram_type_count'}[n]]
 
 class TokyoNgramProxy:
   # tokyo has a counting primitive, tc.addint() that works in 4-byte long ints.
