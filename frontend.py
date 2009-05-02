@@ -317,7 +317,7 @@ def the_app(environ, start_response):
   for t in res.topics:
     for tw in t.tweets:
       if 'created_at' in tw: del tw['created_at']
-  bigass_topic_dict = dict((t.label, dict(label=t.label, tweets_html=t.tweets_html)) for t in res.topics)
+  bigass_topic_dict = dict((t.label, dict(label=t.label, tweets_html=t.tweets_html, tweet_ids=t.tweet_ids)) for t in res.topics)
   for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
 
   yield "<td valign=top>"
