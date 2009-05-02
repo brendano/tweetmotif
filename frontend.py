@@ -289,9 +289,11 @@ def the_app(environ, start_response):
     t['tweets_html'] = topic_fragment(q_toks,t)
     t['nice_tweets'] = nice_tweet_list(q_toks,t)
   if opts.format == 'pickle':
-    yield pickle.dumps(res)
-    # bigass_topic_list = [dict(label=t.label, tweets_html=) for t in res.topics ]
-    # yield pickle.dumps(bigass_topic_list)
+    #yield pickle.dumps(res)
+    bigass_topic_list = [
+        dict(label=t.label, tweet_ids=t.tweet_ids, nice_tweets=t.nice_tweets)
+        for t in res.topics ]
+    yield pickle.dumps(bigass_topic_list)
     return
 
 

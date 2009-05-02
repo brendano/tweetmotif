@@ -104,6 +104,11 @@ def rank_and_filter4(lc, background_model, q, max_topics):
     res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
   return res
 
+def dice(x,y):
+  return 2*len(x&y) / (len(x)+len(y))
+def jaccard(x,y):
+  return len(x&y) / len(x|y)
+
 def topic_xp(topic, lc):
   pairs = {}
   for i in range(len(topic.tweets)):
@@ -112,16 +117,12 @@ def topic_xp(topic, lc):
       t2 = topic.tweets[j]
       set1 = t1['bigrams'] | t1['unigrams']
       set2 = t2['bigrams'] | t2['unigrams']
-      #x = len(t1['bigrams'] & t2['bigrams']) + len(t1['unigrams'] & t2['unigrams'])
-      #y = len(t1['bigrams'] | t2['bigrams']) + len(t1['unigrams'] | t2['unigrams'])
       pairs[t1['id'],t2['id']] = (set1,set2)
   items = pairs.items()
-  scorer = lambda x,y: len(x&y) / len(x|y)   # jaccard
-  scorer = lambda x,y: 2*len(x&y) / (len(x)+len(y))  # dice
-  items.sort(key= lambda (ids,(x,y)): -scorer(x,y))
+  items.sort(key= lambda (ids,(x,y)): -dice(x,y))
   import ansi
   for (id1,id2),(x,y) in items:
-    nums = "%.3f" % scorer(x,y)
+    nums = "%.3f" % dice(x,y)
     t1,t2 = lc.tweets_by_id[id1], lc.tweets_by_id[id2]
     f = twokenize.squeeze_whitespace
     s1,s2 = ["%s %s" % (ansi.color(t['from_user'],'green') + " "*(15-len(t['from_user'])), f(t['text'])) for t in [t1,t2]]
