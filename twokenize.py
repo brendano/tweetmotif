@@ -36,9 +36,9 @@ Entity = '&(amp|lt|gt|quot);'
 UrlStart1 = regex_or('https?://', r'www\.')
 CommonTLDs = regex_or('com','co\\.uk','org','net','info','ca')
 UrlStart2 = r'[a-z0-9\.-]+?' + r'\.' + CommonTLDs + pos_lookahead(r'[/ \W\b]')
-UrlBody = r'\S*?'  # * not + for case of:  "go to bla.com." -- don't want period
+UrlBody = r'[^ \t\r\n<>]*?'  # * not + for case of:  "go to bla.com." -- don't want period
 UrlExtraCrapBeforeEnd = '%s+?' % regex_or(PunctChars, Entity)
-UrlEnd = regex_or( r'\.\.+', r'\s', '$')
+UrlEnd = regex_or( r'\.\.+', r'[<>]', r'\s', '$')
 Url = (r'\b' + 
     regex_or(UrlStart1, UrlStart2) + 
     UrlBody + 

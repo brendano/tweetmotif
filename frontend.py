@@ -155,10 +155,6 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
     user = subtweet['from_user']
     link = "http://twitter.com/%s/status/%s" % (user, subtweet['id'])
     s += " "
-    #print repr(link)
-    #"" + link
-    #print repr(user)
-    #"" + user
     # calling encode() here makes NO SENSE AT ALL why do we need it?
     s += '<a class="m" target="_blank" href="%s">%s</a>' % (util.stringify(link), util.stringify(user))
   s += '</span>'
