@@ -1,5 +1,8 @@
 from django.conf.urls.defaults import *
 
+import os
+dir = os.path.abspath(os.path.dirname(__file__))
+
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
@@ -17,6 +20,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
-	(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/Users/mkrieger/src/twi/djfrontend/static'}),
+	(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': os.path.join(dir,'static')}),
 
 )
