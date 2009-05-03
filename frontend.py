@@ -355,6 +355,6 @@ if __name__=='__main__':
   import util; util.fix_stdio()
   from wsgiref.simple_server import make_server, demo_app
   #httpd = make_server('', 8000, demo_app)
-  httpd = make_server('', 8000, application)
-  print "Serving HTTP on port 8000..."
+  httpd = make_server('', 8080, application)
+  print "Serving HTTP on port 8080..."
   httpd.serve_forever()
