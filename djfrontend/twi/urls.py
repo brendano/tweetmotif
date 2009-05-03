@@ -4,7 +4,7 @@ from django.conf.urls.defaults import *
 # from django.contrib import admin
 # admin.autodiscover()
 
-urlpatterns = patterns('twidjango.twi.views',
+urlpatterns = patterns('djfrontend.twi.views',
 
 	url(r'^do_query$', "do_query"),
 	url(r'^$', "index"),

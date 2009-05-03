@@ -6,7 +6,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
 
-	(r'^', include('twidjango.twi.urls')),
+	(r'^', include('djfrontend.twi.urls')),
 
     # Example:
     # (r'^twidjango/', include('twidjango.foo.urls')),
@@ -17,6 +17,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
-	(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/Users/mkrieger/src/twidjango/static'}),
+	(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/Users/mkrieger/src/twi/djfrontend/static'}),
 
 )
