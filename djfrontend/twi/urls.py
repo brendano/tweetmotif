@@ -6,8 +6,8 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('djfrontend.twi.views',
 
-	url(r'^do_query$', "do_query"),
-	url(r'^$', "index"),
+    url(r'^do_query$', "do_query"),
+    url(r'^$', "index"),
 
     # Example:
     # (r'^twidjango/', include('twidjango.foo.urls')),
