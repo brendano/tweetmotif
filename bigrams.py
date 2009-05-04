@@ -20,7 +20,6 @@ tok_cache = tchelpers.IntKeyWrapper(tchelpers.open_tc("toks.tch"))
 
 def analyze_tweet(tweet):
   tweet['toks'] = tokenize_and_clean(tweet['text'], alignments=True); return   # turn off caching
-
   if tweet['id'] in tok_cache:
     #print "CACHE HIT    %s" % tweet['text']
     toks = pickle.loads(tok_cache[tweet['id']])
@@ -81,13 +80,13 @@ leftside_stopwords         = read_set("stopwords_dir/leftside_stopwords")
 
 def unigram_stopword_filter(unigrams):
   ret = [ug for ug in unigrams
-#    if  ug[0] not in super_stopwords and
-#        ug[0] not in stopwords and
-#        ug[0] not in stopwords_only_as_unigrams and
-#        #ug[0] not in leftside_stopwords and
-#        #ug[0] not in rightside_stopwords and
-#        not PhraseBoundaryTok.search(ug[0])  and
-#        not EdgePunctTok.search(ug[0])
+   if  ug[0] not in super_stopwords and
+       ug[0] not in stopwords and
+       ug[0] not in stopwords_only_as_unigrams and
+       ug[0] not in leftside_stopwords and
+       ug[0] not in rightside_stopwords and
+       not PhraseBoundaryTok.search(ug[0])  and
+       not EdgePunctTok.search(ug[0])
   ]
   #if set(unigrams) - set(ret):
   #  print "dropping unigram stopwords", " ".join(sorted(x[0] for x in (set(unigrams) - set(ret))))
@@ -117,10 +116,11 @@ def ngram_stopword_filter(ngrams):
   #  print "dropping stopword-implicated", reject
   return ret
 
-filtered_unigrams = util.chaincompose(unigrams,  unigram_stopword_filter)
-filtered_bigrams  = util.chaincompose(bigrams,   bigram_stopword_filter)
-filtered_trigrams  = util.chaincompose(trigrams, ngram_stopword_filter)
-filtered_multi_ngrams  = util.chaincompose(multi_ngrams, ngram_stopword_filter)
+cc = util.chaincompose
+filtered_unigrams  = cc(unigrams, unigram_stopword_filter)
+filtered_bigrams   = cc(bigrams,  bigram_stopword_filter)
+filtered_trigrams  = cc(trigrams, ngram_stopword_filter)
+filtered_multi_ngrams  = cc(multi_ngrams, ngram_stopword_filter)
 
 
 def output_ngram_counts(ngram_counts, min_count=1):
