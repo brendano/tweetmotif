@@ -18,7 +18,7 @@ def do_query(request):
   if not "q" in request.REQUEST:
     return HttpResponse("No query")
   else:
-    s=urllib2.urlopen("http://localhost:8080/?q=%s&format=pickle" % request.REQUEST['q']).read()
+    s=urllib2.urlopen("http://localhost:8080/?q=%s&format=pickle" % urllib2.quote(request.REQUEST['q'])).read()
     topic_results=pickle.loads(s)
     bigass_topic_dict = dict((t['label'], dict(
       label=t['label'], 
