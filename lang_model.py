@@ -48,6 +48,12 @@ class LMCommon:
     count = self.counts[ngram] + 1
     return count/big_n
 
+  def lidstone(self, ngram, delta=0.5):
+    n = len(ngram)
+    big_n = self.info["big_n"] + (delta * self.ngram_type_count(n))
+    count = self.counts[ngram] + delta
+    return count/big_n
+
   def pseudocounted_ratio(self, num,denom, a=0.1):
     return (num+a) / (denom+a)
 
