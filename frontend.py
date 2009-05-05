@@ -90,7 +90,6 @@ def form_area(opts):
   ret += " for 100*" + opts.input('pages') + " tweets; "
   ret += " simple?" + opts.input('simple')
   ret += " split?" + opts.input('split')
-  ret += " max topics" + opts.input('max_topics')
   ret += " ncol" + opts.input('ncol')
   ret += " smoothing" + opts.input('smoothing')
   ret += " <input type=submit>"
@@ -166,7 +165,7 @@ def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
   exclude = set(exclude)
   tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
-  tweets = search.group_multitweets(tweets)
+  #tweets = search.group_multitweets(tweets)
   tweets = list(tw for tw in tweets if tw['id'] not in exclude)
   #try:
   #  earliest = min(tw['created_at'] for tw in tweets if 'created_at' in tw)
@@ -277,10 +276,11 @@ def the_app(environ, start_response):
       save = tweets_file if opts.save else None,
       load = tweets_file if opts.load else None
       )
-  tweet_iter = search.group_multitweets(tweet_iter)
+  #tweet_iter = search.group_multitweets(tweet_iter)
   lc.fill_from_tweet_iter(tweet_iter)
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
-  res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics, smoothing=opts.smoothing)
+  #res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics, smoothing=opts.smoothing)
+  res = ranking.extract_topics(lc, background_model, **opts)
   for t in res.topics:
     t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
     t['tweets_html'] = topic_fragment(q_toks,t)

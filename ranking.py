@@ -10,7 +10,7 @@ def tok_norm(tok):
   if len(s)>=1: return s
   return tok
 
-def rank_and_filter1(linkedcorpus, background_model, q, n=2, smoothing=None):
+def rank_and_filter1(linkedcorpus, background_model, q, smoothing, n, **bla):
   q_toks = bigrams.tokenize_and_clean(q, alignments=False)
   q_toks = map(tok_norm, q_toks)
   q_toks_set = set(q_toks)
@@ -43,15 +43,12 @@ def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
     #print "%dgram %s dominated by %dgram %s" % (n-1, n_1_g, n,n_g)
     del n_1_topics[n_1_g]
 
-def rank_and_filter2(linkedcorpus, background_model, q, smoothing=None):
+def rank_and_filter2(linkedcorpus, background_model, **opts):
   # topic deduping
-  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 1, smoothing=smoothing))
-  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 2, smoothing=smoothing))
-  trigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, q, 3, smoothing=smoothing))
+  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, n=1, **opts))
+  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, n=2, **opts))
+  trigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, n=3, **opts))
   topics = [ unigram_topics, bigram_topics, trigram_topics ]
-  #print trigram_topics
-  #print "STOP"
-  #trigram_topics = dict()
   for bg in bigram_topics:
     n_1_g_in_n_g_check(bg, (bg[0],), 2, topics)
     n_1_g_in_n_g_check(bg, (bg[1],), 2, topics)
@@ -67,9 +64,9 @@ def score_topic(topic):
   #a = 1 if len(topic.ngram)==1 else 1.5
   #return topic.ratio * a
 
-def rank_and_filter3(linkedcorpus, background_model, q, smoothing=None):
+def extract_topics_from_ngram_topics(ngram_topics, linkedcorpus):
   # apply final topic ranking
-  r = rank_and_filter2(linkedcorpus, background_model, q, smoothing=smoothing)
+  r = ngram_topics
   all_topics = r['unigram'].values() + r['bigram'].values() + r['trigram'].values()
   all_topics.sort(key=score_topic, reverse=True)
   tweet_ids_in_topics = set()
@@ -77,14 +74,13 @@ def rank_and_filter3(linkedcorpus, background_model, q, smoothing=None):
     tweet_ids_in_topics |= set(tw['id'] for tw in t.tweets)
   leftover_ids = set(linkedcorpus.tweets_by_id.iterkeys()) - tweet_ids_in_topics
   leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_ids]
-  return Topics(topics=all_topics, leftover_tweets=leftover_tweets, linkedcorpus=linkedcorpus)
-  #return all_topics
+  return TopicResults(topics=all_topics, leftover_tweets=leftover_tweets, linkedcorpus=linkedcorpus)
 
 def test_weak_dominance(topic1, topic2):
   def ids(topic): return (tw['id'] for tw in topic.tweets)
   return set(ids(topic1)) >= set(ids(topic2))
 
-class Topics:
+class TopicResults:
   def __init__(self, **kwargs):
     self.__dict__.update(kwargs)
   def cutoff_topics(self, num_left):
@@ -93,16 +89,22 @@ class Topics:
     new_leftover_ids = set(self.linkedcorpus.tweets_by_id) - tweets_left - set(tw['id'] for tw in self.leftover_tweets)
     self.leftover_tweets += (self.linkedcorpus.tweets_by_id[i] for i in new_leftover_ids)
 
-def rank_and_filter4(lc, background_model, q, max_topics, smoothing=None):
-  # topic pruning
-  assert max_topics
-  res = rank_and_filter3(lc, background_model, q, smoothing=smoothing)
+def prune_topics(topic_res, max_topics):
+  res = topic_res
   if len(res.topics) > max_topics:
     print "throwing out %d topics" % (len(res.topics) - max_topics)
     res.cutoff_topics(max_topics)
   if res.leftover_tweets:
     res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
   return res
+
+def extract_topics(linkedcorpus, background_model, max_topics, **opts):
+  ngram_topics = rank_and_filter2(linkedcorpus, background_model, **opts)
+  topic_res = extract_topics_from_ngram_topics(ngram_topics, linkedcorpus)
+  prune_topics(topic_res, max_topics=max_topics)
+  return topic_res
+
+
 
 def dice(x,y):
   return 2*len(x&y) / (len(x)+len(y))
