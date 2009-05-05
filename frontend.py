@@ -19,6 +19,7 @@ import bigrams
 import ranking
 import twokenize
 import highlighter
+import deduper
 import tchelpers
 
 if os.popen("hostname").read().strip()=='btoc.local':
@@ -90,8 +91,8 @@ def form_area(opts):
   ret += " for 100*" + opts.input('pages') + " tweets; "
   ret += " simple?" + opts.input('simple')
   ret += " split?" + opts.input('split')
-  ret += " ncol" + opts.input('ncol')
-  ret += " smoothing" + opts.input('smoothing')
+  for k in 'ncol max_topics smoothing'.split():
+    ret += " " + k + opts.input(k)
   ret += " <input type=submit>"
   ret += "</form>"
   return ret
@@ -167,16 +168,16 @@ def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
   tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
   #tweets = search.group_multitweets(tweets)
   tweets = list(tw for tw in tweets if tw['id'] not in exclude)
-  #try:
-  #  earliest = min(tw['created_at'] for tw in tweets if 'created_at' in tw)
-  #  yield "<div class=more_tweets>more tweets through the last %s</div>" % nice_timedelta(datetime.utcnow() - earliest)
-  #except ValueError: pass
+  lc = linkedcorpus.LinkedCorpus()
+  lc.fill_from_tweet_iter(tweets)
+  groups,groups_by_tweet_id = deduper.dedupe(lc)
+  yield group_html(q_toks, sub_topic_ngram, groups)
 
-  yield "<ul>"
-  for tweet in tweets:
-    tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
-    yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
-  yield "</ul>"
+  #yield "<ul>"
+  #for tweet in tweets:
+  #  tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
+  #  yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
+  #yield "</ul>"
 
 def table_byrow(items, ncol):
   yield "<table>"
@@ -198,6 +199,26 @@ def topic_fragment(q_toks, topic):
   # topic['tweets_html'] = h
   # del topic['tweets']
   # return topic
+
+def topic_fragment_groups(q_toks, topic, all_groups, groups_by_tweet_id):
+  groups = [groups_by_tweet_id[t['id']] for t in topic.tweets]
+  groups = sorted((g for g in set(groups)),  key=lambda g: -len(all_groups[g].tweets))
+  groups = [all_groups[g] for g in groups]
+  return group_html(q_toks, topic.ngram, groups)
+
+def group_html(q_toks, topic_ngram, groups):
+  h = "<ul>"
+  for group in groups:
+    h += "<li>"
+    h += nice_tweet(group.head, q_toks, topic_ngram)
+    if group.rest:
+      h += "<ul>"
+      for subord_tweet in group.rest:
+        h += "<li>" + nice_tweet(subord_tweet, q_toks, topic_ngram)
+      h += "</ul>"
+  h += "</ul>"
+  return h
+
 
 def nice_tweet_list(q_toks, topic):
   return [nice_tweet(tweet, q_toks, topic.ngram) for tweet in topic['tweets']]
@@ -281,9 +302,12 @@ def the_app(environ, start_response):
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
   #res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics, smoothing=opts.smoothing)
   res = ranking.extract_topics(lc, background_model, **opts)
+  groups,groups_by_tweet_id = deduper.dedupe(lc)
+  
   for t in res.topics:
     t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
-    t['tweets_html'] = topic_fragment(q_toks,t)
+    #t['tweets_html'] = topic_fragment(q_toks,t)
+    t['tweets_html'] = topic_fragment_groups(q_toks,t,  groups, groups_by_tweet_id)
     t['nice_tweets'] = nice_tweet_list(q_toks,t)
   if opts.format == 'pickle':
     #yield pickle.dumps(res)

@@ -1,5 +1,5 @@
 from __future__ import division
-import twokenize,util,re,bigrams
+import twokenize,util,re,bigrams,deduper
 import itertools
 from copy import copy
 
@@ -104,44 +104,6 @@ def extract_topics(linkedcorpus, background_model, max_topics, **opts):
   prune_topics(topic_res, max_topics=max_topics)
   return topic_res
 
-
-
-def dice(x,y):
-  return 2*len(x&y) / (len(x)+len(y))
-def jaccard(x,y):
-  return len(x&y) / len(x|y)
-
-def topic_xp(topic, lc):
-  pairs = {}
-  for i in range(len(topic.tweets)):
-    for j in range(i+1, len(topic.tweets)):
-      t1 = topic.tweets[i]
-      t2 = topic.tweets[j]
-      set1 = t1['bigrams'] | t1['unigrams']
-      set2 = t2['bigrams'] | t2['unigrams']
-      pairs[t1['id'],t2['id']] = (set1,set2)
-  items = pairs.items()
-  items.sort(key= lambda (ids,(x,y)): -dice(x,y))
-  import ansi
-  for (id1,id2),(x,y) in items:
-    nums = "%.3f" % dice(x,y)
-    t1,t2 = lc.tweets_by_id[id1], lc.tweets_by_id[id2]
-    f = twokenize.squeeze_whitespace
-    s1,s2 = ["%s %s" % (ansi.color(t['from_user'],'green') + " "*(15-len(t['from_user'])), f(t['text'])) for t in [t1,t2]]
-    print "%-8s %s\n%-8s %s" % (nums, s1, " ", s2)
-    #pairs[t1['id'],t2['id']] = 
-
-def topic_pair_report(res,lc):
-  import ansi
-  for topic in res.topics:
-    print
-    print ansi.color("*** Topic: ",'blue'), ansi.color(repr(topic.ngram),'bold')
-    if len(topic.tweets)>100:
-      print "skipping"
-    else:
-      topic_xp(topic,lc)
-
-
 def prebaked_iter(filename):
   for line in util.counter(open(filename)):
     yield simplejson.loads(line)
@@ -158,7 +120,7 @@ if __name__=='__main__':
 
   lc = linkedcorpus.LinkedCorpus()
   tweets = prebaked_iter(prebaked)
-  tweets = search.dedupe_tweets(tweets, key_fn=search.user_and_text_identity)
+  tweets = search.hard_dedupe_tweets(tweets)
   tweets=list(tweets)
   print "%d tweets" % len(tweets)
   tweets = list(search.group_multitweets(tweets))

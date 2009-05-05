@@ -88,6 +88,10 @@ def write_tsv(data, filename):
 
 ##########  Misc
 
+def argmax(x,scorer):
+  x.sort(key=scorer)
+  return x[-1]
+
 def compose(*fns):
   f1 = fns[-1]
   for f in reversed(fns[:-1]):

@@ -15,8 +15,8 @@ filename = 'recording.pickle'
 import sys
 if sys.argv[1] == 'record':
   try:
-    httpd = make_server('', 8000, recorder)
-    print "Serving HTTP on port 8000..."
+    httpd = make_server('', 8080, recorder)
+    print "Serving HTTP on port 8080..."
     httpd.handle_request()
   finally:
     f = open(filename,'w')
@@ -27,7 +27,7 @@ if sys.argv[1] == 'record':
 elif sys.argv[1] == 'play':
   print "SCOTCH: loading records from %s" % filename
   record_holder = pickle.load(open(filename))
-  for x in [1,2,3,4,5]:
+  for x in [1]:
     for record in record_holder:
       new_response = record.refeed(frontend.application)
       #print new_response.content_list
