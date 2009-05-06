@@ -1,8 +1,7 @@
 import struct,sys,os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__),"platform/%s" % sys.platform))
-# linux only, mac is DYLD_
-os.environ['LD_LIBRARY_PATH'] = "platform/%s:%s" % (sys.platform, os.environ.get('LD_LIBRARY_PATH'))
+plat = 'darwin' if sys.platform=='darwin' else os.popen("uname -m").read().lower().strip()
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),"platform/%s" % plat))
 
 import pytc
 
