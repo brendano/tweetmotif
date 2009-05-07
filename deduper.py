@@ -32,10 +32,9 @@ def dedupe(linkedcorpus):
   " does neardupes, returns TweetGroups. "
 
   lc = linkedcorpus
-
   # prefiltering optimization to cut down on total pairwise comparisons
   trigrams = [tg for tg in lc.model.ngrams_by_type[3] if len(lc.index[tg]) > 1]
-  c_tg = [ (len(lc.index[tg]),tg) for tg in trigrams]
+  c_tg = [ (len(lc.index[tg]), tg) for tg in trigrams]
   c_tg.sort()
 
   pair_merges = defaultdict(set)
@@ -44,40 +43,40 @@ def dedupe(linkedcorpus):
     #print count,tg
     #for tw in lc.index[tg]: print "  %s" % tw['text']
     do_pair_merges(lc.index[tg], linkedcorpus, pair_merges, seen_pairs)
-
   tweet_group_assignments = pairs_to_groups(pair_merges)
-  #return pair_merges,tweet_group_assignments
-
-  tweets_by_group = defaultdict(list)
-  for t,g in tweet_group_assignments.iteritems():
-    tweets_by_group[g].append(lc.tweets_by_id[t])
-  assert set(tweets_by_group.keys()) == set(range(len(tweets_by_group)))
-  tweet_groups = [None]*len(tweets_by_group)
-  for g,tweets in tweets_by_group.iteritems():
-    tweets.sort(key = lambda t: (len(t['text']), t['id']))
-    tweet_groups[g] = TweetGroup(
-        head = tweets[0],
-        rest = tweets[1:],
-        tweets = tweets,
-        tweet_ids = util.myjoin(sorted(t['id'] for t in tweets), sep=" ")
-    )
-  singletons = set(lc.tweets_by_id.keys()) - set(tweet_group_assignments.keys())
-  for id in singletons:
-    tweet_group_assignments[id] = len(tweet_groups)
-    tweet_groups.append( TweetGroup(
-      head = lc.tweets_by_id[id],
-      rest = [],
-      tweets = [lc.tweets_by_id[id]],
-      tweet_ids = [id], ))
-
-  return tweet_groups, tweet_group_assignments
   
+  singletons = set(lc.tweets_by_id) - set(tweet_group_assignments)
+  first_n = len(set(tweet_group_assignments.itervalues()))
+  for x,id in enumerate(singletons):
+    tweet_group_assignments[id] = first_n + x
+  return tweet_group_assignments
+
+def make_groups(tweets, tweet_group_assignments):
+  tgs = dict( (t['id'], tweet_group_assignments[t['id']]) for t in tweets)
+  tweet_groups = {}
+  tweets_by_group = defaultdict(list)
+  for t in tweets:
+    g = tweet_group_assignments[t['id']]
+    tweets_by_group[g].append(t)
+  tweet_groups = []
+  for tws in tweets_by_group.itervalues():
+    tws.sort(key= lambda t: (len(t['text']), t['id']))
+    tweet_groups.append( TweetGroup(
+        head = tws[0],
+        rest = tws[1:],
+        tweets = tws,
+        n = len(tws),
+        tweet_ids = util.myjoin(sorted(t['id'] for t in tws), sep=' ')
+    ))
+  tweet_groups.sort(key= lambda g: (g.n, g.tweet_ids))
+  return tweet_groups
+
 
 class TweetGroup:
   def __init__(self,**kwargs): self.__dict__.update(kwargs)
 
 
-def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs, sim_thresh=0.45):
+def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs, sim_thresh=0.45, min_shared=2):
   for i in range(len(tweets)):
     for j in range(i+1, len(tweets)):
       t1,t2 = tweets[i], tweets[j]
@@ -86,7 +85,7 @@ def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs, sim_thresh=0.4
         print ansi.color("ALREADY SEEN %s %s" % (id1,id2), 'green')
         continue
 
-      sim = sim_scorer(t1, t2)
+      sim = sim_scorer(t1, t2, min_shared=min_shared)
       yes = sim >= sim_thresh
       if yes:
         print ansi.color("%.3f MERGE YES %s %s" % (sim, id1,id2), 'blue')
@@ -97,11 +96,12 @@ def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs, sim_thresh=0.4
       print "\t%s\n\t%s" % (t1['text'], t2['text'])
       seen_pairs.add((id1,id2))
 
-def sim_scorer(t1, t2):
+def sim_scorer(t1, t2, min_shared):
   #set1 = t1['bigrams'] | t1['unigrams']
   #set2 = t2['bigrams'] | t2['unigrams']
   set1 = t1['trigrams']
   set2 = t2['trigrams']
+  if len(set1 & set2) < min_shared: return -1
   return dice(set1, set2)
   
 def dice(x,y):
@@ -129,21 +129,6 @@ def pairs_to_groups(pair_merges):
         if id2 in unassigned_ids:
           totraverse.add(id2)
   return group_assignments
-
-
-
-  #for id1 in pair_merges:
-  #  for id2 in pair_merges[id1]:
-  #    if id1 in tweet_groups and id2 in tweet_groups: continue
-  #    if id1 in tweet_groups:
-  #      tweet_groups[id2] = tweet_groups[id1]
-  #    if id2 in tweet_groups:
-  #      tweet_groups[id1] = tweet_groups[id2]
-  #    group_counter+=1
-  #    new_group = group_counter
-  #    tweet_groups[id1] = new_group
-  #    tweet_groups[id2] = new_group
-  #return tweet_groups
 
 
 ####

@@ -1,6 +1,5 @@
 from pprint import pprint
 import cPickle as pickle
-import sane_re
 from datetime import datetime,timedelta
 from collections import defaultdict
 import time
@@ -8,10 +7,10 @@ from copy import copy
 import re
 import sys
 import os
-import fileinput
 import simplejson
 import cgi
 import util
+import sane_re
 import search
 import linkedcorpus
 import lang_model
@@ -98,7 +97,7 @@ def form_area(opts):
   return ret
 
 def prebaked_iter(filename):
-  for line in fileinput.input(filename):
+  for line in open(filename):
     yield simplejson.loads(line)
 
 from sane_re import *
@@ -170,7 +169,8 @@ def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
   tweets = list(tw for tw in tweets if tw['id'] not in exclude)
   lc = linkedcorpus.LinkedCorpus()
   lc.fill_from_tweet_iter(tweets)
-  groups,groups_by_tweet_id = deduper.dedupe(lc)
+  groups_by_tweet_id = deduper.dedupe(lc)
+  groups = deduper.make_groups(tweets, groups_by_tweet_id)
   yield group_html(q_toks, sub_topic_ngram, groups)
 
   #yield "<ul>"
@@ -200,11 +200,14 @@ def topic_fragment(q_toks, topic):
   # del topic['tweets']
   # return topic
 
-def topic_fragment_groups(q_toks, topic, all_groups, groups_by_tweet_id):
+def topic_fragment_groups1(q_toks, topic, all_groups, groups_by_tweet_id):
   groups = [groups_by_tweet_id[t['id']] for t in topic.tweets]
   groups = sorted((g for g in set(groups)),  key=lambda g: -len(all_groups[g].tweets))
   groups = [all_groups[g] for g in groups]
   return group_html(q_toks, topic.ngram, groups)
+
+def topic_fragment_groups(q_toks, topic):
+  return group_html(q_toks, topic.ngram, topic.groups)
 
 def group_html(q_toks, topic_ngram, groups):
   h = "<ul>"
@@ -226,7 +229,7 @@ def nice_tweet_list(q_toks, topic):
 def nice_date(d):
   return d.strftime("%Y-%m-%dT%H:%M:%S")
 
-def nice_unitted_num(n,sing,plur=None):
+def nice_unitted_num(n, sing, plur=None):
   if n==1: return "%d %s" % (n,sing)
   plur = plur or sing+"s"
   return "%d %s" % (n,plur)
@@ -273,9 +276,10 @@ def the_app(environ, start_response):
       opt('ncol', default=3),
       opt('save', default=False),
       opt('load', default=False),
+      opt('smoothing', default='mle'),
       opt('single_query', default=0),
       opt('format', default='dev'),
-      opt('smoothing', default='mle')
+      opt('topic_groups', default=False),
       )
 
   response_headers = [('Content-type','text/html')]
@@ -302,18 +306,20 @@ def the_app(environ, start_response):
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
   #res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics, smoothing=opts.smoothing)
   res = ranking.extract_topics(lc, background_model, **opts)
-  groups,groups_by_tweet_id = deduper.dedupe(lc)
+  groups_by_tweet_id = deduper.dedupe(lc)
+  for topic in res.topics:
+    topic.groups = deduper.make_groups(topic.tweets, groups_by_tweet_id)
   
   for t in res.topics:
     t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
     #t['tweets_html'] = topic_fragment(q_toks,t)
-    t['tweets_html'] = topic_fragment_groups(q_toks,t,  groups, groups_by_tweet_id)
+    #t['tweets_html'] = topic_fragment_groups1(q_toks, t, groups, groups_by_tweet_id)
+    t['tweets_html'] = topic_fragment_groups(q_toks, t)
     t['nice_tweets'] = nice_tweet_list(q_toks,t)
   if opts.format == 'pickle':
-    #yield pickle.dumps(res)
     bigass_topic_list = [
-        dict(label=t.label, tweet_ids=t.tweet_ids, nice_tweets=t.nice_tweets)
-        for t in res.topics ]
+      dict(label=t.label, tweet_ids=t.tweet_ids, nice_tweets=t.nice_tweets)
+      for t in res.topics ]
     yield pickle.dumps(bigass_topic_list)
     return
 
@@ -322,7 +328,7 @@ def the_app(environ, start_response):
   yield form_area(opts)
   
   if opts.simple:
-    for x in simple_output(lc,background_model, opts): yield x
+    for x in simple_output(lc, background_model, opts): yield x
     return
 
   yield "<table><tr>"

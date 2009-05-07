@@ -22,6 +22,12 @@
   </div>  
 </div>
 <script type="text/javascript" charset="utf-8">
+  function labelHtml(label) {
+    return htmlQuote(label).replace(/ /g,"&nbsp;");
+  }
+  function htmlQuote(s) {
+    return s.replace(/"/g, "&quot;").replace(/>/g, "&gt;").replace(/</g, "&lt;");
+  }
   twitterThemes = new function(){
     this.blocksToEnqueue = 3;
     this.data = {};
@@ -32,7 +38,9 @@
       for (var i = 0; i < this.themeList.length; i++) {
         var curTheme = this.themeList[i];
         var whichCol = i % 2;
-        $('<li><a href="#" onclick="twitterThemes.enqueueTheme(\''+ curTheme + '\'); return false">' + curTheme + '</a></li>').appendTo("#themelist-col" + whichCol);
+        $('<li><a href="#" theme="' + htmlQuote(curTheme) + '"' +  
+            'onclick="twitterThemes.enqueueTheme($(this).attr(\'theme\')); return false">' + 
+            labelHtml(curTheme) + '</a></li>').appendTo("#themelist-col" + whichCol);
       }
     }
     
@@ -42,7 +50,6 @@
     }
     
     this.enqueueTheme = function (theme){
-      
       var currentPosition = -1;
       for (var i = 0; i < this.currentlyEnqueued.length; i++) {
         if (this.currentlyEnqueued[i] == theme) {

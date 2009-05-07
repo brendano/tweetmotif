@@ -5,7 +5,7 @@ os.chdir(dotdot)
 #print>>sys.stderr, os.getcwd()
 #print>>sys.stderr, dotdot
 sys.path.insert(0,'')
-sys.stderr = open('/home/brendano/twi/log','a',0)
+sys.stderr = open('log','a',0)
 sys.stdout = sys.stderr
 from frontend import application
 
