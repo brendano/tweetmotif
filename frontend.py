@@ -170,12 +170,6 @@ def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
   groups = deduper.make_groups(tweets, groups_by_tweet_id)
   yield group_html(q_toks, sub_topic_ngram, groups)
 
-  #yield "<ul>"
-  #for tweet in tweets:
-  #  tweet['toks'] = bigrams.tokenize_and_clean(tweet['text'],True)
-  #  yield "<li>" + nice_tweet(tweet, q_toks, sub_topic_ngram)
-  #yield "</ul>"
-
 def table_byrow(items, ncol):
   yield "<table>"
   for i,x in enumerate(items):
@@ -187,21 +181,11 @@ def table_byrow(items, ncol):
   yield "</table>"
 
 def topic_fragment(q_toks, topic):
-  # topic = copy(topic)
   h = "<ul>"
   for tweet in topic['tweets']:
     h+="<li>" + nice_tweet(tweet, q_toks, topic.ngram)
   h+="</ul>"
   return h
-  # topic['tweets_html'] = h
-  # del topic['tweets']
-  # return topic
-
-def topic_fragment_groups1(q_toks, topic, all_groups, groups_by_tweet_id):
-  groups = [groups_by_tweet_id[t['id']] for t in topic.tweets]
-  groups = sorted((g for g in set(groups)),  key=lambda g: -len(all_groups[g].tweets))
-  groups = [all_groups[g] for g in groups]
-  return group_html(q_toks, topic.ngram, groups)
 
 def topic_fragment_groups(q_toks, topic):
   return group_html(q_toks, topic.ngram, topic.groups)
@@ -221,7 +205,7 @@ def group_html(q_toks, topic_ngram, groups):
 
 
 def nice_tweet_list(q_toks, topic):
-  return [nice_tweet(tweet, q_toks, topic.ngram) for tweet in topic['tweets']]
+  return [nice_tweet(tweet, q_toks, topic.ngram) for tweet in topic.tweets]
 
 def nice_date(d):
   return d.strftime("%Y-%m-%dT%H:%M:%S")
@@ -303,22 +287,22 @@ def the_app(environ, start_response):
   lc.fill_from_tweet_iter(tweet_iter)
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
   res = ranking.extract_topics(lc, background_model, **opts)
-  print len(res.topics)
   groups_by_tweet_id = deduper.dedupe(lc)
   for topic in res.topics:
-    topic.groups = deduper.make_groups(topic.tweets, groups_by_tweet_id)
-    if not topic.tweets: print topic.tweets
-    topic.group_ids = set(g.group_id for g in topic.groups)
-  #todo integrate these...
-  #ranking.late_topic_clean(res)
-  #ranking.gather_leftover_tweets(res,lc)
+    deduper.groupify_topic(topic, groups_by_tweet_id)
+  ranking.late_topic_clean(res)
+  #res.topics.sort(key= lambda t: (-t.group_count, -t.tweet_count))
+  ranking.truncate_topics(res, max_topics=opts.max_topics)
+  ranking.gather_leftover_tweets(res,lc)
+  if res.topics[-1].groups is None:
+    deduper.groupify_topic(res.topics[-1], groups_by_tweet_id)
   
   for t in res.topics:
-    t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
-    #t['tweets_html'] = topic_fragment(q_toks,t)
-    #t['tweets_html'] = topic_fragment_groups1(q_toks, t, groups, groups_by_tweet_id)
-    t['tweets_html'] = topic_fragment_groups(q_toks, t)
-    t['nice_tweets'] = nice_tweet_list(q_toks,t)
+    t.tweet_ids = util.myjoin([tw['id'] for tw in t.tweets])
+    #t.tweets_html = topic_fragment(q_toks,t)
+    #t.tweets_html = topic_fragment_groups1(q_toks, t, groups, groups_by_tweet_id)
+    t.tweets_html = topic_fragment_groups(q_toks, t)
+    t.nice_tweets = nice_tweet_list(q_toks,t) ## todo group-ify
   if opts.format == 'pickle':
     bigass_topic_list = [
       dict(label=t.label, tweet_ids=t.tweet_ids, nice_tweets=t.nice_tweets)
@@ -349,7 +333,10 @@ def the_app(environ, start_response):
   yield "<th>tweets"
   yield "<tr><td valign=top id=topic_list>"
 
-  topic_labels = ["""<span class="topic_label" onclick="topic_click(this)" topic_label="%s">%s</span><br>""" % (cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"))  for topic in res.topics]
+  topic_labels = ["""<span class="topic_label" onclick="topic_click(this)" topic_label="%s"
+  >%s</span><small>&nbsp;%d,&thinsp;%d</small><br>""" % (
+    cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"), topic.group_count, topic.tweet_count )
+                  for topic in res.topics]
 
   for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
 

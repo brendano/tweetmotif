@@ -20,6 +20,7 @@ def merge_multitweets(tweet_iter, key_fn=lambda tw: tw['text'], preserve=('text'
       multitweet['multi_' + k] = [tw[k] for tw in tweets]
     multitweet['orig_tweets'] = tweets
     multitweet['id'] = " ".join([str(tw['id']) for tw in tweets])
+    multitweet['created_at'] = min(tw['created_at'] for tw in tweets)
     multitweet['multi'] = True
     multitweets[key] = (multitweet,)
     #print "multitweet", multitweet['id']
@@ -27,7 +28,6 @@ def merge_multitweets(tweet_iter, key_fn=lambda tw: tw['text'], preserve=('text'
   for k,tweets_singleton in index.iteritems():
     assert len(tweets_singleton)==1
     yield tweets_singleton[0]
-
 
 def dedupe(linkedcorpus):
   " finds neardupes, returns TweetGroups. "
@@ -60,7 +60,8 @@ def make_groups(tweets, tweet_group_assignments):
     tweets_by_group[g].append(t)
   tweet_groups = []
   for g_id, tws in tweets_by_group.iteritems():
-    tws.sort(key= lambda t: (len(t['text']), t['id']))
+#    tws.sort(key= lambda t: (len(t['text']), t['id']))
+    tws.sort(key= lambda t: t['created_at'])
     tweet_groups.append( common.TweetGroup(
       head = tws[0],
       rest = tws[1:],
@@ -71,6 +72,12 @@ def make_groups(tweets, tweet_group_assignments):
     ))
   tweet_groups.sort(key= lambda g: (g.n, g.tweet_ids))
   return tweet_groups
+
+def groupify_topic(topic, groups_by_tweet_id):
+  topic.groups = make_groups(topic.tweets, groups_by_tweet_id)
+  if not topic.tweets:
+    print "wtf?", topic.tweets
+  topic.group_ids = set(g.group_id for g in topic.groups)
 
 
 def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs,
@@ -125,6 +132,8 @@ def pairs_to_groups(pair_merges):
           totraverse.add(id2)
   return group_assignments
 
+
+####
 
 def dedupe_topics(topics):
   for i in range(len(topics)):

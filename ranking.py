@@ -32,7 +32,7 @@ def rank_and_filter1(linkedcorpus, background_model, q, smoothing, n, **bla):
       continue
     topic_label = " ".join(ngram)
     tweets = linkedcorpus.index[ngram]
-    yield util.Struct(ngram=ngram, label=topic_label, tweets=tweets, ratio=ratio)
+    yield common.Topic(ngram=ngram, label=topic_label, tweets=tweets, ratio=ratio)
     #yield ngram, topic_label, tweets
 
 def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
@@ -85,15 +85,15 @@ def gather_leftover_tweets(topic_res, linkedcorpus):
   leftover_tweets = set(linkedcorpus.tweets_by_id) - present_tweets
   topic_res.leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_tweets]
   if topic_res.leftover_tweets:
-    topic_res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",
-                                        tweets=topic_res.leftover_tweets,ratio=-42))
+    new_topic = common.Topic(
+      ngram=('**EXTRAS**',), label="<i>[other...]</i>",
+      tweets=topic_res.leftover_tweets, ratio=-42)
+    topic_res.topics.append(new_topic)
 
-def extract_topics(linkedcorpus, background_model, max_topics, **opts):
+
+def extract_topics(linkedcorpus, background_model, **opts):
   ngram_topics = rank_and_filter2(linkedcorpus, background_model, **opts)
   topic_res = extract_topics_from_ngram_topics(ngram_topics, linkedcorpus)
-  if max_topics < len(topic_res.topics):
-    print "truncating topics"
-    topic_res.topics = topic_res.topics[:max_topics]
   gather_leftover_tweets(topic_res, linkedcorpus)
   return topic_res
 
@@ -104,6 +104,11 @@ def late_topic_clean(topic_res):
   print "nonsingleton count:", util.uniq_c(len(t.groups)>1 for t in res.topics)
   res.topics = [t for t in res.topics if len(t.groups)>1]
   #res.topics = deduper.dedupe_topics(res.topics)
+
+def truncate_topics(topic_res, max_topics):
+  if max_topics < len(topic_res.topics):
+    print "truncating topics"
+    topic_res.topics = topic_res.topics[:max_topics]
 
  
 if __name__=='__main__':
