@@ -1,5 +1,5 @@
 from __future__ import division
-import twokenize,util,re,bigrams,deduper
+import twokenize,util,re,bigrams,deduper,common
 import itertools
 from copy import copy
 
@@ -73,17 +73,11 @@ def extract_topics_from_ngram_topics(ngram_topics, linkedcorpus):
   tweet_ids_in_topics = set()
   for t in all_topics:
     tweet_ids_in_topics |= set(tw['id'] for tw in t.tweets)
-  leftover_ids = set(linkedcorpus.tweets_by_id.iterkeys()) - tweet_ids_in_topics
-  leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_ids]
-  return TopicResults(topics=all_topics, leftover_tweets=leftover_tweets, linkedcorpus=linkedcorpus)
+  return common.TopicResults(topics=all_topics,linkedcorpus=linkedcorpus)
 
 def test_weak_dominance(topic1, topic2):
   def ids(topic): return (tw['id'] for tw in topic.tweets)
   return set(ids(topic1)) >= set(ids(topic2))
-
-class TopicResults:
-  def __init__(self, **kwargs):
-    self.__dict__.update(kwargs)
 
 def gather_leftover_tweets(topic_res, linkedcorpus):
   print [t  for t in topic_res.topics if t.tweets is None]

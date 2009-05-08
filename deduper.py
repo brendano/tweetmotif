@@ -1,6 +1,7 @@
 from __future__ import division
 from pprint import pprint
-import ansi,util
+from copy import copy
+import ansi,util,common
 from collections import defaultdict
 
 def merge_multitweets(tweet_iter, key_fn=lambda tw: tw['text'], preserve=('text','toks',)):
@@ -60,7 +61,7 @@ def make_groups(tweets, tweet_group_assignments):
   tweet_groups = []
   for g_id, tws in tweets_by_group.iteritems():
     tws.sort(key= lambda t: (len(t['text']), t['id']))
-    tweet_groups.append( TweetGroup(
+    tweet_groups.append( common.TweetGroup(
       head = tws[0],
       rest = tws[1:],
       tweets = tws,
@@ -72,12 +73,8 @@ def make_groups(tweets, tweet_group_assignments):
   return tweet_groups
 
 
-class TweetGroup:
-  def __init__(self,**kwargs): self.__dict__.update(kwargs)
-
-
 def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs,
-                  sim_thresh=0.45, min_shared=2):
+                   sim_thresh=0.45, min_shared=2):
   for i in range(len(tweets)):
     for j in range(i+1, len(tweets)):
       t1,t2 = tweets[i], tweets[j]
