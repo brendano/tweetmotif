@@ -113,7 +113,7 @@ def save_tweets(tweet_iter, filename):
 def english_filter(tweet_iter):
   for tw in tweet_iter:
     if tw.get('iso_language_code') != 'en':
-      print "dropping non-english tweet, lang %s  id %s"  % (tw.get('iso_language_code'), tw['id'])
+      #print "dropping non-english tweet, lang %s  id %s"  % (tw.get('iso_language_code'), tw['id'])
       continue
     yield tw
 

@@ -45,9 +45,10 @@ def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
 
 def rank_and_filter2(linkedcorpus, background_model, **opts):
   # topic deduping
-  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, n=1, **opts))
-  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, n=2, **opts))
-  trigram_topics = dict((t.ngram,t) for t in rank_and_filter1(linkedcorpus, background_model, n=3, **opts))
+  lc,bm=linkedcorpus,background_model
+  unigram_topics = dict((t.ngram,t) for t in rank_and_filter1(lc,bm, n=1, **opts))
+  bigram_topics  = dict((t.ngram,t) for t in rank_and_filter1(lc,bm, n=2, **opts))
+  trigram_topics = dict((t.ngram,t) for t in rank_and_filter1(lc,bm, n=3, **opts))
   topics = [ unigram_topics, bigram_topics, trigram_topics ]
   for bg in bigram_topics:
     n_1_g_in_n_g_check(bg, (bg[0],), 2, topics)
@@ -83,36 +84,43 @@ def test_weak_dominance(topic1, topic2):
 class TopicResults:
   def __init__(self, **kwargs):
     self.__dict__.update(kwargs)
-  def cutoff_topics(self, num_left):
-    self.topics = self.topics[:num_left]
-    tweets_left = set(itertools.chain(*( ((tw['id'] for tw in topic['tweets']) for topic in self.topics) )))
-    new_leftover_ids = set(self.linkedcorpus.tweets_by_id) - tweets_left - set(tw['id'] for tw in self.leftover_tweets)
-    self.leftover_tweets += (self.linkedcorpus.tweets_by_id[i] for i in new_leftover_ids)
 
-def prune_topics(topic_res, max_topics):
-  res = topic_res
-  if len(res.topics) > max_topics:
-    print "throwing out %d topics" % (len(res.topics) - max_topics)
-    res.cutoff_topics(max_topics)
-  if res.leftover_tweets:
-    res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",tweets=res.leftover_tweets,ratio=-42))
-  return res
+def gather_leftover_tweets(topic_res, linkedcorpus):
+  print [t  for t in topic_res.topics if t.tweets is None]
+  present_tweets = set(tw['id'] for topic in topic_res.topics for tw in topic.tweets)
+  leftover_tweets = set(linkedcorpus.tweets_by_id) - present_tweets
+  topic_res.leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_tweets]
+  if topic_res.leftover_tweets:
+    topic_res.topics.append(util.Struct(ngram=('**EXTRAS**',),label="<i>[other...]</i>",
+                                        tweets=topic_res.leftover_tweets,ratio=-42))
 
 def extract_topics(linkedcorpus, background_model, max_topics, **opts):
   ngram_topics = rank_and_filter2(linkedcorpus, background_model, **opts)
   topic_res = extract_topics_from_ngram_topics(ngram_topics, linkedcorpus)
-  prune_topics(topic_res, max_topics=max_topics)
+  if max_topics < len(topic_res.topics):
+    print "truncating topics"
+    topic_res.topics = topic_res.topics[:max_topics]
+  gather_leftover_tweets(topic_res, linkedcorpus)
   return topic_res
 
-def prebaked_iter(filename):
-  for line in util.counter(open(filename)):
-    yield simplejson.loads(line)
 
+def late_topic_clean(topic_res):
+  assert topic_res.topics[0].groups
+  res=topic_res
+  print "nonsingleton count:", util.uniq_c(len(t.groups)>1 for t in res.topics)
+  res.topics = [t for t in res.topics if len(t.groups)>1]
+  #res.topics = deduper.dedupe_topics(res.topics)
+
+ 
 if __name__=='__main__':
   import simplejson
   import sys
   import linkedcorpus,search
   import util; util.fix_stdio()
+  
+  def prebaked_iter(filename):
+    for line in util.counter(open(filename)):
+      yield simplejson.loads(line)  
 
   # python ranking.py coachella data/coachella_500 | after RESULTS | tsv2fmt | head -40
   q = sys.argv[1]

@@ -279,8 +279,9 @@ def the_app(environ, start_response):
       opt('smoothing', default='mle'),
       opt('single_query', default=0),
       opt('format', default='dev'),
-      opt('topic_groups', default=False),
       )
+
+  print "OPTIONS %s" % (opts,)
 
   response_headers = [('Content-type','text/html')]
   start_response(status, response_headers)
@@ -306,9 +307,15 @@ def the_app(environ, start_response):
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
   #res = ranking.rank_and_filter4(lc, background_model, opts.q, opts.max_topics, smoothing=opts.smoothing)
   res = ranking.extract_topics(lc, background_model, **opts)
+  print len(res.topics)
   groups_by_tweet_id = deduper.dedupe(lc)
   for topic in res.topics:
     topic.groups = deduper.make_groups(topic.tweets, groups_by_tweet_id)
+    if not topic.tweets: print topic.tweets
+    topic.group_ids = set(g.group_id for g in topic.groups)
+  #todo integrate these...
+  #ranking.late_topic_clean(res)
+  #ranking.gather_leftover_tweets(res,lc)
   
   for t in res.topics:
     t['tweet_ids'] = util.myjoin([tw['id'] for tw in t['tweets']])
