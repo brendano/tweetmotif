@@ -21,8 +21,8 @@ def fetch(url, printer=None, retries=1):
       pass
   return urllib2.urlopen(url)
 
-#SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
-SEARCH_URL = "http://search.twitter.com/search.json?"
+SEARCH_URL = "http://search.twitter.com/search.json?lang=en"
+#SEARCH_URL = "http://search.twitter.com/search.json?"
 #SEARCH_URL = "http://anyall.org/nph-kazamo/" + SEARCH_URL
 #SEARCH_URL = "http://localhost:8500/" + SEARCH_URL
 
