@@ -157,19 +157,6 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
   s += '</span>'
   return s
 
-def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
-  q_toks = bigrams.tokenize_and_clean(q, alignments=False)
-  q = '''%s "%s"''' % (q,topic_label)
-  sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
-  exclude = set(exclude)
-  tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
-  tweets = list(tw for tw in tweets if tw['id'] not in exclude)
-  lc = linkedcorpus.LinkedCorpus()
-  lc.fill_from_tweet_iter(tweets)
-  groups_by_tweet_id = deduper.dedupe(lc)
-  groups = deduper.make_groups(tweets, groups_by_tweet_id)
-  yield group_html(q_toks, sub_topic_ngram, groups)
-
 def table_byrow(items, ncol):
   yield "<table>"
   for i,x in enumerate(items):
@@ -180,29 +167,18 @@ def table_byrow(items, ncol):
   yield "<td>" * (len(items) % ncol)
   yield "</table>"
 
-def topic_fragment(q_toks, topic):
-  h = "<ul>"
-  for tweet in topic['tweets']:
-    h+="<li>" + nice_tweet(tweet, q_toks, topic.ngram)
-  h+="</ul>"
-  return h
-
-def topic_fragment_groups(q_toks, topic):
-  return group_html(q_toks, topic.ngram, topic.groups)
-
-def group_html(q_toks, topic_ngram, groups):
+def topic_group_html(groups):
   h = "<ul>"
   for group in groups:
     h += "<li>"
-    h += nice_tweet(group.head, q_toks, topic_ngram)
+    h += group.head_html
     if group.rest:
       h += "<ul>"
-      for subord_tweet in group.rest:
-        h += "<li>" + nice_tweet(subord_tweet, q_toks, topic_ngram)
+      for subord_html in group.rest_htmls:
+        h += "<li>" + subord_html
       h += "</ul>"
   h += "</ul>"
   return h
-
 
 def nice_tweet_list(q_toks, topic):
   return [nice_tweet(tweet, q_toks, topic.ngram) for tweet in topic.tweets]
@@ -242,6 +218,22 @@ def nice_timedelta(delt):
   s = ', '.join(x)
   return s
   #return "%s back to %s" % (d2.strftime("%Y-%m-%dT%H:%M:%S"), d1.strftime("%Y-%m-%dT%H:%M:%S"))
+
+def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
+  q_toks = bigrams.tokenize_and_clean(q, alignments=False)
+  q = '''%s "%s"''' % (q,topic_label)
+  sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
+  exclude = set(exclude)
+  tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
+  tweets = list(tw for tw in tweets if tw['id'] not in exclude)
+  lc = linkedcorpus.LinkedCorpus()
+  lc.fill_from_tweet_iter(tweets)
+  groups_by_tweet_id = deduper.dedupe(lc)
+  groups = deduper.make_groups(tweets, groups_by_tweet_id)
+  for group in groups:
+    group.head_html = nice_tweet(group.head, q_toks, sub_topic_ngram)
+    group.rest_htmls = [nice_tweet(t,q_toks,sub_topic_ngram) for t in group.rest]
+  yield topic_group_html(groups)
 
 
 def the_app(environ, start_response):
@@ -292,31 +284,39 @@ def the_app(environ, start_response):
     deduper.groupify_topic(topic, groups_by_tweet_id)
   ranking.late_topic_clean(res, max_topics=opts.max_topics)
   ranking.gather_leftover_tweets(res, lc)
-  if res.topics[-1].groups is None:
+  if res.topics and res.topics[-1].groups is None:
     deduper.groupify_topic(res.topics[-1], groups_by_tweet_id)  
-  for t in res.topics:
-    t.tweet_ids = util.myjoin([tw['id'] for tw in t.tweets])
-    #t.tweets_html = topic_fragment_groups(q_toks, t)
-    #t.nice_tweets = nice_tweet_list(q_toks,t) ## todo group-ify
   for topic in res.topics:
+    topic.tweet_ids = util.myjoin([tw['id'] for tw in topic.tweets])
     for group in topic.groups:
       group.head_html = nice_tweet(group.head, q_toks, topic.ngram)
       group.rest_htmls = [nice_tweet(t,q_toks,topic.ngram) for t in group.rest]
       
   if opts.format == 'pickle':
     # pickle.dumps(res) is 800k with dump/load = 100ms/60ms
-    # trimmed version is 150k with dump/load = 5ms/2ms
+    # trimmed version is 150k with dump/load = 5ms/2ms.  so should switch
     yield pickle.dumps(res)
     return
-
+  if opts.format == 'json':
+    topic_info = dict(
+      (t.label,
+       {
+         'label' : t.label,
+         'tweet_ids' : t.tweet_ids,
+         'groups' : [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups]
+       })
+        for t in res.topics)
+    topic_list = [t.label for t in res.topics]
+    results = {"topic_list":topic_list, "topic_info": topic_info}
+    yield simplejson.dumps(results)
+    return
+  if opts.format != 'dev': raise Exception("bad format")
+  
+  for topic in res.topics:
+    topic.tweets_html = topic_group_html(topic.groups)
 
   yield page_header()
-  yield form_area(opts)
-  
-  if opts.simple:
-    for x in simple_output(lc, background_model, opts): yield x
-    return
-
+  yield form_area(opts)  
   yield "<table><tr>"
   yield "<th>topics"
   if lc.tweets_by_id:
