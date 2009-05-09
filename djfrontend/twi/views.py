@@ -33,5 +33,7 @@ def do_query(request):
        })
         for t in topic_res.topics)
     topic_list = [t.label for t in topic_res.topics]
-    return HttpResponse(simplejson.dumps(
-      {"topic_list":topic_list, "topic_info": topic_info}))
+    results = {"topic_list":topic_list, "topic_info": topic_info}
+    # pickle.dump(topic_res, open("results.full",'w'))
+    # pickle.dump(results, open("results.trim",'w'))
+    return HttpResponse(simplejson.dumps(results))

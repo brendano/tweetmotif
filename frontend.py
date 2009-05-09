@@ -304,8 +304,8 @@ def the_app(environ, start_response):
       group.rest_htmls = [nice_tweet(t,q_toks,topic.ngram) for t in group.rest]
       
   if opts.format == 'pickle':
-    # pickle.dumps(res) is ~1MB with dump=100ms, load=60ms
-    # trimming it goes to ... less probably.  but eh
+    # pickle.dumps(res) is 800k with dump/load = 100ms/60ms
+    # trimmed version is 150k with dump/load = 5ms/2ms
     yield pickle.dumps(res)
     return
 
