@@ -46,8 +46,10 @@ h2 {
 }
 
 .tweet{
-
   margin: 5px 10px 10px 5px;
+}
+.rest_tweets{
+  margin: 5px 10px 10px 15px;
 }
 
 span.q_hl {

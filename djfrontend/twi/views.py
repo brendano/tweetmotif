@@ -1,7 +1,11 @@
-# Create your views here.
+import sys,os,urllib2
+# add the twi root
+dir = os.path.abspath(os.path.dirname(__file__))
+dir = os.path.join(dir, '..','..')
+sys.path.insert(0, dir)
+os.chdir(dir)  # makes module loading for pickle easier .. alternative is to fix twi/*.py to not assume chdir-ness.  django seems ok with this tho
+import common
 
-import sys,urllib2
-# sys.path.insert(0, "/Users/mkrieger/src/twi")
 import cPickle as pickle
 from django.http import HttpResponse
 from django.template import loader, RequestContext
@@ -18,12 +22,16 @@ def do_query(request):
   if not "q" in request.REQUEST:
     return HttpResponse("No query")
   else:
-    s=urllib2.urlopen("http://localhost:8080/?q=%s&format=pickle" % urllib2.quote(request.REQUEST['q'])).read()
-    topic_results=pickle.loads(s)
-    bigass_topic_dict = dict((t['label'], dict(
-      label=t['label'], 
-      nice_tweets=t['nice_tweets'], 
-      tweet_ids=t['tweet_ids'],
-    )) for t in topic_results)    
-    topic_list = [x['label'] for x in topic_results]
-    return HttpResponse(simplejson.dumps({"topic_list":topic_list, "topic_info": bigass_topic_dict}))
+    s = urllib2.urlopen("http://localhost:8080/?q=%s&format=pickle" % urllib2.quote(request.REQUEST['q'])).read()
+    topic_res = pickle.loads(s)
+    topic_info = dict(
+      (t.label,
+       {
+         'label' : t.label,
+         'tweet_ids' : t.tweet_ids,
+         'groups' : [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups]
+       })
+        for t in topic_res.topics)
+    topic_list = [t.label for t in topic_res.topics]
+    return HttpResponse(simplejson.dumps(
+      {"topic_list":topic_list, "topic_info": topic_info}))

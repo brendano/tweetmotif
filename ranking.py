@@ -17,12 +17,6 @@ def rank_and_filter1(linkedcorpus, background_model, q, smoothing, n, **bla):
   stopwords = bigrams.stopwords - q_toks_set
   for ratio,ngram in linkedcorpus.model.compare_with_bg_model(background_model, n, min_count=3, smoothing_algorithm=smoothing):
     norm_ngram = [tok_norm(t) for t in ngram]
-    #if set(norm_ngram) <= bigrams.stopwords:
-    #  print "reject stopwords", norm_ngram
-    #  continue
-    #if len(norm_ngram)==1 and norm_ngram[0] in bigrams.stopwords_as_unigrams:
-    #  print "reject unigram stopword", norm_ngram
-    #  continue
     if set(norm_ngram) <= q_toks_set:
       #print "reject query-subsumed", norm_ngram
       continue
@@ -33,9 +27,8 @@ def rank_and_filter1(linkedcorpus, background_model, q, smoothing, n, **bla):
     topic_label = " ".join(ngram)
     tweets = linkedcorpus.index[ngram]
     yield common.Topic(ngram=ngram, label=topic_label, tweets=tweets, ratio=ratio)
-    #yield ngram, topic_label, tweets
 
-def n_1_g_in_n_g_check(n_g, n_1_g, n, topic_dict_list):
+def n1g_in_ng(n_g, n_1_g, n, topic_dict_list):
   n_topics = topic_dict_list[n-1]
   n_1_topics = topic_dict_list[n-2]
   if n_1_g in n_1_topics and \
@@ -51,13 +44,13 @@ def rank_and_filter2(linkedcorpus, background_model, **opts):
   trigram_topics = dict((t.ngram,t) for t in rank_and_filter1(lc,bm, n=3, **opts))
   topics = [ unigram_topics, bigram_topics, trigram_topics ]
   for bg in bigram_topics:
-    n_1_g_in_n_g_check(bg, (bg[0],), 2, topics)
-    n_1_g_in_n_g_check(bg, (bg[1],), 2, topics)
+    n1g_in_ng(bg, (bg[0],), 2, topics)
+    n1g_in_ng(bg, (bg[1],), 2, topics)
     #bg_overlap_check(bg, 'left')
     #bg_overlap_check(bg, 'right')
   for tg in trigram_topics:
-    n_1_g_in_n_g_check(tg, (tg[0],tg[1]), 3, topics)
-    n_1_g_in_n_g_check(tg, (tg[1],tg[2]), 3, topics)
+    n1g_in_ng(tg, (tg[0],tg[1]), 3, topics)
+    n1g_in_ng(tg, (tg[1],tg[2]), 3, topics)
   return {'unigram':unigram_topics, 'bigram':bigram_topics, 'trigram':trigram_topics}
 
 def score_topic(topic):
@@ -65,22 +58,23 @@ def score_topic(topic):
   #a = 1 if len(topic.ngram)==1 else 1.5
   #return topic.ratio * a
 
+def test_weak_dominance(topic1, topic2):
+  def ids(topic): return (tw['id'] for tw in topic.tweets)
+  return set(ids(topic1)) >= set(ids(topic2))
+
 def extract_topics_from_ngram_topics(ngram_topics, linkedcorpus):
   # apply final topic ranking
   r = ngram_topics
   all_topics = r['unigram'].values() + r['bigram'].values() + r['trigram'].values()
   all_topics.sort(key=score_topic, reverse=True)
-  tweet_ids_in_topics = set()
-  for t in all_topics:
-    tweet_ids_in_topics |= set(tw['id'] for tw in t.tweets)
-  return common.TopicResults(topics=all_topics,linkedcorpus=linkedcorpus)
+  return common.TopicResults(topics=all_topics, linkedcorpus=linkedcorpus)
 
-def test_weak_dominance(topic1, topic2):
-  def ids(topic): return (tw['id'] for tw in topic.tweets)
-  return set(ids(topic1)) >= set(ids(topic2))
+def extract_topics(linkedcorpus, background_model, **opts):
+  ngram_topics = rank_and_filter2(linkedcorpus, background_model, **opts)
+  topic_res = extract_topics_from_ngram_topics(ngram_topics, linkedcorpus)
+  return topic_res
 
 def gather_leftover_tweets(topic_res, linkedcorpus):
-  print [t  for t in topic_res.topics if t.tweets is None]
   present_tweets = set(tw['id'] for topic in topic_res.topics for tw in topic.tweets)
   leftover_tweets = set(linkedcorpus.tweets_by_id) - present_tweets
   topic_res.leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_tweets]
@@ -90,23 +84,13 @@ def gather_leftover_tweets(topic_res, linkedcorpus):
       tweets=topic_res.leftover_tweets, ratio=-42)
     topic_res.topics.append(new_topic)
 
-
-def extract_topics(linkedcorpus, background_model, **opts):
-  ngram_topics = rank_and_filter2(linkedcorpus, background_model, **opts)
-  topic_res = extract_topics_from_ngram_topics(ngram_topics, linkedcorpus)
-  gather_leftover_tweets(topic_res, linkedcorpus)
-  return topic_res
-
-
-def late_topic_clean(topic_res):
+def late_topic_clean(topic_res, max_topics):
   assert topic_res.topics[0].groups
   res=topic_res
   print "nonsingleton count:", util.uniq_c(len(t.groups)>1 for t in res.topics)
   res.topics = [t for t in res.topics if len(t.groups)>1]
   #res.topics = deduper.dedupe_topics(res.topics)
-
-def truncate_topics(topic_res, max_topics):
-  if max_topics < len(topic_res.topics):
+  if max_topics < len(res.topics):
     print "truncating topics"
     topic_res.topics = topic_res.topics[:max_topics]
 

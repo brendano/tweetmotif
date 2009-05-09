@@ -27,7 +27,7 @@ else:
   STATIC = "http://anyall.org/twistatic"
 
 def page_header():
-  return """
+  return '''
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
   <script src="%(STATIC)s/js.js"></script>
@@ -35,7 +35,7 @@ def page_header():
   <LINK REL ="STYLESHEET" TYPE="text/css" HREF="%(STATIC)s/css.css">
 
   <div><b>twitter themes/topics/clusters summarization explorer thingamajigger</b></div>
-  """ % globals()
+  ''' % globals()
 
 def safehtml(x):
   return cgi.escape(str(x),quote=True)
@@ -282,7 +282,7 @@ def the_app(environ, start_response):
       key_fn = search.user_and_text_identity, 
       save = tweets_file if opts.save else None,
       load = tweets_file if opts.load else None
-      )
+  )
   tweet_iter = deduper.merge_multitweets(tweet_iter)
   lc.fill_from_tweet_iter(tweet_iter)
   q_toks = bigrams.tokenize_and_clean(opts.q, True)
@@ -290,24 +290,23 @@ def the_app(environ, start_response):
   groups_by_tweet_id = deduper.dedupe(lc)
   for topic in res.topics:
     deduper.groupify_topic(topic, groups_by_tweet_id)
-  ranking.late_topic_clean(res)
-  #res.topics.sort(key= lambda t: (-t.group_count, -t.tweet_count))
-  ranking.truncate_topics(res, max_topics=opts.max_topics)
-  ranking.gather_leftover_tweets(res,lc)
+  ranking.late_topic_clean(res, max_topics=opts.max_topics)
+  ranking.gather_leftover_tweets(res, lc)
   if res.topics[-1].groups is None:
-    deduper.groupify_topic(res.topics[-1], groups_by_tweet_id)
-  
+    deduper.groupify_topic(res.topics[-1], groups_by_tweet_id)  
   for t in res.topics:
     t.tweet_ids = util.myjoin([tw['id'] for tw in t.tweets])
-    #t.tweets_html = topic_fragment(q_toks,t)
-    #t.tweets_html = topic_fragment_groups1(q_toks, t, groups, groups_by_tweet_id)
-    t.tweets_html = topic_fragment_groups(q_toks, t)
-    t.nice_tweets = nice_tweet_list(q_toks,t) ## todo group-ify
+    #t.tweets_html = topic_fragment_groups(q_toks, t)
+    #t.nice_tweets = nice_tweet_list(q_toks,t) ## todo group-ify
+  for topic in res.topics:
+    for group in topic.groups:
+      group.head_html = nice_tweet(group.head, q_toks, topic.ngram)
+      group.rest_htmls = [nice_tweet(t,q_toks,topic.ngram) for t in group.rest]
+      
   if opts.format == 'pickle':
-    bigass_topic_list = [
-      dict(label=t.label, tweet_ids=t.tweet_ids, nice_tweets=t.nice_tweets)
-      for t in res.topics ]
-    yield pickle.dumps(bigass_topic_list)
+    # pickle.dumps(res) is ~1MB with dump=100ms, load=60ms
+    # trimming it goes to ... less probably.  but eh
+    yield pickle.dumps(res)
     return
 
 
@@ -333,8 +332,8 @@ def the_app(environ, start_response):
   yield "<th>tweets"
   yield "<tr><td valign=top id=topic_list>"
 
-  topic_labels = ["""<span class="topic_label" onclick="topic_click(this)" topic_label="%s"
-  >%s</span><small>&nbsp;%d,&thinsp;%d</small><br>""" % (
+  topic_labels = ['''<span class="topic_label" onclick="topic_click(this)" topic_label="%s"
+  >%s</span><small>&nbsp;%d,&thinsp;%d</small><br>''' % (
     cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"), topic.group_count, topic.tweet_count )
                   for topic in res.topics]
 

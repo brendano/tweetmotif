@@ -26,7 +26,13 @@
     return htmlQuote(label).replace(/ /g,"&nbsp;");
   }
   function htmlQuote(s) {
-    return s.replace(/"/g, "&quot;").replace(/>/g, "&gt;").replace(/</g, "&lt;");
+    return s.replace(/"/g, "&quot;").replace(/>/g, "&gt;").replace(/</g,
+    "&lt;");  //"
+  }
+  function pluralize(s,n, /*optional*/ suffix) {
+    if (n == 1) return s;
+    if (suffix==undefined)  suffix = "s"
+    return s + suffix;
   }
   twitterThemes = new function(){
     this.blocksToEnqueue = 3;
@@ -34,7 +40,12 @@
     this.tweetsPerResult = 4;
     this.currentlyEnqueued = [];
     
+    this.clearThemeList = function() {
+      $("#themelist-col0").html("");
+      $("#themelist-col1").html("");
+    }
     this.displayThemeList = function(){
+      this.clearThemeList();
       for (var i = 0; i < this.themeList.length; i++) {
         var curTheme = this.themeList[i];
         var whichCol = i % 2;
@@ -66,10 +77,17 @@
         return;
       }
       this.currentlyEnqueued.unshift(theme);
-      var dataObj = this.data[theme];
+      var themeData = this.data[theme];
       var tweetList = $("<div class='theme'><h3>&ldquo;" + theme + "&rdquo;</h3></div>");
-      for (var i = 0; i < dataObj['nice_tweets'].length; i++) {
-        var thisTweet = $("<div class='tweet'>" + dataObj['nice_tweets'][i] + "</div>").appendTo(tweetList);
+      for (var i = 0; i < themeData.groups.length; i++) {
+        var group = themeData.groups[i];
+        var thisTweet = $("<div class='tweet'>" + group.head_html + "</div>").appendTo(tweetList);
+        if (group.rest_htmls.length > 0) {
+          var n = group.rest_htmls.length
+          var t = pluralize("tweet", n)
+          // todo clicky
+          thisTweet = $("<div class='rest_tweets'>" + n + " similar " + t + "...</div>").appendTo(tweetList);
+        }
         if (i > this.tweetsPerResult) {
           thisTweet.addClass("extratweets");
         }

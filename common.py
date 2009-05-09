@@ -1,4 +1,6 @@
 # data structures that need to be shared with the frontend
+# actually the theory behind this isnt working - pickle.loads drags in other modules anyways.
+# maybe this is now a "datastructures" file.
 import util
 
 class TweetGroup:
