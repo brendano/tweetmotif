@@ -24,7 +24,7 @@ import tchelpers
 if os.popen("hostname").read().strip()=='btoc.local':
   STATIC = "http://localhost/d/twi/twi/static"
 else:
-  STATIC = "http://anyall.org/twistatic"
+  STATIC = "/twitterthemes/backend_static"
 
 def page_header():
   return '''

@@ -55,7 +55,7 @@ function topic_click(elt) {
 }
 
 function requery(topic_label) {
-  $.ajax({url:".", type:"GET", 
+  $.ajax({url:"backend", type:"GET", 
     data:{single_query:1, q:$.query.keys.q, topic_label:topic_label, exclude:topics[topic_label].tweet_ids},
     dataType:"html",
     success: function(data,text) { 

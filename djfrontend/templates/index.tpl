@@ -1,7 +1,7 @@
 {% extends "base.tpl" %}
 
 {% block content %}
-<img src="/static/img/logo.png">
+<img src="static/img/logo.png">
 <div>
 <input type="text" name="query" value="dogs" id="query"/><input type="button" name="search" value="Search" id="search">
 </div>
@@ -125,7 +125,7 @@
     
     $(document).ready(function() {
       $("#search").click(function(){
-        $.getJSON('/do_query',{
+        $.getJSON('do_query',{
          q: $("#query").val()},
          function(result){
           $("#themelist").empty();

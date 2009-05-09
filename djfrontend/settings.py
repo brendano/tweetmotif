@@ -1,6 +1,7 @@
 # Django settings for twidjango project.
 import os,sys
 dir = os.path.abspath(os.path.dirname(__file__))
+print>>sys.stderr,"PATH IS %s" % dir
 #sys.path.insert(0, os.path.join(dir, 'django.zip'))
 
 
