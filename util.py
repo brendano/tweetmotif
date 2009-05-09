@@ -26,14 +26,14 @@ def stringify(s, encoding='utf8', *args):
   if isinstance(s,str): return s
   return s.encode(encoding, *args)
 
-def fix_stdio(encoding='utf8', errors='strict', buffering=0):
+def fix_stdio(encoding='utf8', errors='strict', buffering=0, shutup=True):
   """ forces utf8 at I/O boundaries, since it's ascii by default when using
   pipes .. ugh ..  Never call this multple times in the same process; horrible
   things sometimes seem to happen."""
   import codecs, sys
   en,er,bu=encoding,errors,buffering
   sys.stdout = codecs.open('/dev/stdout', 'w', encoding=en, errors=er, buffering=bu)
-  sys.stdout = ShutUpAboutBrokenPipe(sys.stdout)
+  if shutup: sys.stdout = ShutUpAboutBrokenPipe(sys.stdout)
   sys.stdin  = codecs.open('/dev/stdin',  'r', encoding=en, errors=er, buffering=bu)
   sys.stderr = codecs.open('/dev/stderr', 'w', encoding=en, errors=er, buffering=0)
 

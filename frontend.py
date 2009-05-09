@@ -94,16 +94,25 @@ def form_area(opts):
   ret += "</form>"
   return ret
 
-def prebaked_iter(filename):
-  for line in open(filename):
-    yield simplejson.loads(line)
+def table_byrow(items, ncol):
+  yield "<table>"
+  for i,x in enumerate(items):
+    if i%ncol == 0:
+      yield "<tr>"
+    yield "<td>"
+    yield x
+  yield "<td>" * (len(items) % ncol)
+  yield "</table>"
+
+
+######   below here stuff should be relevant to both dev and django frontends
+
 
 from sane_re import *
 At = _R(r'(@)(\w+)')
 
 Url_RE = sane_re._R(twokenize.Url_RE)
 def linkify(text, klass):
-  #m = Url_RE.match(text)
   def f(m):
     if m[1].startswith("http"): url = m[1]
     else: url = "http://" + m[1]
@@ -157,16 +166,6 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
   s += '</span>'
   return s
 
-def table_byrow(items, ncol):
-  yield "<table>"
-  for i,x in enumerate(items):
-    if i%ncol == 0:
-      yield "<tr>"
-    yield "<td>"
-    yield x
-  yield "<td>" * (len(items) % ncol)
-  yield "</table>"
-
 def topic_group_html(groups):
   h = "<ul>"
   for group in groups:
@@ -180,28 +179,10 @@ def topic_group_html(groups):
   h += "</ul>"
   return h
 
-def nice_tweet_list(q_toks, topic):
-  return [nice_tweet(tweet, q_toks, topic.ngram) for tweet in topic.tweets]
-
-def nice_date(d):
-  return d.strftime("%Y-%m-%dT%H:%M:%S")
-
 def nice_unitted_num(n, sing, plur=None):
   if n==1: return "%d %s" % (n,sing)
   plur = plur or sing+"s"
   return "%d %s" % (n,plur)
-
-#def nice_datespan(d1,d2):
-#  if d2<d1: d1,d2=d2,d1
-#  #if (datetime.utcnow() - d2) < timedelta(hours=4):
-#  #  s = "now"
-#  #else:
-#  #  s = d2.strftime("%Y-%m-%dT%H:%M:%S")
-#  #s += " back to "
-#  s = "spanning "
-#  delt = d2-d1
-#  s += nice_timedelta(delt)
-#  return s
 
 def nice_timedelta(delt):
   x = []
@@ -294,7 +275,7 @@ def the_app(environ, start_response):
       
   if opts.format == 'pickle':
     # pickle.dumps(res) is 800k with dump/load = 100ms/60ms
-    # trimmed version is 150k with dump/load = 5ms/2ms.  so should switch
+    # trimmed version is 150k with dump/load = 5ms/2ms.
     yield pickle.dumps(res)
     return
   if opts.format == 'json':
@@ -314,29 +295,30 @@ def the_app(environ, start_response):
   
   for topic in res.topics:
     topic.tweets_html = topic_group_html(topic.groups)
+  bigass_topic_dict = dict((t.label, dict(
+    label=t.label, 
+    tweets_html=t.tweets_html, 
+    tweet_ids=t.tweet_ids,
+  )) for t in res.topics)
 
   yield page_header()
   yield form_area(opts)  
   yield "<table><tr>"
   yield "<th>topics"
   if lc.tweets_by_id:
-    # HACK i'm confused why theyre not all in tweets_by_id
-    try:
-      earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues() if 'created_at' in tw)
-      #latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
-      s=  "for %d tweets" % len(lc.tweets_by_id)
-      s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
-      yield " <small>%s</small>" % s
-    except ValueError: pass
+    earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+    #latest   = max(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+    s=  "for %d tweets" % len(lc.tweets_by_id)
+    s+= " over the last %s" % nice_timedelta(datetime.utcnow() - earliest)
+    yield " <small>%s</small>" % s
 
   yield "<th>tweets"
   yield "<tr><td valign=top id=topic_list>"
-
+  
   topic_labels = ['''<span class="topic_label" onclick="topic_click(this)" topic_label="%s"
   >%s</span><small>&nbsp;%d,&thinsp;%d</small><br>''' % (
     cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"), topic.group_count, topic.tweet_count )
                   for topic in res.topics]
-
   for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
 
   yield "<td valign=top>"
@@ -349,12 +331,6 @@ def the_app(environ, start_response):
   yield "<script>"
 
   yield "topics = "
-  bigass_topic_dict = dict((t.label, dict(
-    label=t.label, 
-    tweets_html=t.tweets_html, 
-    tweet_ids=t.tweet_ids,
-  )) for t in res.topics)
-
   yield simplejson.dumps(bigass_topic_dict)
   yield ";"
   yield "load_default_topic();"
@@ -371,9 +347,8 @@ def global_init():
 application = util.chaincompose(the_app, app_stringify)
 
 if __name__=='__main__':
-  import util; util.fix_stdio()
-  from wsgiref.simple_server import make_server, demo_app
-  #httpd = make_server('', 8000, demo_app)
+  import util; util.fix_stdio(shutup=False)
+  from wsgiref.simple_server import make_server
   httpd = make_server('', 8080, application)
   print "Serving HTTP on port 8080..."
   httpd.serve_forever()
