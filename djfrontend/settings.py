@@ -1,4 +1,8 @@
 # Django settings for twidjango project.
+import os,sys
+dir = os.path.abspath(os.path.dirname(__file__))
+#sys.path.insert(0, os.path.join(dir, 'django.zip'))
+
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -64,9 +68,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'djfrontend.urls'
-
-import os
-dir = os.path.abspath(os.path.dirname(__file__))
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
