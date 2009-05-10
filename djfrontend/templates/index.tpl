@@ -4,7 +4,7 @@
 
 <div id="logo_area">
   <table><tr><td>
-  <a href="/"><img border="0" src="static/img/logo.png"></a>
+  <a href="."><img border="0" src="static/img/logo.png"></a>
   <td>
   <div id="header_by_logo">Summarize any topic from the twitters.  <a href="about">More information.</a></div>
   </table>
