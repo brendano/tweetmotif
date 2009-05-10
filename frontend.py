@@ -283,7 +283,8 @@ def the_app(environ, start_response):
        {
          'label': t.label,
          'tweet_ids': t.tweet_ids,
-         'groups': [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups]
+         'groups': [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups],
+         'query_refinement': ranking.query_refinement(opts.q, t),
        })
         for t in res.topics)
     topic_list = [t.label for t in res.topics]

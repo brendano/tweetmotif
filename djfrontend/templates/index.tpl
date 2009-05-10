@@ -3,7 +3,11 @@
 {% block content %}
 
 <div id="logo_area">
+  <table><tr><td>
   <a href="/"><img border="0" src="static/img/logo.png"></a>
+  <td>
+  <div id="header_by_logo">Summarize any topic from the twitters.  <a href="about">More information.</a></div>
+  </table>
 </div>
 
 <div>
@@ -16,19 +20,24 @@
     {% if trend_topics %}
       Trending topics:
       {% for topic in trend_topics %}
-        <a href="#" query="{{topic.query}}" onclick="TT.trendClick($(this)); return false;">{{topic.name}}</a>
+        <a href="#" query="{{topic.simple_query}}" onclick="TT.trendClick($(this)); return false;">{{topic.name}}</a>
       {% endfor %}
+      <br>
     {% endif %}
+    Try:
+      {% for q in prebaked_queries %}
+        <a href="#" query="{{q}}" onclick="TT.trendClick($(this)); return false">{{q}}</a>
+      {% endfor %}
   </div>
 </div>
 
 <div id='main'>
   <div id='resultswrapper'>
-    <div id='resultscontent'><h2>results</h2>
+    <div id='resultscontent'><div class='content_header' style='display:none'><h2>results</h2> (click on a theme heading to drilldown)</div>
       <div id='resultsbytheme'></div>
     </div>
   </div>
-  <div id='themelistcontainer'><h2>themes</h2>
+  <div id='themelistcontainer'><div class='content_header' style='display:none'><h2>themes</h2></div>
     <ul id="themelist-col0"></ul>
     <ul id="themelist-col1"></ul>    
   </div>
@@ -51,6 +60,7 @@
     if (suffix==undefined)  suffix = "s"
     return s + suffix;
   }
+  
   TT = new function() {
     this.blocksToEnqueue = 3;
     this.data = {};
@@ -95,11 +105,22 @@
     }
     
     this.newsearchClick = function(elt) {
-      var theme = elt.attr('theme');
-      console.log(theme);
-      var new_q = $("#query").attr('value') + " " + theme;
+      var theme = $(elt).attr('theme');
+      var new_q = TT.data[theme].query_refinement;
       $("#query").attr('value', new_q)
       $("#search").click()
+    }
+    
+    this.rest_tweets_click = function(elt) {
+      elt.parents('.tweet').next('.rest_tweets').toggle('normal', function() {
+        var vis = $(this).is(':visible');
+        if (vis) {
+          elt.html(elt.html().replace("show","hide").replace("»","«"));
+        } else {
+          elt.html(elt.html().replace("hide","show").replace("«","»"));
+        }
+        return true;
+      })
     }
     
     this.enqueueTheme = function(theme) {
@@ -125,16 +146,27 @@
       var tweetList = $("<div class='theme'>" + newsearch_tag + themeHtml + "</span></div>");
       for (var i = 0; i < themeData.groups.length; i++) {
         var group = themeData.groups[i];
-        var thisTweet = $("<div class='tweet'>" + group.head_html + "</div>").appendTo(tweetList);
+        var head_html = "<div class='tweet'>" + group.head_html;
+        var rest_html = "";
         if (group.rest_htmls.length > 0) {
-          var n = group.rest_htmls.length
-          var t = pluralize("tweet", n)
-          // todo clicky more in group
-          thisTweet = $("<div class='rest_tweets'>" + n + " similar " + t + "...</div>").appendTo(tweetList);
+          head_html += " ";
+          var n = group.rest_htmls.length;
+          var t = pluralize("tweet", n);
+          head_html += " &nbsp; <span class='rest_tweets_msg'><a href='#' onclick='TT.rest_tweets_click($(this)); return false;'>show " + n + " similar " + t + " »</a></span>";
+          
+          rest_html += "<div class='rest_tweets' style='display:none'>";
+          for (var j=0; j < group.rest_htmls.length; j++) {
+            rest_html += "<div class='rest_tweet'>" + group.rest_htmls[j] + "</div>";
+          }
+          rest_html += "</div>"
         }
-        if (i > this.tweetsPerResult) {
-          thisTweet.addClass("extratweets");
-        }
+        head_html += "</div>";
+        $(head_html + rest_html).appendTo(tweetList);
+        
+        // if (false &&  i > this.tweetsPerResult) {
+        //   console.log("never here now.")
+        //   thisTweet.addClass("extratweets");  // whoa .. all elements would get this? 
+        // }
       }
       tweetList.hide();
       var safeThemeName = theme.replace(/ /g, "_");
@@ -171,12 +203,15 @@
       if (currentXHR && currentXHR.readyState != 0) {
         currentXHR.abort();
       }
-      currentXHR = $.getJSON('do_query', {
-          q: $("#query").val()
-        },
-        function(result) {
+      TT.startBusyGraphic();
+      
+      currentXHR = $.ajax({
+        url: "do_query", data: {q: $("#query").val()},
+        type: "GET", cache: false, dataType: "json",
+        success: function(result) { 
           TT.stopBusyGraphic();
           TT.clearResults();
+          $('.content_header').show()
           TT.themeList = result.topic_list;
           TT.data = result.topic_info;
           if (TT.themeList.length == 0) {
@@ -187,8 +222,13 @@
           for (var i = Math.min(2, TT.themeList.length-1); i >= 0; i--) {
             TT.enqueueTheme(TT.themeList[i])
           }
-      });
-      TT.startBusyGraphic();
+        },
+        error: function(xhr, text, err) {
+          TT.stopBusyGraphic();
+          console.log(err + " -- " + text) 
+        }
+      })
+      
     });
     
   });

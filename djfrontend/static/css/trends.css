@@ -6,23 +6,16 @@
 body, html {
   font-family: Georgia;
   font-size: 100%;
-  padding: 0em 0.3em ;
+  padding: 0em 0.3em;
 }
 
-#logo_area { 
-  padding-bottom: 2em;
-}
-
-#trends {
-  font-size: 0.8em;
-}
-
-#spinny {
-  margin-left: 0.7em;
-}
+#logo_area { padding-bottom: 2em; }
+#header_by_logo { display:inline; padding-left: 2em; }
+#trends { font-size: 0.8em; }
+#spinny { margin-left: 0.7em; }
 
 #query {
-  width: 200px;
+  width: 400px;
   height: 20px;
   margin-right: 10px;
   font-family: inherit;
@@ -43,7 +36,8 @@ a.m {
   text-decoration: none;
   color: #7f7f7f;
 }
-
+.rest_tweets_msg { font-size: 0.7em; }
+.rest_tweets_msg a { color: #5f5f8f; }
 a.at {
   font-style: italic;
   color: #7f7f7f;
@@ -80,6 +74,11 @@ h2 {
 .rest_tweets {
   margin: 5px 10px 10px 15px;
 }
+.rest_tweet {
+  margin: 0px 0px 0px 0px;
+  padding: 5px 5px 5px 5px;
+  background: #eee;
+}
 
 span.q_hl {
   background-color: #ffd3e5;
@@ -111,13 +110,12 @@ span.topic_hl {
 #themelist-col1 {
 }
 
-h2 {
-  margin: 0px;
-}
+h2 { margin: 0px; }
 
-.extratweets {
-  display: none;
-}
+.extratweets { display: none; }
+
+.content_header h2 { margin: 0 0.6em 0 0; display:inline; font-style: italic; text-decoration:underline;}
+/*.content_header { font-size: 1em; font-style: italic; text-decoration:none;}*/
 
 #themelistcontainer
 {

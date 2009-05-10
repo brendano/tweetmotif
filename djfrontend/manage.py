@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os,sys
-dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(dir,'..'))
+here = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(here,'..'))
 # print sys.path
 # sys.path.insert(0, os.path.join(dir, 'django.zip'))
 

@@ -96,6 +96,19 @@ def late_topic_clean(topic_res, max_topics):
     print "truncating topics"
     topic_res.topics = topic_res.topics[:max_topics]
 
+from sane_re import *
+AllJunkLike = _R('^[^a-z0-9@_-]+$','i')
+def query_refinement(orig_q, topic):
+  if topic.ngram == ("**EXTRAS**",): return None
+  
+  subquery = " ".join(topic.ngram)
+  if any(AllJunkLike.match(term) for term in topic.ngram):
+    # then twitter phrase search will drop that token. at least emoticons.
+    # so fallback to non-phrase search
+    pass
+  elif len(topic.ngram) > 1:
+    subquery = '"%s"' % subquery
+  return orig_q + " " + subquery
  
 if __name__=='__main__':
   import simplejson

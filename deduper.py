@@ -81,7 +81,7 @@ def groupify_topic(topic, groups_by_tweet_id):
 
 
 def do_pair_merges(tweets, linkedcorpus, pair_merges, seen_pairs,
-                   sim_thresh=0.45, min_shared=2):
+                   sim_thresh=0.65, min_shared=2):
   for i in range(len(tweets)):
     for j in range(i+1, len(tweets)):
       t1,t2 = tweets[i], tweets[j]

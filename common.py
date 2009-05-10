@@ -22,4 +22,3 @@ class Topic:
   @property
   def tweet_count(self):
     return len(self.tweets)
-    
