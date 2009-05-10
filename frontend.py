@@ -153,7 +153,7 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
   s += " &nbsp; "
   s += '<span class="authors">'
   if 'orig_tweets' in tweet:
-    s += "%d sources:" % len(tweet['orig_tweets'])
+    s += "%d authors:" % len(tweet['orig_tweets'])
     subtweets = tweet['orig_tweets']
   else:
     subtweets = (tweet,)

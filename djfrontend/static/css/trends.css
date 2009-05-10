@@ -3,7 +3,7 @@
   http://localhost:8000/static/css/trends.css
 */
 
-body, html{
+body, html {
   font-family: Georgia;
   font-size: 100%;
   padding: 0em 0.3em ;
@@ -13,14 +13,22 @@ body, html{
   padding-bottom: 2em;
 }
 
+#trends {
+  font-size: 0.8em;
+}
+
+#spinny {
+  margin-left: 0.7em;
+}
+
 #query {
   width: 200px;
-  height: 25px;
+  height: 20px;
   margin-right: 10px;
   font-family: inherit;
 
   font-weight: bold;
-  font-size:  1.2em;
+  font-size:  1em;
   padding: 0.3em;
   border: 1px solid #cfcfcf;
 }
@@ -29,7 +37,8 @@ body, html{
   min-width: 600px;
 }
 
-a.m{
+.authors { font-size: 0.7em; }
+a.m {
   font-style: italic;
   text-decoration: none;
   color: #7f7f7f;
@@ -45,21 +54,35 @@ h3 {
   margin-bottom: 0px;
 }
 
+span.newsearch {
+  font-size: 1.5em;
+  color: black;
+  text-decoration:none;
+  cursor: pointer;
+}
+span.newsearch:hover {
+  text-decoration: underline;
+}
+
+.theme {
+  margin-top: 1.4em;
+}
+
 h2 {
   font-style: italic;
   font-weight: normal;
   text-decoration: underline;
 }
 
-.tweet{
+.tweet {
   margin: 5px 10px 10px 5px;
 }
-.rest_tweets{
+.rest_tweets {
   margin: 5px 10px 10px 15px;
 }
 
 span.q_hl {
-  background-color: #ffa0b0;
+  background-color: #ffd3e5;
 }
 
 span.topic_hl {

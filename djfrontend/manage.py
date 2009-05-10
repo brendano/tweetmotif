@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os,sys
 dir = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(dir,'..'))
+# print sys.path
 # sys.path.insert(0, os.path.join(dir, 'django.zip'))
 
 from django.core.management import execute_manager
