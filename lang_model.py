@@ -7,8 +7,6 @@ import util
 import tchelpers
 
 sys.path.insert(0, "platform/%s" % sys.platform)
-# linux only
-os.environ['LD_LIBRARY_PATH'] = "platform/%s:%s" % (sys.platform, os.environ.get('LD_LIBRARY_PATH'))
 
 class LMCommon:
   def compare_with_bg_model(self, bg_model, n, min_count=1,

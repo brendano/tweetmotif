@@ -10,7 +10,7 @@ body, html {
 }
 
 #logo_area { padding-bottom: 2em; }
-#header_by_logo { display:inline; padding-left: 2em; }
+#header_by_logo { display:block; padding-left: 2em; }
 #trends { font-size: 0.8em; }
 #spinny { margin-left: 0.7em; }
 
