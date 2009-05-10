@@ -4,7 +4,7 @@ from django.template import loader, RequestContext
 import simplejson
 
 import trends, myurl, util
-import timeout_urllib2; timeout_urllib2.sethttptimeout(10.0)
+import timeout_urllib2; timeout_urllib2.sethttptimeout(20.0)
 
 BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://localhost/twitterthemes/backend"
 def index(request):

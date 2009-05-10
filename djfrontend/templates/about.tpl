@@ -3,7 +3,7 @@
 {% block content %}
 
 <div id="logo_area">
-  <a href="/"><img border="0" src="static/img/logo.png"></a>
+  <a href="."><img border="0" src="static/img/logo.png"></a>
 </div>
 
 
