@@ -226,7 +226,7 @@ def the_app(environ, start_response):
       opt('pages', default=2),
       opt('split', default=0),
       opt('simple', default=0),
-      opt('max_topics', default=50),
+      opt('max_topics', default=40),
       opt('ncol', default=3),
       opt('save', default=False),
       opt('load', default=False),
@@ -275,20 +275,19 @@ def the_app(environ, start_response):
       
   if opts.format == 'pickle':
     # pickle.dumps(res) is 800k with dump/load = 100ms/60ms
-    # trimmed version is 150k with dump/load = 5ms/2ms.
+    # trimmed json-like version is 150k with dump/load = 5ms/2ms.
     yield pickle.dumps(res)
     return
   if opts.format == 'json':
-    topic_info = dict(
-      (t.label,
+    topic_info = dict( (t.label,
        {
-         'label' : t.label,
-         'tweet_ids' : t.tweet_ids,
-         'groups' : [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups]
+         'label': t.label,
+         'tweet_ids': t.tweet_ids,
+         'groups': [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups]
        })
         for t in res.topics)
     topic_list = [t.label for t in res.topics]
-    results = {"topic_list":topic_list, "topic_info": topic_info}
+    results = {'topic_list':topic_list, 'topic_info': topic_info}
     yield simplejson.dumps(results)
     return
   if opts.format != 'dev': raise Exception("bad format")
@@ -296,9 +295,9 @@ def the_app(environ, start_response):
   for topic in res.topics:
     topic.tweets_html = topic_group_html(topic.groups)
   bigass_topic_dict = dict((t.label, dict(
-    label=t.label, 
-    tweets_html=t.tweets_html, 
-    tweet_ids=t.tweet_ids,
+    label= t.label, 
+    tweets_html= t.tweets_html, 
+    tweet_ids= t.tweet_ids,
   )) for t in res.topics)
 
   yield page_header()

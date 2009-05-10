@@ -78,9 +78,10 @@ def gather_leftover_tweets(topic_res, linkedcorpus):
   present_tweets = set(tw['id'] for topic in topic_res.topics for tw in topic.tweets)
   leftover_tweets = set(linkedcorpus.tweets_by_id) - present_tweets
   topic_res.leftover_tweets = [linkedcorpus.tweets_by_id[id] for id in leftover_tweets]
+  topic_res.leftover_tweets.sort(key= lambda tw: tw['created_at'], reverse=True)
   if topic_res.leftover_tweets:
     new_topic = common.Topic(
-      ngram=('**EXTRAS**',), label="<i>[other...]</i>",
+      ngram=('**EXTRAS**',), label="**EXTRAS**",
       tweets=topic_res.leftover_tweets, ratio=-42)
     topic_res.topics.append(new_topic)
 

@@ -9,6 +9,10 @@ body, html{
   padding: 0em 0.3em ;
 }
 
+#logo_area { 
+  padding-bottom: 2em;
+}
+
 #query {
   width: 200px;
   height: 25px;
@@ -31,7 +35,7 @@ a.m{
   color: #7f7f7f;
 }
 
-a.at{
+a.at {
   font-style: italic;
   color: #7f7f7f;
   text-decoration: none;
@@ -43,6 +47,8 @@ h3 {
 
 h2 {
   font-style: italic;
+  font-weight: normal;
+  text-decoration: underline;
 }
 
 .tweet{
@@ -53,14 +59,14 @@ h2 {
 }
 
 span.q_hl {
-  background-color: #ff919b;
+  background-color: #ffa0b0;
 }
 
 span.topic_hl {
   background-color: #fdffb2;
 }
 
-#themelistcontainer ul{
+#themelistcontainer ul {
   list-style: none;
   margin-left: 0px;
   padding-left: 2px;
@@ -69,17 +75,17 @@ span.topic_hl {
   
 }
 
-#themelistcontainer ul li{
+#themelistcontainer ul li {
   margin-bottom: 5px;
   padding: 0;
 }
 
-#themelistcontainer a{
+#themelistcontainer a {
   text-decoration: none;
   color: #164182;
 }
 
-#themelist-col1{
+#themelist-col1 {
 }
 
 h2 {
@@ -94,23 +100,23 @@ h2 {
 {
   color: black;
   float: left;
-   /*background-color: black;*/
-   width: 260px;
-   margin-left: -100%;
-   -webkit-border-radius: 5px;
-   -moz-border-radius: 5px;
+  /*background-color: black;*/
+  width: 260px;
+  margin-left: -100%;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
 }
 
-#resultswrapper{
+#resultswrapper {
   float: left;
   width: 100%;
 }
-#resultscontent{
+#resultscontent {
   padding: 0px 20px;
   margin-left:  260px;
 
   height: 500px;
   
-   -webkit-border-radius: 5px;
-   -moz-border-radius: 5px;  
+ -webkit-border-radius: 5px;
+ -moz-border-radius: 5px;  
 }
