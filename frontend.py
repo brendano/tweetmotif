@@ -146,7 +146,7 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
   text = linkify(text, klass='t')
   #text = twokenize.Url_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
   #text = twokenize.AT_RE.subn(r'<a class=at target=_blank href="\1">\1</a>
-  text = At.gsub(text, r'@<a class="at" target="_blan"k href="http://twitter.com/\2">\2</a>')
+  text = At.gsub(text, r'<a class="at" target="_blan"k href="http://twitter.com/\2">@\2</a>')
   s += text
   s += "</span>"
   
