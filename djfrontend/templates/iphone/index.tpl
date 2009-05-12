@@ -22,7 +22,9 @@
 
 {% block content %}
 	<div id="header">
+		<a href="#" onclick='window.location.hash="";return false; $("#query").focus()'>
 		<img src="static/img/bird-logo-iphone.jpg" style="width:100%"/>
+		</a>
 	</div>
 	
  <div id="trends">
