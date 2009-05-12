@@ -230,7 +230,7 @@ def the_app(environ, start_response):
       opt('ncol', default=3),
       opt('save', default=False),
       opt('load', default=False),
-      opt('smoothing', default='lidstone'),
+      opt('smoothing', default='mle'),
       opt('single_query', default=0),
       opt('format', default='dev'),
       )
