@@ -5,9 +5,18 @@
 		TT.blocksToEnqueue = 1;
 		TT.maxTopics = 10;
 		TT.numColumns = 1;
-		TT.isPhone = true;		
+		TT.isPhone = true;	
+		$(document).ready(function(){
+			$("#searchform").submit(function(event){
+					event.preventDefault();
+					event.stopPropagation();
+					$("#search").click();
+					$("#header").focus();
+			})	
+			
+		})
 </script>
-		<meta name="viewport" content="width=240, user-scalable=no"/>
+		<meta name="viewport" content="width=device-width, user-scalable=no"/>
 		<link rel="stylesheet" href="static/css/trends-iphone.css" type="text/css" media="screen" title="no title" charset="utf-8">
 {% endblock %}
 
@@ -29,11 +38,12 @@
 	</div>
     {% endif %}	
 </div>
+<form id="searchform">
 	<div id="searchbox">
-	<input type="text" id="query" /><br/> <input type="button" id="search" value="Search"><br/>
+	<input type="text" id="query" placeholder="Enter your query" /><br/> <input type="button" id="search" value="Search"><br/>
 	  <img id="spinny" src="static/img/ajax-loader.gif" style="display:none">	
 	</div>
-
+</form>
 
 
  
@@ -51,6 +61,5 @@
 	  </div>
 	</div>
 	
-	</div>
 	<a id="new-search-link" href="#" onclick='window.location.hash="";$(this).hide();$("#query").focus()'>Start new search</a>
 {% endblock %}
