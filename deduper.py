@@ -135,26 +135,95 @@ def pairs_to_groups(pair_merges):
 
 ####
 
-def dedupe_topics(topics):
+def dedupe_topics(topics, lc):
+  # Scoring is not touched
+  new_topics = []
+  already_merged_topics = set()
   for i in range(len(topics)):
+    if i in already_merged_topics:
+      continue
+    new_topic = topics[i]
     for j in range(i+1, len(topics)):
-      t1,t2 = topics[i],topics[j]
-      #if t1.group_ids==t2.group_ids:
-      #  print ansi.color("group-equivalent topics %s  %s" %(t1.ngram,t2.ngram),'blue')
-      #  continue
-      jacc = jaccard(t1.group_ids, t2.group_ids)
-      if jacc > 0.3:
-        s= "jacc %.2f = %2d/%2d,  loseleft %2d loseright %2d  %-20s  %-20s" % (
-          jacc,
-          len(t1.group_ids&t2.group_ids), len(t1.group_ids | t2.group_ids),
-          len(t1.group_ids-t2.group_ids),
-          len(t2.group_ids-t1.group_ids),
-          t1.label, t2.label)
-        if jaccard(t1.group_ids,t2.group_ids)>0.9:  s= ansi.color(s, 'blue')
-        print s
-  return topics
+      this_topic = topics[j]
+      if merge_topics(new_topic, this_topic):
+        new_topic.label_set.add(this_topic.ngram)
+        new_topic.group_ids = new_topic.group_ids.intersection(this_topic.group_ids)
+        already_merged_topics.add(j)
+    # make new_topic.groups consistent with new_topic.group_ids
+    new_topic.groups = [ group for group in new_topic.groups
+                         if group.group_id in new_topic.group_ids ]
+    # NB: not making new_topic.tweets consistent b/c that only affects EXTRAS
+    # Fix label for new_topic
+    if len(new_topic.label_set) > 1:
+      new_topic.ngram, new_topic.label = construct_multi_label(new_topic)
+    new_topics.append(new_topic)
+  return new_topics
 
+import kmp
+import __builtin__
+import itertools
+def construct_multi_label(topic):
+  arbitrary_tweet = topic.groups[0].head
+  tokens = arbitrary_tweet['toks']
+  ranges = []
+  for label in topic.label_set:
+    index = kmp.indexSubsequence(label, tokens)
+    #print "%s in %s at %s" % (label, tokens, index)
+    if index > -1:
+      ranges.append(__builtin__.range(index, index + len(label)))
+  indices = set()
+  for range in ranges:
+    indices.update(range)
+  indices = list(indices)
+  indices.sort()
+  labels = []
+  last_index = indices[0] - 1
+  for index in indices:
+    if index != last_index + 1:
+      labels.append(None)
+    labels.append(tokens[index])
+    last_index = index
+  labels = [ list(g) for k, g
+             in itertools.groupby(labels, lambda it: it is not None)
+             if k ]
+  longest_label = []
+  for label in labels:
+    if len(label) > len(longest_label):
+      longest_label = label
+  #print ranges
+  #print [ [ tokens[index] for index in range ] for range in ranges ]
+  print labels
+  print longest_label
+  return tuple(longest_label), " / ".join([ " ".join(label) for label in labels ])
 
+def intersection(tweets1, tweets2, lc):
+  tweet1_ids = set([ tweet['id'] for tweet in tweets1 ])
+  tweet2_ids = set([ tweet['id'] for tweet in tweets2 ])
+  intersection_ids = tweet1_ids.intersection(tweet2_ids)
+  return [ lc.tweets_by_id[id] for id in intersection_ids ]
+
+def merge_topics(topic1, topic2, use_jaccard=True):
+  if use_jaccard:
+    jacc = jaccard(topic1.group_ids, topic2.group_ids)
+    merge = False
+    if jacc > 0.3:
+      s= "jacc %.2f = %2d/%2d,  loseleft %2d loseright %2d  %-20s  %-20s" % (
+        jacc,
+        len(topic1.group_ids&topic2.group_ids),
+        len(topic1.group_ids | topic2.group_ids),
+        len(topic1.group_ids-topic2.group_ids),
+        len(topic2.group_ids-topic1.group_ids),
+        topic1.label, topic2.label)
+      if jaccard(topic1.group_ids,topic2.group_ids)>0.9:
+        s = ansi.color(s, 'blue')
+        merge = True
+      print s
+  else:
+    merge = False
+    if topic1.group_ids==topic2.group_ids:
+      print ansi.color("group-equivalent topics %s  %s" %(topic1.ngram,topic2.ngram),'blue')
+      merge = True
+  return merge
 
 ####
 

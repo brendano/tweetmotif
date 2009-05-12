@@ -14,6 +14,7 @@ class Topic:
   def __init__(self, **kwargs):
     self.groups = self.ngram = None
     self.__dict__.update(kwargs)
+    self.label_set = set([self.ngram])
 
   @property
   def group_count(self):
