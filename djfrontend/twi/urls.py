@@ -7,6 +7,7 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('djfrontend.twi.views',
 
     url(r'^do_query$', "do_query"),
+    url(r'^search/(?P<query>.*)/$', "show_results"),
     url(r'^$', "index"),
 
     # Example:

@@ -1,5 +1,5 @@
 import sys,os,urllib2
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader, RequestContext
 import simplejson
 
@@ -18,7 +18,11 @@ def index(request):
   d['prebaked_queries'] = ['sandwich', 'coffee', ':)', ':(', 'aw', 'awwwwww', 'school', 'jobs']
   c = RequestContext(request, d)
   return HttpResponse(t.render(c))
-  
+	  
+
+def show_results(request, query):
+	return HttpResponseRedirect("/#" + query)
+
 def do_query(request):
   if not "q" in request.REQUEST:
     return HttpResponse("No query")
