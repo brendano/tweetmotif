@@ -16,7 +16,7 @@
 
   <div id="trends">
     {% if trend_topics %}
-	<div id="trending-topics" class="prefill-suggestions">
+    <div id="trending-topics" class="prefill-suggestions">
       <h3>Trending topics</h3>
 
       {% for topic in trend_topics %}
@@ -24,7 +24,7 @@
         	&bull;
         {% endif %}
       {% endfor %}
-	</div>
+    </div>
     {% endif %}
    <div id="suggested-searches" class="prefill-suggestions">
 	 <h3>Try</h3>

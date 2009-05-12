@@ -16,6 +16,7 @@ def pull():
     data = simplejson.load(myurl.urlopen(URL))
     last_update = datetime.now()
     print "Updated trends.data"
+
   except (ValueError,) + myurl.url_exceptions, e:
     print "Error updating trends: %s %s" % (type(e), e)
     return data

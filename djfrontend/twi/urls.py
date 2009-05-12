@@ -9,6 +9,7 @@ urlpatterns = patterns('djfrontend.twi.views',
     url(r'^do_query$', "do_query"),
     url(r'^search/(?P<query>.*)/$', "show_results"),
     url(r'^$', "index"),
+    url(r'^about$', "about"),
 
     # Example:
     # (r'^twidjango/', include('twidjango.foo.urls')),

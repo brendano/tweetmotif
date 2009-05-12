@@ -27,20 +27,19 @@ def response(template,*args):
     return _process_view
 
 
-BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://localhost/twitterthemes/backend"
+BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://tweetmotif.com/backend"
 
 @response('index.tpl')
 def index(request):
   d = {}
-  d['trend_topics'] = trends.current_topics()
+  d['trend_topics'] = trends.current_topics() or []
   d['default_query'] = ''  #d['trend_topics'][0]['name'] if d['trend_topics'] else "sandwich"
   for x in d['trend_topics']:
     # twitter's x['query'] is too complex, often with boolean OR's.  ugly.  silly to optimize recall so let's do only one form.
     x['simple_query'] = ('"%s"' % x['name']) if len(x['name'].split())>1 else x['name']
   d['prebaked_queries'] = ['sandwich', 'coffee', ':)', ':(', 'aw', 'awwwwww', 'school', 'jobs']
-  c = RequestContext(request, d)
+  # c = RequestContext(request, d)
   return d
-      
 
 def show_results(request, query):
     return HttpResponseRedirect("/#" + query)
@@ -54,5 +53,7 @@ def do_query(request):
     json = urllib2.urlopen(BACKEND_URL + "/?q=%s&max_topics=%s&format=json" % (q, max_topics)).read()
     return HttpResponse(json)
 
-
-
+@response('about.tpl')
+def about(request):
+  return {}
+  

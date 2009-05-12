@@ -8,7 +8,7 @@ import tchelpers
 
 os.system("mkdir -p httpcache.tc")
 data_by_url = tchelpers.open("httpcache.tc/data_by_url.tch")
-last_updaate = tchelpers.open("httpcache.tc/last_update.tch")
+last_update = tchelpers.open("httpcache.tc/last_update.tch")
 
 def application(environ, start_response):
   response_headers = [('Content-type', 'text/plain')]

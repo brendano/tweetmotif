@@ -1,1 +1,1 @@
-django.wsgi
+djfrontend.wsgi

@@ -11,7 +11,6 @@ urlpatterns = patterns('',
 
   (r'^', include('djfrontend.twi.urls')),
   (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': os.path.join(dir,'static')}),
-  (r'^about$', 'django.views.generic.simple.direct_to_template', {'template':'about.tpl'})
   
   # Example:
   # (r'^twidjango/', include('twidjango.foo.urls')),
