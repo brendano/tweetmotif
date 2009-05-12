@@ -88,11 +88,10 @@ def gather_leftover_tweets(topic_res, linkedcorpus):
 def late_topic_clean(topic_res, max_topics):
   if not topic_res.topics: return
   assert topic_res.topics[0].groups
-  res=topic_res
-  print "nonsingleton count:", util.uniq_c(len(t.groups)>1 for t in res.topics)
-  res.topics = [t for t in res.topics if len(t.groups)>1]
-  #res.topics = deduper.dedupe_topics(res.topics)
-  if max_topics < len(res.topics):
+  print "nonsingleton count:", util.uniq_c(len(t.groups)>1 for t in topic_res.topics)
+  topic_res.topics = [t for t in topic_res.topics if len(t.groups)>1]
+  topic_res.topics = deduper.dedupe_topics(topic_res.topics, topic_res.linkedcorpus)
+  if max_topics < len(topic_res.topics):
     print "truncating topics"
     topic_res.topics = topic_res.topics[:max_topics]
 
