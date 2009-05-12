@@ -28,6 +28,7 @@
       {% endfor %}
 	</div>
     {% endif %}	
+</div>
 	<div id="searchbox">
 	<input type="text" id="query" /><br/> <input type="button" id="search" value="Search"><br/>
 	  <img id="spinny" src="static/img/ajax-loader.gif" style="display:none">	
@@ -39,7 +40,7 @@
 	
 	
 	<div id='main'>
-	  <div id='themelistcontainer'><div class='content_header' style='display:none'><h2>related topic results</h2></div>
+	  <div id='themelistcontainer'><div class='content_header' style='display:none'><h2>Related topic results</h2></div>
 	    <ul id="themelist-col0"></ul>  
 	  </div>
 		

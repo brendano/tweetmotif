@@ -10,7 +10,6 @@ import timeout_urllib2; timeout_urllib2.sethttptimeout(20.0)
 
 _IPHONE_UA = re.compile(r'Mobile.*Safari')
 def is_iphone(request):
-    return True
     return _IPHONE_UA.search(request.META['HTTP_USER_AGENT']) is not None
 
 def response(template,*args):
