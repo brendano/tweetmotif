@@ -10,7 +10,7 @@ sys.path.insert(0, "platform/%s" % sys.platform)
 
 class LMCommon:
   def compare_with_bg_model(self, bg_model, n, min_count=1,
-                            smoothing_algorithm='mle'):
+                            smoothing_algorithm='lidstone'):
     ngrams_with_ratios = [
       (self.likelihood_ratio(ngram, bg_model, smoothing_algorithm), ngram)
       for ngram in self.ngrams_by_type[n]
@@ -21,7 +21,7 @@ class LMCommon:
         continue
       yield ratio, ngram
 
-  def likelihood_ratio(self, ngram, bg_model, smoothing_algorithm='mle'):
+  def likelihood_ratio(self, ngram, bg_model, smoothing_algorithm='lidstone'):
     # This is where experimentation can happen:
     # * change probability estimate
     # * change ratio computation
