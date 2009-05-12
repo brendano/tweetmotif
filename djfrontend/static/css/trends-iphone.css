@@ -1,0 +1,80 @@
+/* @override http://172.16.42.9:8000/static/css/trends-iphone.css */
+
+
+body, html{
+	padding: 0px;
+	font-family: Helvetica Neue;
+	font-size: 11px;
+}
+#query {
+	width: 100%;
+}
+
+
+h2,h3{
+	font-size: 120%;
+	margin-bottom: 0px;
+	margin-top: 5px;
+}
+
+#searchbox {
+	margin: 10px auto;
+	width: 80%;
+	text-align: center;
+}
+
+#resultscontent{
+	margin-left: 0px;
+}
+
+.tweet  {
+	margin-top: 10px;
+	border: 1px solid #c0c0c0;
+	padding: 5px;
+	-webkit-border-radius: 5px;
+	background-color: #e9f1ea;
+}
+
+span.rest_tweets_msg {
+	display: none;
+}
+
+a.m{
+	text-align: right;
+	display: block;
+	font-style: italic;
+	font-weight: bold;
+}
+
+span.newsearch{
+	display: none;
+	font-size: 140%;
+	cursor: pointer;
+	margin-left: 0px;
+	text-decoration: none;
+	border-bottom: 1px dotted black;
+	font-weight: bold;
+}
+
+#new-search-link{
+	display: none;
+}
+
+a {
+	text-decoration: none;
+	color: #5565ff;
+}
+
+ul#themelist-col0{
+	list-style-type: none;
+	width: 100%;
+	margin-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+#themelist-col0 li {
+	margin-right: 15px;
+	display: inline-table;
+
+}

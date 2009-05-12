@@ -1,0 +1,16 @@
+span.q_hl {
+  background-color: #fbbc5d;
+	color: #000;
+	padding: 1px;
+}
+
+span.topic_hl {
+  background-color: #b9c6f2;
+	color: #131313;
+	padding: 1px;	
+}
+
+.selected-theme{
+	font-weight: bold;
+}
+
