@@ -5,9 +5,9 @@ from datetime import timedelta
 
 BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://tweetmotif.com/backend"
 
-the_cache = resource_cache.TyrantCache(ttl=timedelta(seconds=60), port=2444)
+the_cache = resource_cache.TyrantCache(port=2444, ttl=timedelta(seconds=60))
 
-@the_cache.wrap
+#@the_cache.wrap
 def url_call(url):
   json = urllib2.urlopen(url).read()
   return json
@@ -19,5 +19,3 @@ def call(q, max_topics):
     
 
 # def refresh_query(q):
-
-

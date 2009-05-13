@@ -317,7 +317,7 @@ def the_app(environ, start_response):
   
   topic_labels = ['''<span class="topic_label" onclick="topic_click(this)" topic_label="%s"
   >%s</span><small>&nbsp;%d,&thinsp;%d</small><br>''' % (
-    cgi.escape(topic.label), topic.label.replace(" ","&nbsp;"), topic.group_count, topic.tweet_count )
+    cgi.escape(topic.label), topic.label, topic.group_count, topic.tweet_count )
                   for topic in res.topics]
   for x in table_byrow(topic_labels, ncol=opts.ncol): yield x
 

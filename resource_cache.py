@@ -6,7 +6,7 @@ import pytyrant
 
 class TyrantCache:
 
-  def __init__(self, ttl, host='localhost', port=2444):
+  def __init__(self, host='localhost', port=1978, ttl=timedelta(seconds=5)):
     self.tt = pytyrant.PyTyrant.open(host, port)
     assert isinstance(ttl, timedelta)
     self.ttl = ttl

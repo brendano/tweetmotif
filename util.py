@@ -88,7 +88,7 @@ def write_tsv(data, filename):
 
 ##########  Misc
 
-def argmax(x,scorer):
+def argmax(x, scorer):
   x.sort(key=scorer)
   return x[-1]
 

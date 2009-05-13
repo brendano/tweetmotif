@@ -186,10 +186,11 @@ def construct_multi_label(topic):
   labels = [ list(g) for k, g
              in itertools.groupby(labels, lambda it: it is not None)
              if k ]
-  longest_label = []
-  for label in labels:
-    if len(label) > len(longest_label):
-      longest_label = label
+  longest_label = util.argmax(labels, scorer=lambda ngram: len(ngram))
+  # longest_label = []
+  # for label in labels:
+  #   if len(label) > len(longest_label):
+  #     longest_label = label
   #print ranges
   #print [ [ tokens[index] for index in range ] for range in ranges ]
   print labels
@@ -205,24 +206,23 @@ def intersection(tweets1, tweets2, lc):
 def merge_topics(topic1, topic2, use_jaccard=True):
   if use_jaccard:
     jacc = jaccard(topic1.group_ids, topic2.group_ids)
-    merge = False
-    if jacc > 0.3:
-      s= "jacc %.2f = %2d/%2d,  loseleft %2d loseright %2d  %-20s  %-20s" % (
-        jacc,
-        len(topic1.group_ids&topic2.group_ids),
-        len(topic1.group_ids | topic2.group_ids),
-        len(topic1.group_ids-topic2.group_ids),
-        len(topic2.group_ids-topic1.group_ids),
-        topic1.label, topic2.label)
-      if jaccard(topic1.group_ids,topic2.group_ids)>0.9:
-        s = ansi.color(s, 'blue')
-        merge = True
-      print s
+    merge = jacc > 0.9
+    # if jacc > 0.3:
+    #   s= "jacc %.2f = %2d/%2d,  loseleft %2d loseright %2d  %-20s  %-20s" % (
+    #     jacc,
+    #     len(topic1.group_ids&topic2.group_ids),
+    #     len(topic1.group_ids | topic2.group_ids),
+    #     len(topic1.group_ids-topic2.group_ids),
+    #     len(topic2.group_ids-topic1.group_ids),
+    #     topic1.label, topic2.label)
+    #   if merge:
+    #     s = ansi.color(s, 'blue')
+    #   print s
   else:
-    merge = False
-    if topic1.group_ids==topic2.group_ids:
+    merge = topic1.group_ids==topic2.group_ids
+    if merge:
       print ansi.color("group-equivalent topics %s  %s" %(topic1.ngram,topic2.ngram),'blue')
-      merge = True
+  if merge: print 'merge'
   return merge
 
 ####
