@@ -27,8 +27,6 @@ def response(template,*args):
     return _process_view
 
 
-BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://tweetmotif.com/backend"
-
 @response('index.tpl')
 def index(request):
   d = {}
@@ -44,16 +42,19 @@ def index(request):
 def show_results(request, query):
     return HttpResponseRedirect("/#" + query)
 
+@response('about.tpl')
+def about(request):
+  return {}
+
+########
+
+import query_cache
+
 def do_query(request):
   if not "q" in request.REQUEST:
     return HttpResponse("No query")
   else:
     q = util.stringify(myurl.quote(request.REQUEST['q']))
     max_topics = request.REQUEST.get("max_topics", 40)
-    json = urllib2.urlopen(BACKEND_URL + "/?q=%s&max_topics=%s&format=json" % (q, max_topics)).read()
+    json = query_cache.call(q, max_topics)
     return HttpResponse(json)
-
-@response('about.tpl')
-def about(request):
-  return {}
-  
