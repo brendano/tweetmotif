@@ -187,14 +187,9 @@ def construct_multi_label(topic):
              in itertools.groupby(labels, lambda it: it is not None)
              if k ]
   longest_label = util.argmax(labels, scorer=lambda ngram: len(ngram))
-  # longest_label = []
-  # for label in labels:
-  #   if len(label) > len(longest_label):
-  #     longest_label = label
-  #print ranges
-  #print [ [ tokens[index] for index in range ] for range in ranges ]
-  print labels
-  print longest_label
+
+  print "LABELS ",labels
+  print "LONGEST ",longest_label
   return tuple(longest_label), " / ".join([ " ".join(label) for label in labels ])
 
 def intersection(tweets1, tweets2, lc):
@@ -222,7 +217,8 @@ def merge_topics(topic1, topic2, use_jaccard=True):
     merge = topic1.group_ids==topic2.group_ids
     if merge:
       print ansi.color("group-equivalent topics %s  %s" %(topic1.ngram,topic2.ngram),'blue')
-  if merge: print 'merge'
+  if not merge and len(set(topic1.ngram) & set(topic2.ngram)) >= 2:
+    print "wtf no merge? %-20s %-20s" % (topic1.ngram, topic2.ngram)
   return merge
 
 ####
