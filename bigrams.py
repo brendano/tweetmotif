@@ -31,9 +31,8 @@ def analyze_tweet(tweet):
 
 from twokenize import regex_or
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
-# junk tokens contribute no information and can be ignored
-#JunkTok = mycompile(r'''^[^a-zA-Z0-9_@]+$''')
-JunkTok = mycompile(r'''^$''')
+# junk tokens are a more aggressive cleaning assumption than usual.
+JunkTok = mycompile(r'''^[^a-zA-Z0-9_@]+$''')
 # dont make n-grams across phrase boundary markers.
 PhraseBoundaryTok = regex_or(r'''[.,“"'?!:;|-]+''', twokenize.Entity)
 PhraseBoundaryTok = mycompile('^'+PhraseBoundaryTok+'$')
@@ -46,7 +45,7 @@ def tokenize_and_clean(msg, alignments):
     toks = twokenize.simple_tokenize(msg)
   for i in range(len(toks)):
     toks[i] = toks[i].lower()
-  inds = [i for i in range(len(toks)) if not JunkTok.search(toks[i])]
+  inds = range(len(toks))
   #if len(inds) < len(toks): print "dropping junk", sorted(list(toks[i] for i in (set(range(len(toks)))-set(inds))))
   if alignments: 
     return toks.subset(inds)
@@ -92,7 +91,8 @@ def bigram_stopword_filter(bigrams):
         not EdgePunctTok.search(ng[0]) and
         ng[-1] not in super_stopwords and
         not EdgePunctTok.search(ng[1]) and
-        not any(PhraseBoundaryTok.search(tok) for tok in ng)
+        not any(PhraseBoundaryTok.search(tok) for tok in ng) and
+        not any(JunkTok.search(tok) for tok in ng)
   ]
   #for reject in set(ngrams) - set(ret):
   #  print "dropping stopword-implicated", reject
@@ -104,6 +104,7 @@ def ngram_stopword_filter(ngrams):
         ng[0] not in leftside_stopwords and 
         ng[-1] not in super_stopwords and
         ng[-1] not in rightside_stopwords and
+        not (JunkTok.search(ng[0]) or JunkTok.search(ng[-1])) and
         not any(PhraseBoundaryTok.search(tok) for tok in ng)
   ]
   #for reject in set(ngrams) - set(ret):
