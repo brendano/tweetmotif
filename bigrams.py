@@ -62,12 +62,6 @@ def bigrams(tokens):
 def trigrams(tokens):
   return ngrams(tokens,3)
 
-def multi_ngrams(tokens, n_and_up):
-  ret = []
-  for k in range(n_and_up, len(tokens)):
-    ret += ngrams(tokens, k)
-  return ret
-
 def ngrams(tokens, n):
   return [tuple(tokens[i:(i+n)]) for i in range(len(tokens) - (n-1))]
 
@@ -116,11 +110,14 @@ def ngram_stopword_filter(ngrams):
   #  print "dropping stopword-implicated", reject
   return ret
 
+def kill_hashtags(ngrams):
+  # for n>1-grams
+  return (ng for ng in ngrams if all(not tok.startswith('#') for tok in ng))
+
 cc = util.chaincompose
 filtered_unigrams  = cc(unigrams, unigram_stopword_filter)
-filtered_bigrams   = cc(bigrams,  bigram_stopword_filter)
-filtered_trigrams  = cc(trigrams, ngram_stopword_filter)
-filtered_multi_ngrams  = cc(multi_ngrams, ngram_stopword_filter)
+filtered_bigrams   = cc(bigrams,  bigram_stopword_filter, kill_hashtags)
+filtered_trigrams  = cc(trigrams, ngram_stopword_filter, kill_hashtags)
 
 
 def output_ngram_counts(ngram_counts, min_count=1):
