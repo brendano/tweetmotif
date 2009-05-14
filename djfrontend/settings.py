@@ -3,7 +3,7 @@ import os,sys
 here = os.path.abspath(os.path.dirname(__file__))
 
 
-DEBUG = True
+DEBUG = not os.popen("hostname").read().strip().startswith("domU")
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
