@@ -119,6 +119,10 @@ def kill_hashtags(ngrams):
 def kill_urls(ngrams):
   # for n>1-igrams
   return (ng for ng in ngrams if all(not twokenize.Url_RE.search(tok) for tok in ng))
+
+def kill_multiple_ats(ngrams):
+  # for n>1-grams
+  return (ng for ng in ngrams if sum(tok.startswith('@') for tok in ng) <= 1)
   
 def kill_starting_at(toks):
   while toks and toks[0].startswith('@'): toks=toks[1:]
@@ -127,9 +131,18 @@ def kill_starting_at(toks):
 
 cc = util.chaincompose
 filtered_unigrams  = cc(unigrams, unigram_stopword_filter)
-filtered_bigrams   = cc(kill_starting_at, bigrams,  bigram_stopword_filter, kill_urls, kill_hashtags)
-filtered_trigrams  = cc(kill_starting_at, trigrams, ngram_stopword_filter,  kill_urls, kill_hashtags)
+filtered_bigrams   = cc(kill_starting_at, bigrams,  bigram_stopword_filter, 
+                        kill_urls, kill_multiple_ats, kill_hashtags)
+filtered_trigrams  = cc(kill_starting_at, trigrams, ngram_stopword_filter,  
+                        kill_urls, kill_multiple_ats, kill_hashtags)
 
+# ngram_cleaner = cc(kill_urls, kill_multiple_ats, kill_hashtags)
+
+# def single_ngram_is_legit(ngram):
+#   # incomplete!!
+#   assert len(ngram)>1
+#   x = list(cleaner([ngram]))
+#   return bool(x)
 
 def output_ngram_counts(ngram_counts, min_count=1):
   join_flag = False

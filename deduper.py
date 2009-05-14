@@ -173,8 +173,8 @@ def construct_multi_label(topic, lang_model):
     if index > -1:
       ranges.append(__builtin__.range(index, index + len(label)))
   indices = set()
-  for range in ranges:
-    indices.update(range)
+  for rng in ranges:
+    indices.update(rng)
   indices = list(indices)
   indices.sort()
   labels = []
@@ -203,6 +203,7 @@ import math
 def choose_multi_label(labels, lang_model):
   longest = util.argmax(labels, scorer=lambda ngram: len(ngram))
   if len(longest) > 3:
+    
     best = util.argmax(bigrams.trigrams(longest), lambda ng: lang_model.lidstone(ng))
     best = (best,)
   elif len(longest) == 3:
