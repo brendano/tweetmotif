@@ -31,7 +31,7 @@
 	</div>
     {% endif %}
    <div id="suggested-searches" class="prefill-suggestions">
-	 <h3>Try</h3>
+	 <h3>Or try</h3>
       {% for q in prebaked_queries %}
         <a href="#" query="{{q}}" onclick="TT.trendClick($(this)); return false">{{q}}</a>{% if not forloop.last  %}
         	&bull;

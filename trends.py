@@ -4,7 +4,13 @@ import simplejson
 
 def current_topics():
   if needs_update(): pull()
-  return data and data['trends'].values()[0]
+  if not data: return []
+  for x in data['trends'].values()[0]:
+    # twitter's x['query'] is too complex, often with boolean OR's.  ugly.  
+    # silly to optimize recall so let's do only one form.
+    if 'simple_query' not in x:
+      x['simple_query'] = ('"%s"' % x['name']) if len(x['name'].split())>1 else x['name']
+  return data['trends'].values()[0]
 
 data = None
 last_update = datetime.now() - timedelta(days=999)

@@ -1,5 +1,5 @@
 import sys,os,urllib2
-import myurl
+import myurl,util
 import resource_cache
 from datetime import timedelta
 
@@ -12,10 +12,11 @@ def url_call(url):
   json = urllib2.urlopen(url).read()
   return json
 
-def call(q, max_topics):
-  url = BACKEND_URL + "/?q=%s&max_topics=%s&format=json" % (q, max_topics)
-  return url_call(url)
+def make_url(q, max_topics):
+  q = util.stringify(myurl.quote( q ))
+  return BACKEND_URL + "/?q=%s&max_topics=%s&format=json" % (q, max_topics)
   
-    
+def call(*args,**kwargs):
+  url = make_url(*args, **kwargs)
+  return url_call(url)
 
-# def refresh_query(q):

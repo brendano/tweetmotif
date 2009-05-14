@@ -26,16 +26,14 @@ def response(template,*args):
         return _handle_request
     return _process_view
 
+PREBAKED_QUERIES = ['sandwich', 'coffee', ':)', ':(', 'aw', 'awwwwww', 'jobs','@the_real_shaq','@twitter', '"san francisco" weather']
 
 @response('index.tpl')
 def index(request):
   d = {}
-  d['trend_topics'] = trends.current_topics() or []
+  d['trend_topics'] = trends.current_topics()
   d['default_query'] = ''  #d['trend_topics'][0]['name'] if d['trend_topics'] else "sandwich"
-  for x in d['trend_topics']:
-    # twitter's x['query'] is too complex, often with boolean OR's.  ugly.  silly to optimize recall so let's do only one form.
-    x['simple_query'] = ('"%s"' % x['name']) if len(x['name'].split())>1 else x['name']
-  d['prebaked_queries'] = ['sandwich', 'coffee', ':)', ':(', 'aw', 'awwwwww', 'school', 'jobs','@the_real_shaq','@twitter']
+  d['prebaked_queries'] = PREBAKED_QUERIES
   # c = RequestContext(request, d)
   return d
 
@@ -54,7 +52,6 @@ def do_query(request):
   if not "q" in request.REQUEST:
     return HttpResponse("No query")
   else:
-    q = util.stringify(myurl.quote(request.REQUEST['q']))
     max_topics = request.REQUEST.get("max_topics", 40)
-    json = query_cache.call(q, max_topics)
+    json = query_cache.call(q=request.REQUEST['q'], max_topics=max_topics)
     return HttpResponse(json)

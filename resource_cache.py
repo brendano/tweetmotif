@@ -42,6 +42,10 @@ class TyrantCache:
       else:
         _print("CACHE HIT %s" % key)
       return cache.get(key)
+    def _force_refresh(key):
+      _print("FORCE REFRESH %s" % key)
+      cache.set(key, fetcher(key))
+    _getter.force_refresh = _force_refresh
     return _getter
     
 

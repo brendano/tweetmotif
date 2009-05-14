@@ -195,6 +195,9 @@ ul#themelist-col1 {
   text-decoration: none;
   color: #164182;
 }
+#themelistcontainer a:hover {
+  text-decoration: underline;
+}
 
 
 h2 { margin: 0px; }
