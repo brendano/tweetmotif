@@ -16,10 +16,11 @@ import lang_model
 import util
 
 import tchelpers
-tok_cache = tchelpers.IntKeyWrapper(tchelpers.open_tc("toks.tch"))
+# tok_cache = tchelpers.IntKeyWrapper(tchelpers.open_tc("toks.tch"))
 
 def analyze_tweet(tweet):
   tweet['toks'] = tokenize_and_clean(tweet['text'], alignments=True); return   # turn off caching
+  
   if tweet['id'] in tok_cache:
     #print "CACHE HIT    %s" % tweet['text']
     toks = pickle.loads(tok_cache[tweet['id']])
@@ -115,10 +116,19 @@ def kill_hashtags(ngrams):
   # for n>1-grams
   return (ng for ng in ngrams if all(not tok.startswith('#') for tok in ng))
 
+def kill_urls(ngrams):
+  # for n>1-igrams
+  return (ng for ng in ngrams if all(not twokenize.Url_RE.search(tok) for tok in ng))
+  
+def kill_starting_at(toks):
+  while toks and toks[0].startswith('@'): toks=toks[1:]
+  return toks
+
+
 cc = util.chaincompose
 filtered_unigrams  = cc(unigrams, unigram_stopword_filter)
-filtered_bigrams   = cc(bigrams,  bigram_stopword_filter, kill_hashtags)
-filtered_trigrams  = cc(trigrams, ngram_stopword_filter, kill_hashtags)
+filtered_bigrams   = cc(kill_starting_at, bigrams,  bigram_stopword_filter, kill_urls, kill_hashtags)
+filtered_trigrams  = cc(kill_starting_at, trigrams, ngram_stopword_filter,  kill_urls, kill_hashtags)
 
 
 def output_ngram_counts(ngram_counts, min_count=1):

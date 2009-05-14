@@ -106,7 +106,7 @@ a.m {
   color: #7f7f7f;
 }
 .rest_tweets_msg { font-size: 0.7em; }
-.rest_tweets_msg a { color: #5f5f8f; }
+.rest_tweets_msg a { color: #101090; }
 a.at {
   font-style: italic;
   color: #7f7f7f;
@@ -118,13 +118,15 @@ h3 {
 }
 
 span.newsearch {
-  font-size: 1.5em;
-  color: black;
   text-decoration:none;
   cursor: pointer;
 }
 span.newsearch:hover {
   text-decoration: underline;
+}
+
+.theme_header {
+  font-size: 1.5em;
 }
 
 .theme {
@@ -148,6 +150,12 @@ h2 {
   padding: 5px 5px 5px 5px;
   background: #eee;
 }
+.theme_footer {
+  margin: 5px 10px 10px 5px;
+  font-size: 0.7em;
+  font-style: italic;
+  color: #101090;
+}
 
 span.q_hl {
   background-color: #fbbc5d;
@@ -161,12 +169,17 @@ span.topic_hl {
 	padding: 1px;	
 }
 
+#timeInfo {
+  font-size: 0.8em;
+}
+
 #themelistcontainer ul {
   list-style: none;
   margin-left: 0px;
   padding-left: 02px;
   width: 130px;
   float: left;
+  line-height: 1.1em;
 }
 
 #themelistcontainer ul li {

@@ -1,3 +1,5 @@
+{% comment %}
+
 {% extends "base.tpl" %}
 
 {% block content %}
@@ -329,3 +331,6 @@
 </script>
 
 {% endblock %}
+
+
+{% comment %}

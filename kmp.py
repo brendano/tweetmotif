@@ -38,3 +38,5 @@ def indexSubsequence(subsequence, sequence, start=-1, cmpFn=operator.eq):
     else:
         return -1
 
+def isSubseq(subseq, seq):
+  return indexSubsequence(subseq, seq) != -1

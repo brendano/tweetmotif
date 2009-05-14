@@ -119,10 +119,10 @@ def linkify(text, klass):
     return m.sre.expand(r'<a class="%s" target="_blank" href="%s">\1</a>' % (klass,url))
   return Url_RE.gsub(text, f)
 
-nice_tweet_cache = tchelpers.open("nice_tweets.tch")
+# nice_tweet_cache = tchelpers.open("nice_tweets.tch")
 
-def nice_tweet(tweet, q_toks, topic_ngram):
-  return _nice_tweet(tweet,q_toks,topic_ngram)  # disable cache
+def nice_tweet(tweet, q_toks, topic_ngrams):
+  return _nice_tweet(tweet,q_toks,topic_ngrams)  # disable cache
 
   key = pickle.dumps( (tweet, q_toks, topic_ngram) )
   if key in nice_tweet_cache:
@@ -134,19 +134,22 @@ def nice_tweet(tweet, q_toks, topic_ngram):
     nice_tweet_cache[key] = nt
     return nt
 
-def _nice_tweet(tweet, q_toks, topic_ngram):
+import kmp
+
+def _nice_tweet(tweet, q_toks, topic_ngrams):
   s = ""
   s += '<span class="text">'
-  hl_spec = {topic_ngram: ('<span class="topic_hl">','</span>')}
-  for ug in set(bigrams.unigrams(q_toks)):
-    if ug[0] in bigrams.super_stopwords: continue
-    if ug[0] in topic_ngram: continue
-    hl_spec[ug] = ('<span class="q_hl">','</span>')
+  hl_spec = dict((ng, ('<span class="topic_hl">','</span>')) for ng in topic_ngrams)
+  for qg in list(set(bigrams.bigrams(q_toks))) + list(set(bigrams.unigrams(q_toks))):
+    if len(qg)==1 and qg[0] in bigrams.super_stopwords: continue
+    if len(qg)==1 and any(qg[0] in ng for ng in topic_ngrams): continue
+    if len(qg)>=2 and any(kmp.isSubseq(qg, ng) for ng in topic_ngrams): continue
+    hl_spec[qg] = ('<span class="q_hl">','</span>')
   text = highlighter.highlight(tweet['toks'], hl_spec)
   text = linkify(text, klass='t')
   #text = twokenize.Url_RE.subn(r'<a class=t target=_blank href="\1">\1</a>', text)[0]
   #text = twokenize.AT_RE.subn(r'<a class=at target=_blank href="\1">\1</a>
-  text = At.gsub(text, r'<a class="at" target="_blan"k href="http://twitter.com/\2">@\2</a>')
+  text = At.gsub(text, r'<a class="at" target="_blank" href="http://twitter.com/\2">@\2</a>')
   s += text
   s += "</span>"
   
@@ -164,6 +167,15 @@ def _nice_tweet(tweet, q_toks, topic_ngram):
     # calling encode() here makes NO SENSE AT ALL why do we need it?
     s += '<a class="m" target="_blank" href="%s">%s</a>' % (util.stringify(link), util.stringify(user))
   s += '</span>'
+  return s
+
+HTTP_RE = _R(r'\bhttp://')
+WWW_RE = _R(r'\bwww[0-9]?\.')
+
+def nice_label(topic_label):
+  s = topic_label
+  s = HTTP_RE.replace(s,'')
+  s = WWW_RE.replace(s,'')
   return s
 
 def topic_group_html(groups):
@@ -200,21 +212,22 @@ def nice_timedelta(delt):
   return s
   #return "%s back to %s" % (d2.strftime("%Y-%m-%dT%H:%M:%S"), d1.strftime("%Y-%m-%dT%H:%M:%S"))
 
-def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
-  q_toks = bigrams.tokenize_and_clean(q, alignments=False)
-  q = '''%s "%s"''' % (q,topic_label)
-  sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
-  exclude = set(exclude)
-  tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
-  tweets = list(tw for tw in tweets if tw['id'] not in exclude)
-  lc = linkedcorpus.LinkedCorpus()
-  lc.fill_from_tweet_iter(tweets)
-  groups_by_tweet_id = deduper.dedupe(lc)
-  groups = deduper.make_groups(tweets, groups_by_tweet_id)
-  for group in groups:
-    group.head_html = nice_tweet(group.head, q_toks, sub_topic_ngram)
-    group.rest_htmls = [nice_tweet(t,q_toks,sub_topic_ngram) for t in group.rest]
-  yield topic_group_html(groups)
+# def single_query(q, topic_label, pages=1, rpp=20, exclude=()):
+#   q_toks = bigrams.tokenize_and_clean(q, alignments=False)
+#   q = '''%s "%s"''' % (q,topic_label)
+#   sub_topic_ngram = tuple(bigrams.tokenize_and_clean(topic_label,True))
+#   exclude = set(exclude)
+#   tweets = search.cleaned_results(q, pages=pages, rpp=rpp, key_fn=search.user_and_text_identity)
+#   tweets = list(tw for tw in tweets if tw['id'] not in exclude)
+#   lc = linkedcorpus.LinkedCorpus()
+#   lc.fill_from_tweet_iter(tweets)
+#   groups_by_tweet_id = deduper.dedupe(lc)
+#   groups = deduper.make_groups(tweets, groups_by_tweet_id)
+#   for group in groups:
+#     assert False, "broken"
+#     group.head_html = nice_tweet(group.head, q_toks, sub_topic_ngram)
+#     group.rest_htmls = [nice_tweet(t,q_toks,sub_topic_ngram) for t in group.rest]
+#   yield topic_group_html(groups)
 
 
 def the_app(environ, start_response):
@@ -249,7 +262,7 @@ def the_app(environ, start_response):
     return
 
   lc = linkedcorpus.LinkedCorpus()
-  tweets_file = 'save_%s_tweets' % opts.q
+  tweets_file = 'saved_tweets/save_%s_tweets' % opts.q
   tweet_iter = search.cleaned_results(opts.q, 
       pages = opts.pages, 
       key_fn = search.user_and_text_identity, 
@@ -270,9 +283,15 @@ def the_app(environ, start_response):
   for topic in res.topics:
     topic.tweet_ids = util.myjoin([tw['id'] for tw in topic.tweets])
     for group in topic.groups:
-      group.head_html = nice_tweet(group.head, q_toks, topic.ngram)
-      group.rest_htmls = [nice_tweet(t,q_toks,topic.ngram) for t in group.rest]
-      
+      group.head_html = nice_tweet(group.head, q_toks, topic.label_ngrams)
+      group.rest_htmls = [nice_tweet(t,q_toks,topic.label_ngrams) for t in group.rest]
+  
+  if lc.tweets_by_id:
+    earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
+    time_since_earliest = nice_timedelta(datetime.utcnow() - earliest)
+  else:
+    time_since_earliest = None
+
   if opts.format == 'pickle':
     # pickle.dumps(res) is 800k with dump/load = 100ms/60ms
     # trimmed json-like version is 150k with dump/load = 5ms/2ms.
@@ -282,13 +301,14 @@ def the_app(environ, start_response):
     topic_info = dict( (t.label,
        {
          'label': t.label,
+         'nice_label': nice_label(t.label),
          'tweet_ids': t.tweet_ids,
          'groups': [{'head_html':g.head_html, 'rest_htmls':g.rest_htmls} for g in t.groups],
          'query_refinement': ranking.query_refinement(opts.q, t),
        })
         for t in res.topics)
     topic_list = [t.label for t in res.topics]
-    results = {'topic_list':topic_list, 'topic_info': topic_info}
+    results = {'topic_list':topic_list, 'topic_info': topic_info, 'time_since_earliest': time_since_earliest,}
     yield simplejson.dumps(results)
     return
   if opts.format != 'dev': raise Exception("bad format")

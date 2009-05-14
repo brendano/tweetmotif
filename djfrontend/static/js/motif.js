@@ -1,4 +1,3 @@
-
 	jQuery.fn.fadeToggle = function(speed, easing, callback) {
 	   return this.animate({opacity: 'toggle'}, speed, easing, callback);
 
@@ -7,8 +6,8 @@
   
   function labelHtml(label) {
     if (label == "**EXTRAS**") {
-		if (!TT.isPhone) return "<i>more...</i>"
-		else return "";
+      if (!TT.isPhone) return "<i>more...</i>"
+      else return "";
     } else if (label != "**EXTRAS**") return (TT.isPhone ? htmlQuote(label).replace(/ /g,"&nbsp;") : htmlQuote(label) );
   }
   function htmlQuote(s) {
@@ -25,9 +24,9 @@
   
   TT = new function() {
     this.blocksToEnqueue = 3;
-	this.maxTopics = 40;
-	this.isPhone = false;
-	this.numColumns = 2;
+    this.maxTopics = 40;
+    this.isPhone = false;
+    this.numColumns = 2;
     this.data = {};
     this.tweetsPerResult = 4;
     this.currentlyEnqueued = [];
@@ -65,7 +64,16 @@
         var whichCol = i % this.numColumns;
         $('<li><a class="themelink" href="#" theme="' + htmlQuote(curTheme) + '"' +  
             'onclick="TT.enqueueTheme($(this).attr(\'theme\')); return false">' + 
-            labelHtml(curTheme) + '</a></li>').appendTo("#themelist-col" + whichCol);
+            labelHtml(TT.data[curTheme].nice_label) + '</a></li>').appendTo("#themelist-col" + whichCol);
+      }
+    }
+    
+    this.setTimeInfo = function(timeSinceEarliest) {
+      if (timeSinceEarliest) {
+        $('#timeInfo').html("over the last " + timeSinceEarliest);
+        $('#timeInfo').show();
+      } else {
+        $('#timeInfo').hide();
       }
     }
     
@@ -85,7 +93,9 @@
     
     this.newsearchClick = function(elt) {
       var theme = $(elt).attr('theme');
-      var new_q = TT.data[theme].query_refinement;
+      var themeData = TT.data[theme];
+      if (!themeData) return false;
+      var new_q = themeData.query_refinement;
       $("#query").attr('value', new_q)
       $("#search").click()
     }
@@ -121,10 +131,11 @@
 			this.currentlyEnqueued.splice(this.blocksToEnqueue,1);
 
       var themeData = this.data[theme];
-      var themeHtml = (theme=="**EXTRAS**") ? ""   //"<i>tweets on other themes...<i>" : 
-          : "&ldquo;" + labelHtml(theme) + "&rdquo;";
+      var themeHtml = (theme=="**EXTRAS**") ? "<i>more tweets...</i>"   //"<i>tweets on other themes...<i>" : 
+          : "&ldquo;" + labelHtml(themeData.nice_label) + "&rdquo;";
       var newsearch_tag = "<span class='newsearch' theme='" + labelHtml(theme) + "' onclick='TT.newsearchClick($(this)); return false;'>"
-      var tweetList = $("<div class='theme'>" + newsearch_tag + themeHtml + "</span></div>");
+      var tweetList = $("<div class='theme'>" + "<span class='theme_header'>" + 
+          newsearch_tag + themeHtml + "</span></span></div>");
       for (var i = 0; i < themeData.groups.length; i++) {
         var group = themeData.groups[i];
         var head_html = "<div class='tweet'>" + group.head_html;
@@ -149,6 +160,9 @@
         //   thisTweet.addClass("extratweets");  // whoa .. all elements would get this? 
         // }
       }
+      extra_html = "<div class='theme_footer'>" + newsearch_tag + "(drilldown &uarr;)" + "</span></div>";
+      $(extra_html).appendTo(tweetList);
+      
       tweetList.hide();
       var safeThemeName = theme.replace(/ /g, "_");
       tweetList.attr("id", "tweetresult-" + (safeThemeName));
@@ -164,7 +178,7 @@
 				var curElem = $($(".themelink")[i]);
 				var isSelectedTheme = false;				
 				for (var j=0; j < this.currentlyEnqueued.length; j++) {
-					if (this.currentlyEnqueued[j] == curElem.html().replace(/&nbsp;/g, " ") ) {
+					if (this.currentlyEnqueued[j] == curElem.attr('theme')) {
 						isSelectedTheme = true;
 					} 
 				};
@@ -220,26 +234,22 @@
     currentXHR = null;
     
     $("#search").click(function() {
-
       var query = $("#query").val();
-
 			if (query == this.currentQuery) return;
-
       if (currentXHR && currentXHR.readyState != 0) {
         currentXHR.abort();
       }
       TT.startBusyGraphic();
-
 
 			window.location.hash = encodeURIComponent(query);
 
 			TT.clearResults(true);
 			this.currentQuery = query;
       currentXHR = $.ajax({
-        url: "do_query", 
-		data: {q: query, 
-				max_topics: TT.maxTopics
-		},
+          url: "do_query", 
+          data: {q: query, 
+          max_topics: TT.maxTopics
+        },
         type: "GET", cache: false, dataType: "json",
         success: function(result) { 
 					$("#main").show();
@@ -248,12 +258,14 @@
           $('.content_header').show()
           TT.themeList = result.topic_list;
           TT.data = result.topic_info;
-		  $("#new-search-link").show();
+          $("#new-search-link").show();
           if (TT.themeList.length == 0) {
             TT.tellNoResults();
             return;
           }
           TT.displayThemeList();
+          TT.setTimeInfo(result.time_since_earliest);
+          
           for (var i = Math.min(2, TT.themeList.length-1); i >= 0; i--) {
             TT.enqueueTheme(TT.themeList[i])
           }

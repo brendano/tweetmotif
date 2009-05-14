@@ -89,6 +89,8 @@ def late_topic_clean(topic_res, max_topics):
   if not topic_res.topics: return
   assert topic_res.topics[0].groups
   print "nonsingleton count:", util.uniq_c(len(t.groups)>1 for t in topic_res.topics)
+  # for t in topic_res.topics:
+  #   if len(t.groups)==1: print "SINGLETON TOPIC ", t.ngram
   topic_res.topics = [t for t in topic_res.topics if len(t.groups)>1]
   topic_res.topics = deduper.dedupe_topics(topic_res.topics, topic_res.linkedcorpus)
   if max_topics < len(topic_res.topics):
@@ -99,13 +101,12 @@ from sane_re import *
 AllJunkLike = _R('^[^a-z0-9@_-]+$','i')
 def query_refinement(orig_q, topic):
   if topic.ngram == ("**EXTRAS**",): return None
-  
-  subquery = " ".join(topic.ngram)
-  if any(AllJunkLike.match(term) for term in topic.ngram):
+  subquery = topic.label.replace("/ ","")
+  if any(AllJunkLike.match(term) for term in util.flatten(topic.label_ngrams)):
     # then twitter phrase search will drop that token. at least emoticons.
     # so fallback to non-phrase search
     pass
-  elif len(topic.ngram) > 1:
+  elif len(subquery.split()) > 1:
     subquery = '"%s"' % subquery
   return orig_q + " " + subquery
  

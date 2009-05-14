@@ -47,7 +47,7 @@
       <div id='resultsbytheme'></div>
     </div>
   </div>
-  <div id='themelistcontainer'><div class='content_header' id="related-themes-title" style='display:none'><h2>related topics</h2></div>
+  <div id='themelistcontainer'><div class='content_header' id="related-themes-title" style='display:none'><h2>related themes</h2><div id='timeInfo' style='display:none'></div></div>
     <ul id="themelist-col0"></ul>
     <ul id="themelist-col1"></ul>    
   </div>

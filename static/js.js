@@ -47,8 +47,8 @@ function topic_click(elt) {
   if (has_been_requeried) {
     $("#tweets_more").html(topic.requery_tweets_html)
   } else {
-    $("#tweets_more").html("<img class=loading src=http://anyall.org/twistatic/ajax-loader.gif>")
-    requery(topic_label)
+    // $("#tweets_more").html("<img class=loading src=http://anyall.org/twistatic/ajax-loader.gif>")
+    //     requery(topic_label)
   }
   $(".topic_label.sel").removeClass("sel")
   $(elt).addClass("sel")

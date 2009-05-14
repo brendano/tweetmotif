@@ -155,14 +155,15 @@ def dedupe_topics(topics, lc):
     # NB: not making new_topic.tweets consistent b/c that only affects EXTRAS
     # Fix label for new_topic
     if len(new_topic.label_set) > 1:
-      new_topic.ngram, new_topic.label = construct_multi_label(new_topic)
+      new_topic._label_ngrams, new_topic.label = construct_multi_label(new_topic, lc.model)
+      new_topic.ngram = None
     new_topics.append(new_topic)
   return new_topics
 
 import kmp
 import __builtin__
 import itertools
-def construct_multi_label(topic):
+def construct_multi_label(topic, lang_model):
   arbitrary_tweet = topic.groups[0].head
   tokens = arbitrary_tweet['toks']
   ranges = []
@@ -183,14 +184,51 @@ def construct_multi_label(topic):
       labels.append(None)
     labels.append(tokens[index])
     last_index = index
-  labels = [ list(g) for k, g
+  labels = [ tuple(g) for k, g
              in itertools.groupby(labels, lambda it: it is not None)
              if k ]
-  longest_label = util.argmax(labels, scorer=lambda ngram: len(ngram))
 
-  print "LABELS ",labels
-  print "LONGEST ",longest_label
-  return tuple(longest_label), " / ".join([ " ".join(label) for label in labels ])
+  multi_label = choose_multi_label(labels, lang_model)
+  if isinstance(multi_label[0], list):
+    multi_label = tuple(tuple(x) for x in multi_label)
+
+  # if len(labels) > 1:
+  #   print "LABELS ",labels
+  #   print "MULTI", multi_label
+
+  return multi_label, " / ".join([ " ".join(label) for label in multi_label])
+
+import bigrams
+import math
+def choose_multi_label(labels, lang_model):
+  longest = util.argmax(labels, scorer=lambda ngram: len(ngram))
+  if len(longest) > 3:
+    best = util.argmax(bigrams.trigrams(longest), lambda ng: lang_model.lidstone(ng))
+    best = (best,)
+  elif len(longest) == 3:
+    best = longest
+    best = (best,)
+  elif len(longest) <= 2:
+    # this is kinda shitty set of them .. would rather want all possible skip n-grams (O(N^2) of them?)
+    z = [(tuple(x),) for x in labels] + bigrams.bigrams(labels) + bigrams.trigrams(labels)
+    assert z
+    z = [x for x in z if len(util.flatten(x)) <= 3]
+    # sum is too weird
+    # lexicographic ordering of the top-ranked sublabels in the multilabel
+    def scorer(ngrams):
+      scores = [lang_model.lidstone(ng) for ng in ngrams]
+      if len(scores) < 3:
+        scores += [0]*(3 - len(scores))
+      scores.sort(reverse=True)
+      # print "SCORE %-30s %s" % (scores, ngrams)
+      return scores
+    z.sort(key= scorer, reverse=True)
+    # print "RANKING",z
+    best = z[0]
+  else:
+    assert False
+  return best
+  
 
 def intersection(tweets1, tweets2, lc):
   tweet1_ids = set([ tweet['id'] for tweet in tweets1 ])
@@ -217,8 +255,8 @@ def merge_topics(topic1, topic2, use_jaccard=True):
     merge = topic1.group_ids==topic2.group_ids
     if merge:
       print ansi.color("group-equivalent topics %s  %s" %(topic1.ngram,topic2.ngram),'blue')
-  if not merge and len(set(topic1.ngram) & set(topic2.ngram)) >= 2:
-    print "wtf no merge? %-20s %-20s" % (topic1.ngram, topic2.ngram)
+  # if not merge and len(set(topic1.ngram) & set(topic2.ngram)) >= 2:
+  #   print "wtf no merge? %-20s %-20s" % (topic1.ngram, topic2.ngram)
   return merge
 
 ####
