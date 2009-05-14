@@ -26,7 +26,7 @@ def response(template,*args):
         return _handle_request
     return _process_view
 
-PREBAKED_QUERIES = ['sandwich', 'coffee', ':)', ':(', 'aw', 'awwwwww', 'jobs','@the_real_shaq','@twitter', '"san francisco" weather','tweetmotif']
+PREBAKED_QUERIES = ['sandwich', 'coffee', ':)', ':(', 'aw', 'awwwwww', '@the_real_shaq','@twitter', '"san francisco" weather','tweetmotif']
 
 @response('index.tpl')
 def index(request):
