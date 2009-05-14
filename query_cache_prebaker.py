@@ -62,5 +62,6 @@ def loop_forever():
 
 
 if __name__=='__main__':
-  util.fix_stdio()
+  #util.fix_stdio()
+  sys.stdout = open('/dev/stdout', 'w', 0)
   loop_forever()
