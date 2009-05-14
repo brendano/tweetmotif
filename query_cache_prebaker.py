@@ -48,8 +48,10 @@ def loop_forever():
   while True:
     i = (i+1)
     try:
-      if i%100 == 0: print "DATE %s" % datetime.now()
-      if i%10 == 0: prebake_refresh()
+      if i%100 == 0: print "DATE %s  ITER %s" % (datetime.now(), i)
+      if i%10 == 0:
+        print "prebake refresh"
+        prebake_refresh()
       trends_refresh()
     except Exception, e:
       raise e
