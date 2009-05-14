@@ -7,7 +7,7 @@
 {% block content %}
 
 <div id="logo_area">
-  <div id="header_by_logo"><a target="_blank" href="http://twitter.com/home?status=Summarize%20any%20Twitter%20topic%20at%20http%3A%2F%2Ftwittermotif.com">(tweet this)</a> <a href="about">(about)</a> <a href="#" onclick='TT.showTips(); return false'>(tips)</a></div>	
+  <div id="header_by_logo"><a target="_blank" href="http://twitter.com/home?status=Summarize%20any%20Twitter%20topic%20at%20http%3A%2F%2Ftweetmotif.com">(tweet this)</a> <a href="about">(about)</a> <a href="#" onclick='TT.showTips(); return false'>(tips)</a></div>	
   <a href="#"><img border="0" src="static/img/bird-logo.png"></a>
 </div>
 

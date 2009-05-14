@@ -14,7 +14,7 @@
 
 <p>TweetMotif was created by <a href="http://anyall.org/">Brendan O'Connor</a> (<a class="at" href="http://twitter.com/brendan642">@brendan642</a>), <a href="http://staff.science.uva.nl/~ahn/">David Ahn</a> (<a class="at" href="http://twitter.com/davidahn">@davidahn</a>) and <a href="http://ambientwitter.appspot.com/">Mike Krieger</a> (<a class="at" href="http://twitter.com/mikeyk">@mikeyk</a>).  We released it this week.
 
-<p><a target="_blank" href="http://twitter.com/home?status=Summarize%20any%20Twitter%20topic%20at%20http%3A%2F%2Ftwittermotif.com">Tweet this!</a>
+<p><a target="_blank" href="http://twitter.com/home?status=Summarize%20any%20Twitter%20topic%20at%20http%3A%2F%2Ftweetmotif.com">Tweet this!</a>
   
 <p>And please give us feedback!  At <a class="at" href="http://twitter.com/tweetmotif">@tweetmotif</a>, or email at <a href="mailto:tweetmotif@gmail.com">tweetmotif@gmail.com</a>.
 
