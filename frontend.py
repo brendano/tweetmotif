@@ -285,7 +285,8 @@ def the_app(environ, start_response):
     for group in topic.groups:
       group.head_html = nice_tweet(group.head, q_toks, topic.label_ngrams)
       group.rest_htmls = [nice_tweet(t,q_toks,topic.label_ngrams) for t in group.rest]
-  
+  for topic in res.topics:
+    topic.groups.sort(key=lambda g: g.head['created_at'], reverse=True)
   if lc.tweets_by_id:
     earliest = min(tw['created_at'] for tw in lc.tweets_by_id.itervalues())
     time_since_earliest = nice_timedelta(datetime.utcnow() - earliest)
