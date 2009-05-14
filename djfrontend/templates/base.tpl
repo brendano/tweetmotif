@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
   <head>
-    <title></title>
+    <title>tweetmotif - summarize and discover topics on twitter</title>
     <script type="text/javascript" charset="utf-8">
       if (!window['console']) {
         window.console = {};
