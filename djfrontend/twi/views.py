@@ -44,6 +44,9 @@ def show_results(request, query):
 def about(request):
   return {}
 
+def common_user_error(request):
+  return HttpResponseRedirect("/")
+  
 ########
 
 import query_cache

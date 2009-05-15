@@ -9,8 +9,8 @@ dir = os.path.abspath(os.path.dirname(__file__))
 
 urlpatterns = patterns('',
 
-  (r'^', include('djfrontend.twi.urls')),
   (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': os.path.join(dir,'static')}),
+  (r'^', include('djfrontend.twi.urls')),
   
   # Example:
   # (r'^twidjango/', include('twidjango.foo.urls')),
