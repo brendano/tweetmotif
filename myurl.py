@@ -5,9 +5,9 @@ import urllib
 from urllib2 import *
 url_exceptions = (urllib2.URLError, timeout_urllib2.Error, socket.error)
 
-def quote(s,*a,**k):
-  try:
-    return urllib.quote(s,*a,**k)
-  except KeyError:
-    # for some unicode. sigh.
-    return s.replace(" ","%20")
+import util
+
+def urlencode(dct):
+  dct = dict( (k, util.stringify(v)) for k,v in dct.iteritems())
+  return urllib.urlencode(dct)
+  

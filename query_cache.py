@@ -1,4 +1,4 @@
-import sys,os,urllib2
+import sys,os,urllib2,urllib
 import myurl,util
 import resource_cache
 from datetime import timedelta
@@ -13,8 +13,8 @@ def url_call(url):
   return json
 
 def make_url(q, max_topics):
-  q = util.stringify(myurl.quote( q ))
-  return BACKEND_URL + "/?q=%s&max_topics=%s&format=json" % (q, max_topics)
+  q = urllib.quote( util.stringify(q) )
+  return BACKEND_URL + "/?q=%s&max_topics=%s&format=json" % ((q), util.stringify(max_topics))
   
 def call(*args,**kwargs):
   url = make_url(*args, **kwargs)

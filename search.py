@@ -9,6 +9,7 @@ from collections import defaultdict
 import socket
 # socket.setdefaulttimeout(1) # http://www.voidspace.org.uk/python/articles/urllib2.shtml
 import timeout_urllib2; timeout_urllib2.sethttptimeout(4.0)
+import myurl
 
 def fetch(url, printer=None, retries=1):
   for i in range(retries):
@@ -52,7 +53,7 @@ def parallel_search(q, pages=10, rpp=100):
   return results
 
 def search_page(q, page, rpp):
-  url = SEARCH_URL + "&" + urllib.urlencode(dict(q=q, rpp=rpp, page=page))
+  url = SEARCH_URL + "&" + myurl.urlencode(dict(q=q, rpp=rpp, page=page))
   def _print(s):
     print ("SEARCH page %2d: " % page), s
   _print(url)

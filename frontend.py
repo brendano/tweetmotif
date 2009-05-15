@@ -24,7 +24,7 @@ import tchelpers
 if os.popen("hostname").read().strip()=='btoc.local':
   STATIC = "http://localhost/d/twi/twi/static"
 else:
-  STATIC = "http://anyall.org/twitterthemes/backend_static"
+  STATIC = "http://tweetmotif.com/backend_static"
 
 def page_header():
   return '''
@@ -56,6 +56,9 @@ def type_clean(val,type):
     if val in (False,0,'0','f','false','False','no','n'): return False
     if val in (True,1,'1','t','true','True','yes','y'): return True
     raise Exception("bad bool value %s" % repr(val))
+  if type==str or type==unicode:
+    # nope no strings, you're gonna get unicode instead!
+    return util.unicodify(val)
   return type(val)
 
 class Opts(util.Struct):
@@ -292,7 +295,7 @@ def the_app(environ, start_response):
     time_since_earliest = nice_timedelta(datetime.utcnow() - earliest)
   else:
     time_since_earliest = None
-
+  
   if opts.format == 'pickle':
     # pickle.dumps(res) is 800k with dump/load = 100ms/60ms
     # trimmed json-like version is 150k with dump/load = 5ms/2ms.

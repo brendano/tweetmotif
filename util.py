@@ -20,11 +20,13 @@ def unicodify(s, encoding='utf8', *args):
   """ because {str,unicode}.{encode,decode} is anti-polymorphic, but sometimes
   you can't control which you have. """
   if isinstance(s,unicode): return s
-  return s.decode(encoding, *args)
+  if isinstance(s,str): return s.decode(encoding, *args)
+  return unicode(s)
 
 def stringify(s, encoding='utf8', *args):
   if isinstance(s,str): return s
-  return s.encode(encoding, *args)
+  if isinstance(s,unicode): return s.encode(encoding, *args)
+  return str(s)
 
 def fix_stdio(encoding='utf8', errors='strict', buffering=0, shutup=True):
   """ forces utf8 at I/O boundaries, since it's ascii by default when using
