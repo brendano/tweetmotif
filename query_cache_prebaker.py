@@ -54,7 +54,7 @@ def loop_forever():
         prebake_refresh()
       trends_refresh()
     except Exception, e:
-      raise e
+      #raise e
       print "exception %s %s" % (type(e), e)
     time.sleep(5)
 
