@@ -154,11 +154,6 @@
         }
         head_html += "</div>";
         $(head_html + rest_html).appendTo(tweetList);
-        
-        // if (false &&  i > this.tweetsPerResult) {
-        //   console.log("never here now.")
-        //   thisTweet.addClass("extratweets");  // whoa .. all elements would get this? 
-        // }
       }
       extra_html = "<div class='theme_footer'>" + newsearch_tag + "(drilldown &uarr;)" + "</span></div>";
       $(extra_html).appendTo(tweetList);
@@ -176,18 +171,13 @@
 
 			for (var i=0; i < $(".themelink").length; i++) {
 				var curElem = $($(".themelink")[i]);
-				var isSelectedTheme = false;				
-				for (var j=0; j < this.currentlyEnqueued.length; j++) {
-					if (this.currentlyEnqueued[j] == curElem.attr('theme')) {
-						isSelectedTheme = true;
-					} 
-				};
+				var isSelectedTheme = this.currentlyEnqueued.length > 0 && this.currentlyEnqueued[0] == curElem.attr('theme')
 				if (isSelectedTheme) {
 					curElem.addClass("selected-theme");									
 				} else {
 					curElem.removeClass("selected-theme");
 				}
-			};
+			}
     }
    this.startBusyGraphic = function() {
      $("#spinny").show();
