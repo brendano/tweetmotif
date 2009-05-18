@@ -91,7 +91,7 @@ def write_tsv(data, filename):
 ##########  Misc
 
 def argmax(x, scorer):
-  x.sort(key=scorer)
+  x = sorted(x, key=scorer)
   return x[-1]
 
 def compose(*fns):
