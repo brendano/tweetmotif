@@ -19,7 +19,6 @@ import ranking
 import twokenize
 import highlighter
 import deduper
-import tchelpers
 
 if os.popen("hostname").read().strip()=='btoc.local':
   STATIC = "http://localhost/d/twi/twi/static"

@@ -6,7 +6,7 @@ import simplejson
 import util
 import tchelpers
 
-sys.path.insert(0, "platform/%s" % sys.platform)
+#sys.path.insert(0, "platform/%s" % sys.platform)
 
 class LMCommon:
   def compare_with_bg_model(self, bg_model, n, min_count=1,

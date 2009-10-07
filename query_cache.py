@@ -3,7 +3,7 @@ import myurl,util
 import resource_cache
 from datetime import timedelta
 
-BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://localhost/backend"
+BACKEND_URL = "http://localhost:8080" if sys.platform=='darwin' else "http://tweetmotif.com/backend"
 
 the_cache = resource_cache.TyrantCache(port=2444, ttl=timedelta(seconds=60))
 
