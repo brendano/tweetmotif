@@ -1,24 +1,96 @@
-"""
-A more natural regular expression API for Python - anyall.org/sane_re.py
-Because the 're' module is awfully hard to use, this is a wrapper.
-Use either _S or _R for everything.
-When in doubt, we attempt to emulate the Ruby standard library.
-Never uses re.match, always re.search.  (why would you EVER want the former? use a caret!)
-Specify flags via a string of lowercase characters -- like open() -- but with
-the standard regex flags from Perl/Ruby/etc.
+"""\
+Easy-to-use regular expression API for Python, where _S() and _R() are the
+primitives for everything.
+  
+    >>> from sane_re import *
+
+Matching:
+
+    >>> _R('[a-z]').match("hiho")          # Match (like =~)
+    <Match 0:1>
+    >>> _S("hiho").match('[a-z]')          # Match, other way if you want
+    <Match 0:1>
+    >>> _S("hiho")['h.']                   # Extraction by indexing
+    'hi'
+    >>> _S("hiho")['(h.)(h.)', 2]          # Extraction by indexing: pick group
+    'ho'
+    >>> _S("HIHO")['[a-z]']
+    None
+    >>> _S("HIHO")[ _R('[a-z]', 'i') ]     # Flags as string
+    'H'
+    >>> _R('[a-z]').matches("omg!")        # Multiple matches
+    <generator object>
+    >>> [x.span for x in _R('[a-z]').matches("omg!")]
+    [(0, 1), (1, 2), (2, 3)]
+
+
+Mashing:
+
+    >>> _S("hiho").gsub('[io]', '_')
+    'h_h_'
+
+    >>> _S("hiho").gsub('[io]', lambda m: " |" + m[0] + "| ")
+    'h |i| h |o| '
+
+    >>> _S("hiho").split('[io]')
+    ['h', 'h', '']
+
+Groups:
+
+    >>> _R('([a-z]+)([0-9]+)').show_match("hello world42 ok")
+    hello world42 ok
+          0000000   
+          1111122   
+    >>> match = _R('([a-z]+)([0-9]+)').show_match("hello world42 ok")
+    >>> match[0]
+    'world42'
+    >>> match[1]
+    'world'
+    >>> match[2]
+    '42'
+    >>> match.groups
+    ('world', '42')
+    >>> match.groupspan(1)
+    (6, 11)
+    >>> match.groupspan(2)
+    (11, 13)
 """
 
-__author__ = "Brendan O'Connor (anyall.org, brenocon@gmail.com)"
-__version__= "april 2009"
-__all__=['_S','_R']
+"""
+More notes
+
+We wrap `re` methods to rejigger their API, to make them more convenient and
+consistent.
+
+* Trying to close the usability gap with Perl/Ruby.  _R() is replacement for
+  not having regex literal syntax builtin to the language.  _S() adds convenient
+  methods, conforming to our conventions, that the string class doesn't have.
+* I always forget re.search/match()'s argument order.  Using either _R().match() or
+  _S().match() is completely unambiguous.
+* Never use re.match(), always re.search().  What good is the former if you
+  can use a caret?  Having both only causes confusion.
+* Specify flags via a string of lowercase characters -- like open() -- but with
+  the standard regex flags from Perl/Ruby/etc.
+* Python doesn't have a do-only-one-substitution operation -- in Awk/Perl/Ruby
+  terms, it has gsub() but not sub() -- so make naming clearer.
+* Match objects have @property accessors like modern Python classes
+"""
+
+__author__  = "Brendan O'Connor (anyall.org, brenocon@gmail.com)"
+__website__ = "http://anyall.org/sane_re.py"
+__version__ = "Sept 2009"
+__all__ = ['_S','_R']
 import re, _sre
-import util  # anyall.org/util.py
 from StringIO import StringIO
 from types import FunctionType
 RegexType = type(re.compile("bla"))
 
+def stringify(s, encoding='utf8', *args):
+  if isinstance(s,str): return s
+  return s.encode(encoding, *args)
+
 def _S(string):
-  string = util.stringify(string)
+  string = stringify(string)
   return _Ss(string)
   
 class _Ss(str):
