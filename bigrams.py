@@ -7,15 +7,16 @@
 
 from __future__ import division
 import sys
+import os
 import re
 import fileinput
 import cPickle as pickle
 from collections import defaultdict
 import twokenize
-import lang_model
+#import lang_model
 import util
 
-import tchelpers
+#import tchelpers
 # tok_cache = tchelpers.IntKeyWrapper(tchelpers.open_tc("toks.tch"))
 
 def analyze_tweet(tweet):
@@ -65,7 +66,7 @@ def trigrams(tokens):
 def ngrams(tokens, n):
   return [tuple(tokens[i:(i+n)]) for i in range(len(tokens) - (n-1))]
 
-read_set = lambda f: set(open(f).read().split())
+read_set = lambda f: set(open(os.path.join(os.path.dirname(__file__),f)).read().split())
 stopwords                  = read_set("stopwords_dir/normal_stopwords")
 stopwords_only_as_unigrams = read_set("stopwords_dir/only_as_unigrams")
 super_stopwords            = read_set("stopwords_dir/super_stopwords")
