@@ -1,0 +1,650 @@
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+
+
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\pdfinfo{
+/Title (Formatting Instructions for Authors)
+/Subject (Proceedings of the AAAI Press Conference)
+/Author (AAAI)}
+\setcounter{secnumdepth}{0}  
+ \begin{document}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+\title{Formatting Instructions for Authors}
+\author{AAAI Press\\
+Association for the Advancement of Artificial Intelligence\\
+445 Burgess Drive\\
+Menlo Park, California 94025\\
+}
+\maketitle
+\begin{abstract}
+\begin{quote}
+AAAI creates proceedings, working notes, and technical reports directly from electronic source furnished by the authors. To ensure that all papers in the publication have a uniform appearance, authors must adhere to the following 
+instructions. 
+\end{quote}
+\end{abstract}
+
+\noindent Congratulations on having a paper selected for inclusion in an AAAI Press proceedings or technical report! This document details the requirements necessary to get your accepted paper published. Within the document, general guidelines are provided as applicable for using \LaTeX{} with aaai.sty, and also for using Microsoft Word. Beyone this document, AAAI cannot provide detailed guidance to you. We assume that you are expert in the use of your chosen formatting software, and that you can comply with the requirements as they are provided herein. Please review the entire document for specific instructions that might apply to your particular situation. All authors must comply with the following:
+
+\begin{itemize}
+\item You must use the latest AAAI Press Word template or \LaTeX{} macro (if you use some other formatting software, you must make your paper look exactly as it would using either Microsoft Word or \LaTeX{}.
+\item Download the author kit
+\item Complete, sign, and return by the deadline the AAAI Copyright form (proceedings authors) or distribution license (technical report authors).
+\item Read and format your paper source and PDF according to the formatting instructions for authors.
+\item Name your finished electronic files (including your PDF, your \LaTeX{} or Word source, and any enclosing directory or folder name) according to our naming convention (see the upload form for your event for specific naming instructions)
+\item Submit your electronic files and abstract using our electronic submission form {\bf on time.}
+\item Submit your copyright form, and any required page or formatting charges to AAAI Press so that they are received by the deadline
+\item Check every page of your paper before submitting it
+\end{itemize}
+
+\section{Formatting Requirements in Brief}
+We need source and PDF files that can be used in a variety of ways and can be output on a variety of devices. AAAI imposes some requirements on your source and PDF files that must be followed. Most of these requirements are based on our efforts to standardize conference manuscript properties and layout. These requirements are as follows, and all papers submitted to AAAI for publication must comply:
+
+\begin{itemize}
+\item All fonts must be embedded in the PDF file
+\item No type 3 fonts may be used (even in illustrations)
+\item Your title must follow US capitalization rules
+\item \LaTeX{} documents must use the Times or Nimbus font package (do not use Computer Modern for the text of your paper)
+\item No \LaTeX{} 209 documents may be used or submitted.
+\item Fonts that require non-English language support (CID and Identity-H) must be converted to outlines or removed from the document. (The text may not be formatted in an Identity-H or CID font.)
+\item Two-column format in AAAI style is required for all papers
+\item The paper size for final submission must be US letter (for both \LaTeX{} and Word source as well as PDF)
+\item The document margins must be as specified in the formatting instructions.
+\item The number of pages and the file size must be as specified for your event.
+\item No document may be password protected
+\item Neither the PDFs nor the \LaTeX{} or Word source may contain embedded links or bookmarks (for example, hyperref may not be used in \LaTeX{}). Do not embed links (and turn off underlining and link color in Word) (hyperref is incompatible with aaai.sty)
+\item Your source and PDF must not have any page numbers, footers, or headers
+\item Your PDF must be distilled at 1,200 dpi or higher
+\item Your PDF must be compatible with Acrobat 5.
+\end{itemize}
+
+If you ignore any of the above requirements, it is likely that we will be unable to publish your paper.
+
+\section{Source Documents to Submit}
+If you used Microsoft Word, you must supply your ``doc" file. If you used \LaTeX{}, you must supply all your \LaTeX{} source files, including (but not limited to) referenced style files, graphics files, bibliography files, (.bbl, .bst), dvi, .aux, and so forth. Your files should work without any supporting files (other than the program itself) on any computer. Place your PDF and source files in a single tar, zipped, gzipped, stuffed, or compressed archive. Follow the naming instructions (provided later) for the source files as well as the archive name. {\bf Please do not send files that are not actually used in the paper.} A shell script that might help you create the \LaTeX{} source package is included in the Author Kit.
+
+\section{Using Microsoft Word to Format Your Paper}
+AAAI Press has provided several versions of a Word template that you can use to create your paper. You must be careful, however, not to change the page set-up of this document (print a PDF and use ``shrink to fit" if you need to print it on A4 paper), and you will encounter problems if you use Identity-H or CID fonts. If your paper contains many in-line equations, and a significant amount of display mathematics, you may achieve better results using \LaTeX{}, although the learning curve for this program is significantly higher. AAAI does not offer support in the use of Word.
+
+\section{Using \LaTeX{} to Format Your Paper}
+If you are not an experienced \LaTeX{} user, AAAI does {\bf not} recommend that you use \LaTeX{} to format your paper. No support for \LaTeX{} is provided by AAAI, and these instructions and the accompanying style files are {\bf not} guaranteed to work. If the results you obtain are not in accordance with the specifications you received, you must correct the style files or macro to achieve the correct result. AAAI {\bf cannot} help you with this task. The instructions herein are provided as a general guide for experienced \LaTeX{} users who would like to use that software to format their paper for an AAAI Press publication or report. These instructions are generic. Consequently, they do not include specific dates, page charges, and so forth. Please consult your specific written conference instructions for details regarding your submission.
+
+\subsection{Using the \LaTeX{} Style File}
+The latest version of the AAAI style file is available on AAAI's website. You should download this file and place it in a file named ``aaai.sty" in the \TeX\ search path. Placing it in the same directory as the paper should also work. (We recommend that you download the complete author kit so that you will have the latest bug list and instruction set.)
+
+\subsubsection{Setting Up Your Paper in \LaTeX}
+
+In the \LaTeX{} source for your paper, you {\bf must} place the following lines (uncommented, except for setcounter) as shown in the example in this subsection.
+
+This command set-up is for three authors. Add or subtract author and address lines as necessary. In most instances, this is all you need to do to format your paper in the Times font. The helvet package will cause Helvetica to be used for sans serif, and the courier package will cause Courier to be used for the typewriter font. These files are part of the PSNFSS2e package, which is freely available from many Internet sites (and is often part of a standard installation.
+
+Leave the setcounter for section number depth commented out and set at 0 unless you want to add section numbers to your paper. If you do add section numbers, you must uncomment this line and change the number to 1 (for section numbers), or 2 (for section and subsection numbers). The style file will not work properly with numbering of subsubsections, so do not use a number higher than 2.
+
+To add the required metadata for your paper, uncomment one of the two metadata sections. You should use the pdfmark code if your paper will be created using GhostScript. You should use the pdfinfo code if your paper will be created using PDFTeX.
+
+\begin{scriptsize}
+\begin{verbatim}
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PDFMARK for TeX and GhostScript
+% Uncomment and complete the following for metadata if
+% your paper is typeset using TeX and GhostScript (e.g
+% if you use .ps or .eps files in your paper):
+% \special{! /pdfmark where
+% {pop} {userdict /pdfmark /cleartomark load put} ifelse
+% [ /Author (John Doe, Jane Doe)
+% /Title (Input Your Paper Title Here)
+% /Subject (Input the Proceedings Title Here)
+% /Keywords (AAAI, artificial intelligence)
+% /DOCINFO pdfmark}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PDFINFO for PDFTeX
+% Uncomment and complete the following for metadata if
+% your paper is typeset using PDFTeX
+% \pdfinfo{
+% /Title (Input Your Paper Title Here)
+% /Subject (Input the Proceedings Title Here)
+% /Author (John Doe, Jane Doe)
+% }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Uncomment if you want to use section numbers
+% and change the 0 to a 1 or 2
+% \setcounter{secnumdepth}{0}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Title}
+\author{Author 1 \and Author 2 \\ 
+Address line \\ Address line 
+\And
+Author 3 \\ Address line \\ Address line}
+\begin{document}
+\maketitle
+...
+\bibliography{Bibliography-File}
+\bibliographystyle{aaai}
+\end{document}
+\end{verbatim}
+\end{scriptsize}
+
+If you need additional assistance in setting up your paper (and you are using \LaTeX{}2e), please read the Quick Guide to AAAI Style for \LaTeX{}2e found in the author kit. You will also find additional information about fonts later on in this document.
+
+\section{Copyright}
+If you are required to transfer copyright of your paper to AAAI, you must include the AAAI copyright notice and web site address on all copies of your paper, whether electronic or paper. If you are not required to transfer copyright (for example, technical report authors), you need not include the copyright notice on your paper. An example of the copyright notice, which may be printed in 8 point type, is reproduced below. A signed, unaltered copyright form (or, if applicable, permission to distribute form) must be faxed to AAAI by the submission deadline, and the original must be mailed to the AAAI office. If you fail to send in a signed copyright or permission form, your paper will not be published. You will find PDF versions of the AAAI copyright and permission to distribute forms in the author kit.
+
+\subsection{\LaTeX{} Copyright Notice}
+The copyright notice automatically appears if you use aaai.sty. If you are creating a technical report, it is not necessary to include this notice. You may disable the copyright line using the \verb+\+nocopyrightcommand. (However, if you disable this line and transfer of copyright is required, your paper will be returned to you.)
+
+\subsection{Word Copyright Notice}
+The copyright notice has been added to the Word template using an invisible, unnumbered footnote, appended to the example of a first-level heading. You should retain this footnote. Be sure the copyright date is correct. (If you disable this footnote and transfer of copyright is required, your paper will not be published.)
+
+\section{Margins and Paper Size}
+Papers must be formatted to print in two-column format on 8.5 x 11 inch US letter-sized paper. The margins must be exactly as follows: 
+\begin{itemize}
+\item Top margin: .75 inches
+\item Left margin: .75 inches
+\item Right margin: .75 inches
+\item Bottom margin: 1.25 inches
+\end{itemize} 
+
+Paper size and margins in Word are usually set in Page Setup. Please ensure that the document conforms to the previously listed measurements.
+
+\subsection{Paper Size in \LaTeX{}}
+If you use \LaTeX{}, it is quite likely that the default paper size is A4. Because we require that your electronic paper be formatted in US letter size, you will need to change the default back to US letter size. Assuming you are using the 2e version of \LaTeX{}, you can do this by including the [letterpaper] option at the beginning of your file: 
+\begin{footnotesize}
+\begin{verbatim}
+ \documentclass[letterpaper]{article}. 
+\end{verbatim}
+\end{footnotesize}
+
+This command is usually sufficient to change the format. Sometimes, however, it may not work, especially if you use PDF\LaTeX{}. If you note that the font size is being shrunk to make the columns fit in A4 width, please consult the aaai.sty buglist for three suggested fixes. {\bf Do not use the Geometry package to alter the page size.} Use of this style file alters aaai.sty and will result in your paper being 
+
+It is also usually necessary to configure dvips. Try passing the -tletter option to dvips. Those using RedHat Linux 8.0 and \LaTeX{} should also check the paper size setting in ``/usr/share/texmf/dvips/config/config.ps" --- it may be that ``A4" is the default, rather than ``letter." This can result in incorrect top and bottom margins in documents you prepare with \LaTeX{}. You will need to edit the config file to correct the problem. (Once you've edited to config file for US letter, it may not be possible for you to print your papers locally).
+
+\section{Column Width and Margins}
+To ensure maximum readability, your paper must include two columns. Each column should be 3.3 inches wide (slightly more than 3.25 inches), with a .375 inch (.952 cm) gutter of white space between the two columns. The aaai.sty and aaai.doc template will automatically create these columns for you.
+
+\subsection{Warning}
+Do not alter column width or margin in an attempt to make your paper ``fit" in a specific number of pages. We don't accept source or PDFs where margins have been altered (and telling us to use ``shrink to fit" is not an acceptable solution). Papers that do not meet these column width and margin requirements will be returned.
+
+\section{Type Font and Size}
+Your paper must be formatted in Times Roman, Times New Roman, or Nimbus. We will not accept papers formatted using Computer Modern as the text or heading typeface. Sans serif, when used, should be Courier. Use Symbol or Lucida or Computer Modern for {\it mathematics only. } 
+
+Do not use type 3 fonts for any portion of your paper, including graphics. If you are unsure if your paper contain type 3 fonts, view the PDF in Acrobat Reader. The Properties/Fonts window will display the font name, font type, and encoding properties of all the fonts in the document. If you are unsure if your graphics contain type 3 fonts (and they are PostScript or encapsulated PostScript documents), create PDF versions of them, and consult the properties window in Acrobat Reader. 
+
+The default size for your type should be ten-point with eleven- or twelve-point leading (line spacing). If your paper is running long, change the leading to eleven point. If it is short, change the leading to twelve point. Twelve point leading is a little easier to read. Start all pages (except the first) directly under the top margin. (See the next section for instructions on formatting the title page.) Indent ten points when beginning a new paragraph, unless the paragraph begins directly below a heading or subheading.
+
+\subsection{Obtaining Type 1 Computer Modern for \LaTeX{}}
+
+If you use Computer Modern for the mathematics in your paper (you cannot use it for the text) you may need to download type 1 Computer fonts. They are available without charge from the American Mathematical Society:
+http://www.ams.org/tex/type1-fonts.html. 
+
+\section{Title and Authors}
+In the United States, it is a common practice to capitalize the first letter of more words in headlines and titles than in normal sentences. The style guides and authors instructions of U.S. publishers (including AAAI Press) require that you conform to this capitalization convention. Consequently, your title should appear in mixed case (nouns and verbs are capitalized) near the top of the first page, centered over both columns in sixteen-point bold type (twenty-four point leading). Author's names should appear below the title of the paper, centered in twelve-point type (with fifteen point leading), along with affiliation(s) and complete address(es) (including electronic mail address if available) in nine-point roman type (the twelve point leading). (If the title is long, or you have many authors, you may reduce the specified point sizes by up to two points.) You should begin the two-column format when you come to the abstract. 
+
+\subsubsection{Formatting Author Information in \LaTeX{}}
+Author information can be set in a number of different styles, depending on the number of authors and the number of affiliations you need to display. For several authors from the same institution, use \verb+\+and:
+
+\begin{footnotesize}
+\begin{verbatim}
+\author{Author 1 \and 
+... 
+\and Author n \\
+Address line \\ 
+... 
+\\ Address line}
+\end{verbatim}
+\end{footnotesize}
+
+\noindent If the names do not fit well on one line use:
+
+\begin{footnotesize}
+\begin{verbatim}
+\author{Author 1 \\ {\bf Author 2} \\ 
+... 
+\\ {\bf Author n} \\
+Address line \\ 
+... 
+\\ Address line}
+\end{verbatim}
+\end{footnotesize}
+
+\noindent For authors from different institutions, use \verb+\+And:
+
+\begin{footnotesize}
+\begin{verbatim}
+\author{Author 1 \\ Address line \\
+... 
+\\ Address line
+\And ... \And
+Author n \\ Address line \\
+... 
+\\ Address line}
+\end{verbatim}
+\end{footnotesize}
+
+\noindent To start a separate ``row" of authors, use \verb+\+AND:
+\begin{footnotesize}
+\begin{verbatim}
+\author{Author 1 \\ Address line \\
+... 
+\\ Address line
+\AND
+Author 2 \\ Address line \\
+... 
+\\ Address line \And
+Author 3 \\ Address line \\
+... 
+\\ Address line}
+\end{verbatim}
+\end{footnotesize}
+
+\noindent If the title and author information does not fit in the area allocated, place
+\begin{footnotesize}
+\begin{verbatim}
+\setlength\titlebox{\emph{height}}
+\end{verbatim}
+\end{footnotesize}
+after the \verb+\+documentclass line where \emph{height} is something like 2.5in.
+
+\section{Credits}
+Any credits to a sponsoring agency should appear in the acknowledgments section, unless the agency requires different placement. 
+
+\section{Abstract}
+The abstract must be placed at the beginning of the first column, indented ten points from the left and right margins. The title “Abstract” should appear in ten-point bold type, centered above the body of the abstract. The abstract should be set in nine-point type with ten-point leading. This concise, one-paragraph summary should describe the general thesis and conclusion of your paper. A reader should be able to learn the purpose of the paper and the reason for its importance from the abstract. The abstract should be no more than two hundred words in length. (Authors who are submitting short one- or two-page extended extracts should provide a short abstract of only a sentence or so.) {\bf Do not include references in your abstract!}
+
+\section{Page Numbers}
+
+Do not {\bf ever} print any page numbers on your paper. 
+
+\section{Text }
+The main body of the paper must be formatted in two columns. It follows the abstract. Each column of text should be 3.3 inches wide with a .375 inch (.952 cm) gutter should separating the two columns. Text should be ten-point with eleven-point or twelve-point leading (line spacing). If you are using Word, specify fractional widths and turn hyphenation on. Your text must be in Times Roman or its equivalent.
+
+\subsection{Citations}
+Citations within the text should include the author's last name and year, for example (Newell 1980). Append lower-case letters to the year in cases of ambiguity. Multiple authors should be treated as follows: (Feigenbaum and Engelmore 1988) or (Ford, Hayes, and Glymour 1992). In the case of four or more authors, list only the first author, followed by et al. (Ford et al. 1997).
+
+\subsection{Extracts}
+Long quotations and extracts should be indented ten points from the left and right margins. 
+
+\begin{quote}
+This is an example of an extract or quotation. Note the indent on both sides. Quotation marks are not necessary if you offset the text in a block like this, and properly identify and cite the quotation in the text. 
+
+\end{quote}
+
+\subsection{Footnotes}
+Avoid footnotes as much as possible; they interrupt the reading of the text. When essential, they should be consecutively numbered throughout with superscript Arabic numbers. Footnotes should appear at the bottom of the page, separated from the text by a blank line space and a thin, half-point rule. 
+
+\subsection{Headings and Sections}
+When necessary, headings should be used to separate major sections of your paper. Remember, you are writing a short paper, not a lengthy book! An overabundance of headings will tend to make your paper look more like an outline than a paper.
+
+First-level heads should be twelve-point Times Roman bold type, mixed case (initial capitals followed by lower case on all words except articles, conjunctions, and prepositions, which should appear entirely in lower case), with fifteen-point leading, centered, with one blank line preceding them and three additional points of leading following them. Second-level headings should be eleven-point Times Roman bold type, mixed case, with thirteen-point leading, flush left, with one blank line preceding them and three additional points of leading following them. Do not skip a line between paragraphs. Third-level headings should be run in with the text, ten-point Times Roman bold type, mixed case, with twelve-point leading, flush left, with six points of additional space preceding them and no additional points of leading following them.
+
+\subsection{Section Numbers}
+The use of section numbers in AAAI Press papers is optional. To use section numbers in \LaTeX{}, uncomment the setcounter line in your document preamble and change the 0 to a 1 or 2. To use section numbers in Word, simply add the numbers to your section by hand, or use Word's tools to automatically number the sections. Section numbers should not be used in short poster papers.
+
+\subsection{Section Headings}
+Sections should be arranged and headed as follows: 
+
+\subsubsection{Acknowledgments}
+The acknowledgments section, if included, appears after the main body of text and is headed ``Acknowledgments." This section includes acknowledgments of help from associates and colleagues, credits to sponsoring agencies, financial support, and permission to publish. Please acknowledge other contributors, grant support, and so forth, in this section. Do not put acknowledgments in a footnote on the first page. If your grant agency requires acknowledgment of the grant on page 1, limit the footnote to the required statement, and put the remaining acknowledgments at the back. Please try to limit acknowledgments to no more than three sentences. 
+
+\subsubsection{Appendices}
+Any appendices follow the acknowledgments, if included, or after the main body of text if no acknowledgments appear. 
+
+\subsubsection{References}
+The references section should be labeled ``References" and should appear at the very end of the paper (don't end the paper with references, and then put a figure by itself on the last page). A sample list of references is given later on in these instructions. Please use a consistent format for references. Poorly prepared or sloppy references reflect badly on the quality of your paper and your research. Please prepare complete and accurate citations.
+
+\section{Illustrations and Figures}
+Figures, drawings, tables, and photographs should be placed throughout the paper near the place where they are first discussed. Do not group them together at the end of the paper. If placed at the top or bottom of the paper, illustrations may run across both columns. Figures must not invade the top, bottom, or side margin areas. Figures must be inserted using your page-formatting software. Number figures sequentially, for example, figure 1, and so on. 
+
+The illustration number and caption should appear under the illustration. Leave some space between the figure and the caption and surrounding type; .25 inches should suffice. Captions should be presented in nine-point Times Roman italic. Labels, and other text in illustrations must be at least nine-point type. 
+
+\subsection{Low-Resolution Bitmaps}
+You may not use low-resolution (such as 72 dpi) screen-dumps and GIF files---these files contain so few pixels that they are always blurry, and illegible when printed. If they are color, they will become an indecipherable mess when converted to black and white. This is always the case with gif files, which should never be used. The resolution of screen dumps can be increased by reducing the print size of the original file while retaining the same number of pixels. You can also enlarge files by manipulating them in software such as PhotoShop. Your figures should be a minimum of 266 dpi when incorporated into your document.
+
+\subsection{\LaTeX{} Overflow}
+\LaTeX{} users please beware: \LaTeX{} will sometimes put portions of the figure or table or an equation in the margin. If this happens, you need to scale the figure or table down, or reformat the equation, because {\bf nothing} (not even a rule!) is allowed to intrude into the margins. Check your log file! You must fix any overflow into the margin (that means no overfull boxes in \LaTeX{}). If you don't whatever is in the margin will simply be eliminated by the printer. {\bf Nothing is permitted to intrude into the margins.}
+
+\subsection{Using Color}
+Your paper will be printed in black and white and grayscale. Consequently, because conversion to grayscale can cause undesirable effects (red changes to black, yellow can disappear, and so forth), we strongly suggest you avoid placing color figures in your document. Of course, any reference to color will be indecipherable to your reader. 
+
+\subsection{Drawings}
+We suggest you use computer drawing software (such as Adobe Illustrator or, (if unavoidable), the drawing tools in Microsoft Word) to create your illustrations. Do not use Microsoft Publisher. These illustrations will look best if all line widths are uniform (half- to two-point in size), and you do not create labels over shaded areas. Shading should be 133 lines per inch if possible. Use Times Roman or Helvetica for all figure call-outs. {\bf Do not use hairline width lines} --- be sure that the stroke width of all lines is at least .5 pt. Zero point lines will print on a laser printer, but will completely disappear on the high-resolution devices used by our printers.
+
+\subsection{Photographs and Images}
+Photographs and other images should be in grayscale (color photographs will not reproduce well; for example, red tones will reproduce as black, yellow may turn to white, and so forth) and set to a minimum of 266 dpi. Do not prescreen images.
+
+\section{Sample References} 
+
+\subsection{Book with Multiple Authors}
+Engelmore, R., and Morgan, A. eds. 1986. {\it Blackboard Systems.} Reading, Mass.: Addison-Wesley.
+
+\subsection{Journal Article}
+Robinson, A. L. 1980a. New Ways to Make Microcircuits Smaller. {\it Science} 208: 1019--1026.
+
+\subsection{Magazine Article}
+Hasling, D. W.; Clancey, W. J.; and Rennels, G. R. 1983. Strategic Explanations in Consultation. {\it The International Journal of Man-Machine Studies} 20(1): 3--19.
+
+\subsection{Proceedings Paper Published by a Society}
+Clancey, W. J. 1983b. Communication, Simulation, and Intelligent Agents: Implications of Personal Intelligent Machines for Medical Education. In Proceedings of the Eighth International Joint Conference on Artificial Intelligence, 556--560. Menlo Park, Calif.: International Joint Conferences on Artificial Intelligence, Inc.
+
+\subsection{Proceedings Paper Published by a Press or Publisher}
+Clancey, W. J. 1984. Classification Problem Solving. In {\it Proceedings of the Fourth National Conference on Artificial Intelligence,} 49--54. Menlo Park, Calif.: AAAI Press. 
+
+\subsection{University Technical Report}
+Rice, J. 1986. Poligon: A System for Parallel Problem Solving, Technical Report, KSL-86-19, Dept. of Computer Science, Stanford Univ. 
+
+\subsection{Dissertation or Thesis}
+Clancey, W. J. 1979b. Transfer of Rule-Based Expertise through a Tutorial Dialogue. Ph.D. diss., Dept. of Computer Science, Stanford Univ., Stanford, Calif.
+
+\subsection{Forthcoming Publication}
+Clancey, W. J. 1986a. The Engineering of Qualitative Models. Forthcoming.
+
+\section{Using \LaTeX{} and BiBTeX \\to Create Your References}
+At the end of your paper, you can include your reference list by using the following commands:
+
+\begin{footnotesize}
+\begin{verbatim}
+\bibliography{Bibliography-File}
+\bibliographystyle{aaai}
+\end{document}
+\end{verbatim}
+\end{footnotesize}
+
+The aaai.sty file includes a set of definitions for use in formatting references with BibTeX. These definitions make the bibliography style fairly close to the one specified previously. To use these definitions, you also need the BibTeX style file ``aaai.bst," available in the author kit on the AAAI web site. Then, at the end of your paper but before \verb+\+end{document}, you need to put the following lines:
+
+\begin{footnotesize}
+\begin{verbatim}
+\bibliographystyle{aaai}
+\bibliography{bibfile1,bibfile2,...}
+\end{verbatim}
+\end{footnotesize}
+
+The list of files in the bibliography command should be the names of your BibTeX source files (that is, the .bib files referenced in your paper).
+
+The following commands are available for your use in citing references:
+\begin{description}
+\item \verb+\+cite: Cites the given reference(s) with a full citation. This appears as ``(Author Year)'' for one reference, or ``(Author Year; Author Year)'' for multiple references.
+\item \verb+\+shortcite: Cites the given reference(s) with just the year. This appears as ``(Year)'' for one reference, or ``(Year; Year)'' for multiple references.
+\item \verb+\+citeauthor: Cites the given reference(s) with just the author name(s) and no parentheses.
+\item \verb+\+citeyear: Cites the given reference(s) with just the date(s) and no parentheses.
+\end{description}
+
+{\bf Warning:} The aaai.sty file is incompatible with the hyperref package. If you use hyperref, your references will be garbled. Do not use hyperref.
+
+\section{Creating a Reliable PDF\\File with Microsoft Word}
+Your paper must be submitted as a US-letter sized PDF, containing only fully-embedded type 1 PostScript or TrueType fonts. We cannot accept files that contain {\bf any} type 3 fonts or CID or Identify-H fonts or that are formatted for A4 paper or where the fonts are not fully embedded. Your file also must abide by the margin requirements stated in this document. Please check your PDF to ensure that it complies with these requirements. 
+
+\subsection{Distiller Settings}
+We need PDF files that can be used in a variety of ways and can be output on a variety of devices. To do that, we need files that contain high-resolution graphics and scalable fonts. 
+
+To ensure that your Word-generated PDF is acceptable, {\bf do not use the Office PDF Maker.} Instead, create a PostScript file with type 1 fonts and a resolution of 1200 dpi, then distill the PostScript file using Acrobat Distiller 5.0 or later. This is the most reliable way to make a PDF.
+
+When you create a PDF from a PostScript file, you will need to configure Acrobat Distiller. That usually only means that you should choose "PDF/X-1a:2001" as the default Distiller setting. If that isn't available, your distiller setting should be set to produce a high-end print PDF file (press quality); thus, automatic compression should be set to ZIP, the default resolution should be a minimum of 1,200 dpi, compatibility should be set to Acrobat 5.0, and down sampling should be turned off. All fonts should be embedded, and the default page size must be set to letter (8.5 x 11 inches), not A4. Most versions of the Acrobat Distiller can be easily set to conform to these settings by choosing the ``PDF/X-1a:2001" job option bundled with Acrobat Distiller. Do not choose the Screen optimized setting --- if you do your paper cannot be published. (You are not creating a file for the web.) 
+
+\subsection{CID Fonts}
+Many installations of Word now use CID or Identity-H fonts. Unfortunately, these multi-language fonts cause problems when combined with other files and when output using many high-resolution devices. The fonts are also not compatible with older systems. Please check your PDF. If you find the letters CID or Identity-H next to your text font (Times New Roman, Times Roman, Times Italic, Times Bold, and so forth), you will need to install a non-CID version of Times on your system, and search and replace all instances of the CID font with the new non-CID font. If your PDF includes a CID version of Symbol or Wingdings, you may convert those font to outlines. This option is not available for Times, however, because PDFs consisting only of outlines cannot be indexed. (If you can't convert those fonts to outlines in your PDF, you'll need to search and replace Symbol and Wingdings as well.) Please do not include fonts other than Arial, Times, Symbol, Helvetica, and Wingdings in your Word document or graphics file.
+
+\section{Producing Reliable PDF\\Documents with \LaTeX{}}
+Generally speaking, PDF files are platform independent and accessible to everyone. When creating a paper for a proceedings or publication in which many PDF documents must be merged and then printed on high-resolution PostScript RIPs, several requirements must be met that are not normally of concern. Thus to ensure that your paper will look like it does when printed on your own machine, you must take several precautions:
+\begin{itemize}
+\item Use type 1 fonts (not type 3 fonts)
+\item Use only standard Times, Nimbus, and CMR font packages (not fonts like F3 or fonts with tildes in the names or fonts---other than Computer Modern---that are created for specific point sizes, like Times\~{}19) or fonts with strange combinations of numbers and letters
+\item Embed all fonts when producing the PDF
+\item Do not use the [T1]{fontenc} package (install the CM super fonts package instead)
+\end{itemize}
+
+\subsection{Fonts}
+Papers published in AAAI publications must be formatted using the Times family of fonts so that all papers in the proceedings have a uniform appearance. If you've been using Computer Modern, the first advantage you will see to using Times is that the character count is smaller --- that means you can put more words on a page!
+
+Some fonts (such as Times-Roman and Courier) are expected to be available on all PDF devices and are not normally embedded. However, when your Times Roman font is combined with the Times Roman font of another paper, it is possible that conflicts will occur. Consequently, if you have used some special characters in the Times font, you should embed even these fonts.
+
+\subsubsection{Type 3 Fonts}
+Type 3 bitmapped fonts are designed for fixed resolution printers. Most print at 300 dpi even if the printer resolution is 1200 dpi or higher. They also often cause high resolution imagesetter devices and our PDF indexing software to crash. Consequently, AAAI will not accept electronic files containing obsolete type 3 fonts. Files containing those fonts (even in graphics) will be returned to the authors unpublished. 
+
+Fortunately, there are effective workarounds that will prevent your file from embedding type 3 bitmapped fonts. The easiest workaround is to use the times, helvet, and courier packages with \LaTeX{}2e. (Note that papers formatted in this way will still use Computer Modern for the mathematics. To make the math look good, you'll either have to use Symbol or Lucida, or you will need to install type 1 Computer Modern fonts --- for more on these fonts, see the section ``Obtaining Type 1 Computer Modern.")
+
+\subsection{Traditional \LaTeX{} Output}
+Most authors using traditional \LaTeX{} output methods will have success by taking the following three steps in creating their paper (called, in the example, proceedingspaper.tex). 
+
+\begin{footnotesize}
+\begin{verbatim}
+latex proceedingspaper
+dvips -Ppdf -G0 -tletter proceedingspaper
+ps2pdf -dPDFSETTINGS=/printer
+-dCompatibilityLevel=1.4 -dMaxSubsetPct=0
+-dSubsetFonts=false -dEmbedAllFonts=true
+-sPAPERSIZE=letter proceedingspaper.ps
+\end{verbatim}
+\end{footnotesize}
+
+Note that the ps2pdf command should be typed all on one line. You can then proceed to distill your PostScript file into a PDF file using GhostScript or Acrobat Distiller.
+
+If your PostScript output still includes type 3 fonts, you should run dvips with option ``dvips -Ppdf -G0 -o papername.ps papername.dvi" (If your machine or site has type 1 fonts, they will probably be loaded.) Note that it is a zero following the ``-G." This tells dvips to use the config.pdf file (and this file refers to a better font mapping). If that doesn't work, you'll have to download the fonts and create a font substitution list.
+
+\subsection{Creating Output Using PDF\LaTeX{}}
+PDF\LaTeX{} is a good alternative solution to the \LaTeX{} font problem. By using the PDF\TeX{} program instead of straight \LaTeX{} or \TeX{}, you will probably avoid the type 3 font problem altogether. PDF\LaTeX{} enables you to create a PDF document directly from \LaTeX{} source. The one requirement of this software is that all your graphics and images are available in a format that PDF\LaTeX{} understands (normally PDF).
+
+PDF\LaTeX{}'s default is to create documents with type 1 fonts. If you find that it is not doing so in your case, it is likely that one or more fonts are missing from your system or are not in a path that is known to PDF\LaTeX{}.
+
+One problem with PDF\LaTeX{}, however, is that, by default, it will not embed the Base 14 fonts. AAAI will embed these fonts for you, bur we will not be able to proofread the results. If you are concerned that font substitution may alter your paper in an adverse way (and it can), we recommend that you alter the pdftex.cfg configuration file so that the following lines are present and uncommented:
+
+\begin{footnotesize}
+\begin{verbatim}
+map +bsr.map % CM/AMS fonts
+map +bsr-interpolated.map % additional sizes
+map +hoekwater.map % additional fonts
+\end{verbatim}
+\end{footnotesize}
+and that the base 14 Nimbus fonts are embedded by replacing the line
+\begin{footnotesize}
+\begin{verbatim}
+map acrobat-std-adobe-suildin.map
+\end{verbatim}
+\end{footnotesize}
+with
+\begin{footnotesize}
+\begin{verbatim}
+map acrobat-std-urw-kb.map
+\end{verbatim}
+\end{footnotesize}
+
+If this doesn't work, you should look at the pdftex mailing list for hints on how to configure pdftex or PDF\LaTeX{} to properly embed the typefaces: http://tug.org/pipermail/pdftex/2002-July/002803.html 
+
+\subsubsection{dvipdf Script}
+Scripts such as dvipdf which ostensibly bypass the Postscript intermediary should not be used since they generally do not instruct dvips to use the config.pdf file.
+
+\subsubsection{dvipdfm}
+Do not use this dvi-PDF conversion package if your document contains graphics (and we recommend you avoid it even if your document does not contain graphics).
+
+\subsection{Ghostscript}
+\LaTeX{} users using GhostScript should make sure that they are using v7.04 or newer. The older versions do not create acceptable PDF files on most platforms.
+
+\subsection{Graphics}
+If you are still finding type 3 fonts in your PDF file, look at your graphics! \LaTeX{} users should check all their imported graphics files as well for font problems.
+
+\subsection{Making A Font Substitution List}
+Once you've installed the type 1 Computer Modern fonts, you'll need to get dvips to refrain from embedding the bitmap fonts. To do this, you'll need to create a font
+substitution list for use by dvips. Each line of this file should start with the
+name of the font that TeX uses, as shown below:
+
+\begin{footnotesize}
+\begin{flushleft}
+cmb10 $<$/usr/local/lib/tex/fonts/type1/cmb10.pfb \\
+cmbsy10 $<$/usr/local/lib/tex/fonts/type1/cmbsy10.pfb \\
+cmbsy6 $<$/usr/local/lib/tex/fonts/type1/cmbsy6.pfb \\
+cmbsy7 $<$/usr/local/lib/tex/fonts/type1/cmbsy7.pfb \\
+cmbsy8 $<$/usr/local/lib/tex/fonts/type1/cmbsy8.pfb \\
+cmbsy9 $<$/usr/local/lib/tex/fonts/type1/cmbsy9.pfb \\
+cmbx10 $<$/usr/local/lib/tex/fonts/type1/cmbx10.pfb \\
+cmbx12 $<$/usr/local/lib/tex/fonts/type1/cmbx12.pfb \\
+\end{flushleft}
+\end{footnotesize}
+
+In this example, the assumption is that you have PFB versions of the Computer Modern fonts located in the directory /urs/local/lib/tex/fonts/type1/. The file name should be the type 1 encoding of the Postscript font in PFB or PFA format.
+
+If your home directory contains a file called .dvipsrc containing the line: ``*	p +fontMapFileName" that font map will be used by dvips for all the jobs you run. You can also created a file, like ``config.embed" that contains that line. If you do that, when you invoke dvips with the command ``dvips -P embed ...," dvips will look for config embed in the current directory (and perhaps your home directory). You may need to change how dvips looks for config files. To do this, read the ``environment variables" section of the dvips documentation.
+
+If you need more information, or a better and more technical explanation of how to make this all work, Kendall Whitehouse has written detailed instructions on ``Creating Quality Adobe PDF Files from TeX with DVIPS." It is available from Adobe's website, and other sites on the Internet (you'll need to do a quick search for it).
+
+\subsection{Checking For Improper Fonts}
+Once a PDF has been made, authors should check to ensure that the file contains no type 3 fonts and further that all fonts have been embedded. This step is hardly ever used by authors, and it would save significant time (and help keep conference fees down) if they would simply take 45 seconds and do this. This can be done with the pdffonts utility that is included in the Xpdf package (http://www.foolabs.com/xpdf/). Use the command: pdffonts proceedingspaper.pdf This will list the fonts included in your document. Check to ensure the following:
+
+\begin{itemize}
+\item All fonts have type 1 or TrueType in the type column
+\item All fonts have "yes" in the "emb" (embedded) column
+\item None of the fonts listed have tildes or names consisting of long strings of numbers and letters
+\end{itemize}
+
+\section{PDF MetaData}
+PDF files contain document summary information that enables us to create an Acrobat index (pdx) file, and also allows some search function search engines to locate and present your paper more accurately. Please include the metadata for your PDF. You can do this in Acrobat within the Description section of Document Properties. {\it Important:} Do not include any \LaTeX{} code (including accents) in the metadata. Type the title exactly as it appears on the paper (minus any formatting). Input the author names in the order in which they appear on the paper, separating each author by semicolons. Do not include accent marks. You may also include keywords in the Keywords field. If you know the full title of the proceedings, include it in the subject line. Leave any additional metadata fields blank.
+
+\subsection{Inserting Document Metadata with \LaTeX{}}
+Insert the following PostScript command before the \LaTeX{} begin document  code:
+
+\begin{scriptsize}
+\begin{verbatim}
+\special{! /pdfmark where
+ {pop} {userdict /pdfmark /cleartomark load put} ifelse
+ [ 
+ /Author (John Doe, Jane Doe)
+ /Title (Input Your Paper Title Here)
+ /Subject (Input the Proceedings Title Here)
+ /Keywords (AAAI, artificial intelligence)
+ /DOCINFO pdfmark}
+\end{verbatim}
+\end{scriptsize}
+
+With PDFTeX, you should use the following code instead
+
+\begin{scriptsize}
+\begin{verbatim}
+ \pdfinfo{
+ /Title (Input Your Paper Title Here)
+ /Subject (Input the Proceedings Title Here)
+ /Author (John Doe, Jane Doe)
+ }
+ 
+\end{verbatim} 
+\end{scriptsize}
+
+\section{Paper Length and Page Charges}
+Papers should not exceed the length specified in your acceptance packet. If they exceed that length, you will be responsible for paying the extra page charges. See your acceptance letter for the cost of additional pages, and the invoice to be used if your paper exceeds the free allowance. Make checks payable to AAAI for such additional charges. Payment must be made by the submission deadline. If you would like to pay by credit card (MasterCard, VISA, or American Express), you may either fax in the invoice with your credit card information or use our online shopping cart. Papers that exceed the maximum length allowed will be rejected. 
+
+\section{Proofreading Your PDF}
+Please check all the pages of your PDF file. Is the page size A4? Are there any type 3, Identity-H, or CID fonts? Are all the fonts embedded? Are there any areas where equations or figures run into the margins? Did you include all your figures? Did you follow US capitalization rules for your title? Did you include a copyright notice? Do any of the pages scroll slowly (because the graphics draw slowly on the page)? Are URLs underlined and in color? You will need to fix these common errors before submitting your file. 
+
+\section{Improperly Formatted Files }
+In the past, AAAI has corrected improperly formatted files submitted by the authors. Unfortunately, this has become an increasingly burdensome expense that we can no longer absorb. Consequently, if your file is improperly formatted, you will be notified via e-mail (with a copy to the program chair) of the problems with your file and given the option of correcting the file yourself or asking that AAAI have the file corrected for you, for a fee. If you opt to correct the file yourself, please note that we cannot provide you with any additional advice beyond that given in your packet. Files that are not corrected after a second attempt will be withdrawn.
+
+\subsection{\LaTeX{} 209 Warning}
+If you use \LaTeX{} 209 it is extremely unlikely that we will be able to publish your paper. Convert your paper to \LaTeX{}2e.
+
+\section{Naming Your Electronic File}
+To avoid possible erasure of your file on our site, please name your source files and compressed archives as follows: 
+\begin{itemize}
+\item Event abbreviation (such as AAAI10) 
+\item Principal author's first initial and surname (don't include
+more than one author) 
+\item File type extension (.tar, .gz, .zip, and so on)
+\end {itemize}
+ 
+\subsection{Warning}
+Do {\bf not} name {\it any} of your files (or your directory or archive) with the name of the event or ``aaai" or ``paper" or ``camera-ready" or some other generic or indecipherable name! When we expand an archives with names like that, it becomes impossible to sort them without going into the archive and sorting through acceptance lists. With thousands of files to process, we don't have time to do that. Consequently, our policy is simply to delete such archives.
+
+\section{Submitting Your Electronic Files to AAAI}
+Submitting your files to AAAI is a two-step process. AAAI now uses the Open Conference Systems publications management system, which enables us to create a permanent XML conference archive. All the data you input will be captured in our database for permanent display on the permanent AAAI Digital Library. Your cooperation in complying with the requirements of this system will ensure that future readers of your paper will be able to view your paper correctly. Please note that the OCS site is a temporary submission site only. Your paper will not be permanently archived at this site. We request that you do {\bf not} place any pointers or links to your paper or the conference that  direct users to the OCS site.
+
+\subsection{Account Registration}
+To submit your paper, you must first open an account at our OCS site (only the author responsible for the paper should submit). Please do this well before the paper deadline, as the site requires an e-mail confirmation that, depending on traffic, may be significantly delayed. If you wait until the deadline to open an account, it is likely that you will be unable to submit your paper. To open an account:
+
+\begin{itemize}
+\item Go to the URL specified in your author acceptance letter.
+\item Choose a username and password. 
+\end {itemize}
+
+\noindent Next, using mixed case, (upper and lower-case letters), the following information is required:
+
+\begin{itemize}
+\item Your First Name
+\item Your Last Name
+\item Your Affiliation (if you are not affiliated with a company or university, put Independent Researcher) (Your affiliation should just be your University or Company---not your department or lab). Please don't abbreviate the affiliation.
+\item Your e-mail address (your e-mail address will not be displayed to the public)
+\item The Country in which you live
+\end {itemize}
+
+\noindent Next click the boxes:
+\begin{itemize}
+\item Send me a confirmation email 
+\item Author: Able to submit items to the conference.
+\end {itemize}
+
+The other fields are optional. A bio statement would be your title and department, such as
+\begin{quote}
+Assistant Professor\\
+Department of Computer Science
+\end{quote}
+
+Once you have registered and prepared your paper in accordance with the instructions in this document, you may submit it. You will be submitting two items:
+\begin{itemize}
+\item A PDF of your paper 
+\item A Supplementary file, which will be a compressed archive containing all your source files (either all the LaTeX files required to compile your paper on a different computer or your Word doc file).
+\end {itemize}
+
+To submit these two items, go back to the OCS site, log in, choose Author, and click on Step One of the Submission Process
+
+Some  items are critically important. 
+
+{\it First, use Mixed Case.} The information you provide will be used to compile the table of contents, so all the information you provide must be entered carefully and completely, and using Mixed Case. This includes, for example, your paper title. If you registered properly, your personal information will be entered automatically. Please review it, and be sure your country is included.
+
+{\it Second, include all the authors of your paper.} You'll need to click the Add Author button to do this. You must include the e-mail, as well as the country and affiliation for every additional author. E-mail addresses will not be displayed to the public. The author names, countries, and affiliations will be included in the index or in conference statistics. If you omit an author, they won't get credit for the publication. You can change the author order using the small up and down arrows on the screen. The author order should correspond to the order the names appear on your formatted paper.
+
+{\it Third, submit your PDF as the Submission, and your Ccompressed archive as a Supplementary File.} The title of this supplementary file should be your paper title followed by the words Compressed Archive. If you don't submit this archive, we can't proceed with publication of your paper.
+
+Finally, at the last screen, click on Active Submissions to ensure that your submission is complete. You will receive a confirming e-mail.
+
+It is critically important that you complete this registration with care, as some of the information you provide will be used as the basis for the permanent table of contents and index to the proceedings. 
+
+The server is quite likely to be busy during the last hours before a submission deadline and it may take some time to upload your file; please plan accordingly.) {\bf We strongly suggest you upload your paper at least 2 days before the deadline.}
+
+\section{Mailing Your Copyright Form}
+Your copyright or permission to distribute form must be received by AAAI prior to the paper submission deadline. You may fax the form if time is short (the fax number is 650-321-4457) or you may scan a signed copy of the form and include the scan with your compressed archive, but you must also mail in the original signed form as well (if you fax the form by the deadline, the original can follow via ordinary airmail, provided it is postmarked by the submission deadline. If you are paying any page charges by check, it must also be received no later than the date specified in your acceptance packet.
+
+\section{Inquiries} 
+If you have any questions about the preparation or submission of your paper as instructed in this document, please contact AAAI Press at the address given below. If you have technical questions about implementation of the aaai style file or formatting your paper using Microsoft Word, please contact an expert at your site. We do not provide technical support for \LaTeX{} or Microsoft Word or any other software package. To avoid problems, please keep your paper simple, and do not incorporate complicated macros and style files.
+
+\smallskip
+\noindent AAAI Press\\
+445 Burgess Drive\\
+Menlo Park, California 94025\\ 
+Telephone: (650) 328-3123\\ 
+E-mail: Please use the contact form at www.aaai.org.
+
+\section{Return Receipts}
+The web site will provide you with an e-mail receipt after submission. If there is a problem with your submission or with your paper, we will notify you after we have processed your file. We cannot answer telephone queries, and e-mail sent the week of the paper deadline will be subject to significant delays in response time. If you need confirmation of receipt of your copyright form, we'd appreciate it if you could submit your paper early, (in which case we'd be delighted to e-mail confirmation), or wait until we are ready to contact you (and we will!). 
+
+\section{Changes}
+Once your paper has been submitted, you {\it may} in some circumstances and for some events be allowed to submit a replacement file. Please do not ever create a new submission. Please always inform us by e-mail if you have corrected your paper and uploaded a replacement version. Once the paper deadline has passed, the submission site will close down. If, after the deadline, you discover that your paper has major errors, please contact us for instructions on submitting a replacement version. You will be required to pay a replacement fee. Although we will make every attempt to make the substitution, we {\bf cannot guarantee} that the correct version will appear in the proceedings. Also, to avoid confusion, please refrain from making changes to your original paper's title and its attributed authors. If you must do this (because of a reviewer's suggestion, for example), please notify us via e-mail as soon as possible so that we might change our database of accepted papers. 
+
+\section{Possible Bugs in the AAAI Style File}
+Some users have found that the aaai.sty does not work properly at their site. They have submitted suggestions for improvement of the macro. You will find those suggestions in the buglist file that is part of author kit, and also as a separate file on the AAAI website. Some of these suggestions have already been implemented, while others seem to be dependent on individual site conditions. If you're having problems with aaai.sty, we suggest you look at the ``bug list" first. The style file is {\bf not} guaranteed to work in all situations and on all platforms. If you make bug fixes or improvements, please let us know so that we might share them with others.
+
+\section{Additional Resources}
+\LaTeX{} is a difficult program to master. If you've used that software, and this document didn't help or some items were not explained clearly, we recommend you read Michael Shell's excellent document (testflow doc.txt V1.0a 2002/08/13) about obtaining correct PS/PDF output on \LaTeX{} systems. (It was written for another purpose, but it has general application as well). It is available at www.ctan.org in the tex-archive.
+
+\section{ Acknowledgments}
+AAAI is especially grateful to Peter Patel Schneider for his work in implementing the aaai.sty file, liberally using the ideas of other style hackers, including Barbara Beeton. We also acknowledge with thanks the work of George Ferguson for his guide to using the style and BibTeX files --- which has been incorporated into this document, as well as the many others who have, from time to time, sent in suggestions on improvements to the AAAI style. 
+
+The preparation of the \LaTeX{} and Bib\TeX{} files that implement these instructions was supported by Schlumberger Palo Alto Research, AT\&T Bell Laboratories, Morgan Kaufmann Publishers, The Live Oak Press, LLC, and AAAI Press. Bibliography style changes were added by Sunil Issar. \verb+\+pubnote was added by J. Scott Penberthy. George Ferguson added support for printing the AAAI copyright slug. Additional changes to aaai.sty and aaai.bst have been made by the AAAI staff.
+
+\bigskip
+\noindent Thank you for reading these instructions carefully. We look forward to receiving your electronic files!
+
+\end{document}

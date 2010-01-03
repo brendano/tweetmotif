@@ -1,0 +1,25 @@
+query logs
+
+ * Intro: Description of Twitter / microblogs
+ * Motivation: need for unsupervised summarizing search
+ * Description of application
+   => Screenshot!
+ * In-depth description of algorithm
+   => Motivate each step with examples
+ * Analysis of results
+   => Interesting examples!!
+   => Locations!  Protesters!  Loud noises!  Temporal serendipity!
+
+===================
+
+previous work
+
+other twitter papers - usually, "what is it?"
+
+HCIR?  or what?
+
+===
+
+simple stub intro
+writeup of core sys/algo // add interface // add more related work
+.. wed time from mike ..

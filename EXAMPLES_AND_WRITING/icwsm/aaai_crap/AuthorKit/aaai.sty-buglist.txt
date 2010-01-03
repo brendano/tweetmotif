@@ -1,0 +1,205 @@
+%File: AAAI.Sty-BugList
+The following suggestions have been sent to us regarding the AAAI LaTeX 
+style file. These modifications may or may not apply to you.
+=========================================================================
+When the list of authors is more than 1 line long, affiliations on the second line of authors appear in a larger font. Using \normalsize on the affiliations for the second line of authors restores the font size.
+=========================================================================
+Latex 2e treats the aaai.sty differently than Latex 2.09, in
+particular, adding about a page to a 7 page paper by increasing the
+interline spacing.
+This is apparently because 2e redefines the "normalsize" macro, while
+2.09 defines if from @normalsize. This also scews up the treatment of
+\{above,below}display[short]skip.
+The workaround is to add the line:
+\def\normalsize{\@setsize\normalsize{11pt}\xpt\@xpt}% 10 point on 11
+right after the line:
+\def\@normalsize{\@setsize\normalsize{11pt}\xpt\@xpt}% 10 point on 11
+in aaai.sty.
+=========================================================================
+Latex 2e treats the aaai.sty differently than Latex 2.09, in
+particular, adding about a page to a 7 page paper by increasing the
+interline spacing.
+This is apparently because 2e redefines the "normalsize" macro, while
+2.09 defines if from @normalsize. This also scews up the treatment of
+\{above,below}display[short]skip.
+The workaround is to add the line:
+\def\normalsize{\@setsize\normalsize{11pt}\xpt\@xpt}% 10 point on 11
+right after the line:
+\def\@normalsize{\@setsize\normalsize{11pt}\xpt\@xpt}% 10 point on 11
+in aaai.sty.
+=========================================================================
+Here is a bug fix to the aaai.sty file for Latex from AAAI's web site needed
+for my version of latex ("This is TeX, Version 3.1415 (C version 6.1)"):
+Change line
+\linewidth\hsize \vskip 0.625in minus 0.125in \centering
+to
+\linewidth\hsize \vskip 0.375in minus 0.125in \centering
+to make the title start at the correct height on the page. Otherwise it starts
+0.25 in too low. I don't know if this applies to older versions of latex or
+not.
+=========================================================================
+Since I was annoyed by a strange behavior of aaai.sty,
+I examined it and found a bug of the style file.
+\def\subsubsection{\@startsection{subparagraph}{3}{\z@}{-6pt plus
+2pt minus 1pt}{-1em}{\normalsize\bf}}
+==> -2pt minus -1pt}{-1em}{\normalsize\bf}}
+=========================================================================
+In order to use aaai.sty in LaTeX2e it is necessary to comment out the 
+\footheight command. You can do so by changing
+\setlength\footheight{0pt}  \setlength\footskip{0pt}
+to
+%\setlength\footheight{0pt}
+\setlength\footskip{0pt}
+=========================================================================
+The \setlength\titlebox{2.25in} is 2.25, while the paper template
+looks like it will allow a minimum of 2 in.
+Perhaps 2 in. should be the default in aaai.sty?
+=========================================================================
+The mechanism for invoking styles is different in LaTeX2e.  The mechanism to
+use is
+\documentclass{article}
+\usepackage{aaai}
+\usepackage{times}
+This assumes that the user has a version of the style file that works with
+LaTeX2e.  
+Some users may be able to use
+\documentstyle[aaai]{article}
+to invoke compatability mode, but that may have some problems.
+=========================================================================
+The \setlength\titlebox{2.25in} is 2.25, while the paper template
+looks like it will allow a minimum of 2 in.
+Perhaps 2 in. should be the default in aaai.sty?
+=========================================================================
+The copyright slug comes too close to any footnotes in the first
+column of text; it should have a small vertical separation, especially
+as it is not indented, whereas the text of any \thanks{ } footnotes
+is indented.  Right now, if the last \thanks{} footnote above
+the copyright happens to fill in its last line, it looks like the
+copyright slug is part of that same footnote.
+The fix is very simple:  on line 133, replace the current line, which
+reads
+\if T\copyright@on\insert\footins{\noindent\footnotesize\copyright@text}\fi
+by
+\if T\copyright@on\insert\footins{\smallskip\relax\noindent\footnotesize\copyright@text}\fi
+The small vertical skip hardly takes any room on the page, yet makes
+the copyright notice stand clearly separate from any preceding
+footnote.
+Bernard M.E. Moret	     moret@cs.unm.edu       http://www.cs.unm.edu/~moret
+=========================================================================
+Small bug in the definition of \AND, which results in the second
+(and any following) "rows" of authors to have their affiliation in
+\Large type as opposed to normal size.
+Here is the fix: change (starting line 124 of file)
+
+   \def\AND{\end{tabular}\hss\egroup \hfil\hfil\egroup
+           \vskip 0.25in plus 1fil minus 0.125in
+            \hbox to \linewidth\bgroup\Large\hfil\hfil
+              \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\Large\bf}
+
+into
+
+   \def\AND{\end{tabular}\hss\egroup \hfil\hfil\egroup
+           \vskip 0.25in plus 1fil minus 0.125in
+            \hbox to \linewidth\bgroup\hfil\hfil
+              \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\Large\bf}
+
+that is, simply remove the \Large on line 126.
+
+  Bernard M.E. Moret	     moret@cs.unm.edu 
+http://www.cs.unm.edu/~moret
+=========================================================================
+Hyperref likes to be loaded as the last package since it redefines a lot
+of basic LaTeX macros. This includes the definition of the bibitems in
+the bibliography, since it adds the anchors for hyperlinks.
+
+Unfortunately, aaai.sty also wants to change the behavior of bibitem,
+specifically in order not to print the item key in the bibliography.
+When loading aaai.sty before hyperref.sty, these changes get reversed.
+As a hack, one can load a style file as the last package which combines
+the necessary changes from aaai.sty and hyperref.sty. I have included
+such a hack below, but I think one should look into whether this cannot better
+be achieved by changing the aaai BibTeX style in order to work together
+nicely with hyperref. 
+-----------
+%Filename: AAAIbib.sty
+%
+\typeout{Bibliography Style for AAAI for LaTeX 2e -- Hack by J. Cassens 8 March 2006}
+
+  \def\@lbibitem[#1]#2{%
+    \@skiphyperreftrue
+    \H@item[%
+      \ifx\Hy@raisedlink\@empty
+        \hyper@anchorstart{cite.#2}\hyper@anchorend
+      \else
+        \Hy@raisedlink{\hyper@anchorstart{cite.#2}\hyper@anchorend}%
+      \fi
+    ]%
+    \@skiphyperreffalse
+    \if@filesw
+{ \def\protect##1{\string ##1\space}\immediate
+\write\@auxout{\string\bibcite{#2}{#1}}}\fi\ignorespaces}
+-----------
+
+Jšrg Cassens
+
+=========================================================================
+
+I have been using aaai.sty to prepare a paper in latex, and
+had thought that the recommended heading
+
+    \documentclass[letterpaper]{article}
+
+would produce the right paper size with both latex and pdflatex.
+
+However, it turns out not to work for pdflatex. The font size gets
+shrunk to make the columns fit in A4 width.
+
+After some exploration and consultation with local latex experts,
+I have come across two solutions that I have tried which produce
+identical effects, which I think are correct, and one solution
+that I have not tried, but may also work.
+
+SOLUTION 1 (provided by Mark Roberts):
+
+The "geometry" package provides a very intuitive interface to
+those awkward settings. Documentation is here
+ftp://tug.ctan.org/pub/tex-archive/macros/latex/contrib/geometry/manual.pdf
+
+The following sets AAAI format:
+
+\usepackage[pdftex,letterpaper,lmargin=0.75in,rmargin=0.75in,tmargin=0.75in,bmargin=1.25in]{geometry}
+
+
+SOLUTION 2 (found via google):
+
+% Insert conditional instructions for pdflatex
+    \newif\ifpdf
+    \ifx\pdfoutput\undefined
+    \pdffalse % we are not running PDFLaTeX
+    \else
+    \pdfoutput=1 % we are running PDFLaTeX
+    \pdftrue
+    \fi
+
+% Set size for pdflatex
+% If using only pdflatex, never latex, the two setlength
+% commands will work on their own
+    \ifpdf
+        \setlength{\pdfpagewidth}{8.5in}
+        \setlength{\pdfpageheight}{11.0in}
+    \fi
+
+SOLUTION 3, which I have not tried:
+
+    \usepackage[pdftex,letterpaper,,...]{hyperref}
+
+
+No doubt there are lots more solutions. Putting those three in the bugs
+file and a warning about pdflatex in the formatting guide should
+probably meet everyone's needs.
+
+Aaron Sloman
+http://www.cs.bham.ac.uk/~axs/
+=========================================================================
+
+
