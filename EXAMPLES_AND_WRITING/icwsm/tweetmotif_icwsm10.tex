@@ -140,6 +140,8 @@ All pairs of topics are compared, and final topics are connected components of t
 \codenote{ deduper.py }
 When we implemented the basic topic system, a message duplication issue was revealed: the same, or nearly the same, textual message may be repeated many times.  People forward (``retweet'') interesting messages such as jokes and news headlines \bto{cite the new boyd et al paper?  kinda lame the wrote a whole paper on retweeting}; and furthermore, a seemingly huge number of bots repeat advertisements, spam, weather reports, news feeds, other people's tweets, and many other types of messages many thousands of times.  It is a waste of space to always show near-duplicates to the search user; therefore we detect clusters of near-duplicates, display them with a single representative and numeric size, and allow them to be optionally viewed.  \bto{awkward}
 
+.. we use metainfo too
+
 The algorithm simply groups messages whose sets of trigrams have a pairwise Jaccard similarity exceeding 65\%.  (Using a trigram message index cuts down on the potentially quadratic runtime.)  This approximates finding a large shared phrase, since usually two messages share several trigrams only when they are overlapping trigrams from a larger shared n-gram.  We experimented with weighting trigrams by their inverse frequency in the general corpus, but this did not seem to improve results.   
 
 This technique seems to reliably find retweets and other forms of repetition; it also naturally groups together spam.
@@ -152,6 +154,24 @@ We are now left with a ranked list of topics containing messages in near-duplica
 \section{User interface}
 
 \section{Examples}
+
+.. TODO dredge up query logs, though not many people used it besides us
+
+.. twitterpornnames .. unfortunately i just grepped my incomplete tweet scrape and it's not there
+
+.. sentiment analysis example of some sort.  modifiers, not nouns.  completely unsupervised, biyatches!
+
+.. G20 protesters
+
+.. rumors: balloon boy ... damn maybe i lost that screenshot
+
+.. folk semantics: sandwich
+
+.. note various parts-of-speech
+
+.. text-topic infections: mother's day => sandwich; \#whoremembers => sandwich
+
+.. show some failures.  trending topics actually perform worst; best use case isn't chasing down these hot trends, but rather exploring the space of what exists on twitter.
 
 \section{Related Work}
 
