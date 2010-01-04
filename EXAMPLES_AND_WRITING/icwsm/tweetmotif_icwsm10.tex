@@ -37,7 +37,7 @@ David Ahn \\ Microsoft, Inc. \\ daviddahn@gmail.com
 \maketitle
 \begin{abstract}
 \begin{quote}
-We present TweetMotif, an exploratory search application for Twitter.  Unlike traditional approaches to information retrieval, which present a simple list of messages, TweetMotif groups messages by frequent significant terms --- a query set's subtopics --- which facilitate navigation and drilldown through a faceted search interface.  The topic extraction system is based on syntactic filtering, language modeling, near-duplicate detection, and set cover heuristics.  TweetMotif's subtopic groupings make it easy to obtain both an overview and specific examples of what people are saying; we present examples where it can help deflate rumors, uncover scams, summarize sentiment, and track political protests in real-time.  The system also illustrates possibilities for future work in unsupervised linguistic induction from social media text.  A demo of TweetMotif, plus its source code, is available at http://tweetmotif.com.
+We present TweetMotif, an exploratory search application for Twitter.  Unlike traditional approaches to information retrieval, which present a simple list of messages, TweetMotif groups messages by frequent significant terms --- a query set's subtopics --- which facilitate navigation and drilldown through a faceted search interface.  The topic extraction system is based on syntactic filtering, language modeling, near-duplicate detection, and set cover heuristics.  TweetMotif's subtopic groupings make it easy to obtain both an overview and specific examples of what people are saying; we present examples where it can help deflate rumors, uncover scams, summarize sentiment, and track political protests in real-time.   A demo of TweetMotif, plus its source code, is available at http://tweetmotif.com.
 \end{quote}
 \end{abstract}
 
@@ -131,16 +131,16 @@ First, there are easy merges between subsumed n-gram phrases of differing sizes.
 
 \bto{ LOL wish there was a way to incorporate http://xkcd.com/574/ }
 
-But more generally, there are more difficult cases when topics roughly overlap; we should to merge topics if their message sets are sufficiently similar.  We use the Jaccard set similarity metric, which measures the size of the intersection, scaled from 0 to 1.  It has a value of 0\% if there are no shared messages, and is 100\% if all messages are shared; i.e, if neither set has messages that are not in the other.  For topic message sets $s_1$ and $s_2$, merge the topics if:
+But more generally, there are more difficult cases when topics roughly overlap; we should to merge topics if their message sets are sufficiently similar.  We use the Jaccard set similarity metric, which measures the size of the intersection, scaled from 0 to 1.  It has a value of 0\% if there are no shared messages, and is 100\% if all messages are shared; i.e, the topics are identical.  For topic message sets $s_1$ and $s_2$, merge the topics if:
 
 \[ Jacc(s_1,s_2) = \frac{ |s_1 \cap s_2| }{ |s_1 \cup s_2 | } \geq 0.9 
 \]
-All pairs of topics are compared, and final topics are connected components of the pairwise $Jacc \geq 0.9$ graph (i.e., single-link clustering, such that topics less than 90\% similar may end up merged).  When several topics are merged, only the intersection of messages is included in the new topic.  There is a label choice problem/opportunity: any of the old topics' labels are now legitimate.  Our heuristic solution usually picks longer and higher scoring labels, and sometimes combines short labels into a skip n-gram.
+Topic labels are ignored for this analysis.  All pairs of topics are compared, and final topics are connected components of the pairwise $Jacc \geq 0.9$ graph --- i.e., single-link clustering, so topics less than 90\% similar may end up merged.  When several topics are merged, only the intersection of messages is included in the new topic.  There is a label choice problem/opportunity for merged topics: any of the old topics' labels are now legitimate.  Our heuristic solution usually picks longer and higher scoring labels, and sometimes combines short labels into a skip n-gram.
 
 \subsection{Step N: Group near-duplicate messages}
 
 \codenote{ deduper.py }
-When we implemented the basic topic system, a message duplication issue was revealed: the same, or nearly the same, textual message may be repeated many times.  People forward (``retweet'') interesting messages such as jokes and news headlines \bto{cite the new boyd et al paper?  kinda lame the wrote a whole paper on retweeting}; and furthermore, a seemingly huge number of bots repeat advertisements, spam, weather reports, news feeds, other people's tweets, and many other types of messages many thousands of times.  It is a waste of space to always show near-duplicates to the search user; therefore we detect clusters of near-duplicates, display them with a single representative and numeric size, and allow them to be optionally viewed.  \bto{awkward}
+When we implemented the basic topic system, a message duplication issue was revealed: the same, or nearly the same, textual message may be repeated many times.  People forward (``retweet'') interesting messages such as jokes and news headlines \bto{cite the new boyd et al paper?  kinda lame the wrote a whole paper on retweeting}; and furthermore, a seemingly huge number of bots repeat advertisements, spam, weather reports, news feeds, other people's tweets, templated messages, etc.  It is a waste of space to always show near-duplicates to the search user; therefore we detect clusters of near-duplicates, display them with a single representative and numeric size, and allow them to be optionally viewed.  \bto{awkward}
 
 .. we use metainfo too
 
@@ -177,6 +177,10 @@ We are now left with a ranked list of topics containing messages in near-duplica
 
 .. show some failures.  trending topics actually perform worst; best use case isn't chasing down these hot trends, but rather exploring the space of what exists on twitter.
 
+\section{Implementation Notes}
+
+surprisingly, it's fast enough to be usable, despite several steps with quadratic runtime and everything in pure python.  caching helps.  waiting on twitter search API is actually a bottleneck.  should be possible to scale this prototype into a full-fledged application.
+
 \section{Related Work}
 
 Topic models; LSA, LSI, LDA ... also, k-means-style document clustering.  Clusty [[god is there anything else to cite by now??]].
@@ -185,9 +189,6 @@ All of these approaches suffer from the topic labeling problem. ..  By contrast,
 
 Another difference with previous topic modeling work is that topic-message relationships and representations are all discrete (boolean).  LSA/LSI is a vector topic model and LDA is a probabilistic topic model; TweetMotif's topic criteria might be formulated as a \emph{discrete topic model}.  Since user interfaces usually communicate discrete information --- e.g., lists of representative words, or the set of documents belonging to a topic --- the results of LSA, LDA, or document clustering usually have to be discretized anyways for a user interface.  Directly formulating discrete topic models may be a useful approach for future work in exploratory document collection analysis.  \bto{or .. ``combinatorial topic model'' was the other term i've been batting around.  both are zero hits on google!}
 
-\section{Acknowledgments}
-
-Withheld for anonymous review.
 
 \bibliography{tweetmotif.bib}
 \bibliographystyle{aaai}
