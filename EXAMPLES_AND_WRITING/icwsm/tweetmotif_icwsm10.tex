@@ -85,7 +85,7 @@ Instead of simply showing the user this entire resultset as a list, TweetMotif e
 \item Topic diversity: Topics should be chosen such that their messages and label phrases minimally overlap.  Overlapping topics repetitively fill the same information niche; only one should be used.
 %\item Set cover: Topics should be chosen such that their message union includes as much of the query subcorpus as possible, though it is not necessary to i
 \item Topic size: A topic that includes too few messages is bad; it is overly specific.
-\item Small number of topics: Screen real-estate and user cognitive load are limited resources.
+\item Small number of topics: Screen real-estate and concomitant user cognitive load are limited resources.
 \end{enumerate}
 
 The goal is to provide the user a concise summary of themes and variation in the query subcorpus, then allow the user to navigate to individual topics to see their associated messages, and allow recursive drilldown.
@@ -96,7 +96,7 @@ It could be interesting to formulate these desiderata as a constrained optimizat
 
 Tokenization is difficult in the social media domain, and, as is often glossed over in academic natural language processing literature, good tokenization is absolutely crucial for overall system performance.  Standard tokenizers, usually designed for newspapers or biomedical publications, perform poorly.  Our tokenizer correctly handles hashtags, @-replies, abbreviations, times of day, and long strings of punctuation, while preserving emoticons and unicode glyphs (e.g. musical notes) as lexical items.  We made no attempt to handle Asian languages or others that require sophisticated word segmentation, but the tokenizer seems to work well for Spanish and other languages with similar word boundary conventions as English; some queries indeed generate multilingual topic sets.
 
-Unigrams are too narrow a unit of analysis; ideally, we want to extract all phrases and subphrases.  In lieu of developing or adapting a part-of-speech tagger, a prerequisite for standard phrase chunking approaches, we use all unigrams, bigrams, and trigrams (from our fine-grained tokenizations) as candidate topic phrases.  We discard unigrams belonging to a small stopword list of function words, and discard all bigrams and trigrams that cross syntactic boundaries: discard if they include certain types of punctuation tokens in certain positions, or if they end with certain right-binding function words like ``the'' and ``of.''  This simple syntactic filtering greatly improves the coherency of extracted n-grams, though they usually seem worse than the results of a typical phrase chunker.
+Unigrams are too narrow a unit of analysis; ideally, we want to extract all phrases and subphrases.  In lieu of developing or adapting a part-of-speech tagger, a prerequisite for standard phrase chunking approaches, we use all unigrams, bigrams, and trigrams (from our fine-grained tokenizations) as candidate topic phrases.  We discard unigrams belonging to a small stopword list of function words, and discard all bigrams and trigrams that cross syntactic boundaries. The rules flag n-grams including certain types of punctuation tokens in certain positions, and ones that end with certain right-binding function words like ``the'' and ``of.''  This simple syntactic filtering greatly improves the coherency of extracted n-grams, though they usually seem worse than the results of a typical phrase chunker.
 
 
 \subsection{Step N: Score and filter topic phrase candidates}
@@ -118,12 +118,14 @@ where $\delta$ is the smoothing parameter, set to 0.5, $N$ is the \bto{TODO Davi
 
 .. interestingly, hacky MLE beat Lidstone for a while until tweaked syntactic analysis filtering \bto{explain if room}
 
+.. Backgrond corpus .. say size, admit it's tiny ..
+
 It is well-known in the information retrieval literature that this  language model comparison approach is analogous to TF/IDF; e.g. \cite{manning_introduction_2008}.  Thus our approach might be vaguely compared to TF/IDF, which estimates document relevance by balancing the frequency of query terms against their frequencies in a background corpus.  Note that the average Twitter message is 11 words long, and words rarely occur more than once in a message; thus, the count of a word is virtually the same as the count of messages it occurs in (DF and TF are the same).  If messages are considered documents, the notion of document TF is not very useful.  Our approach is more like TF for one giant document consisting of the concatenation of all query subcorpus messages.  This too is an odd analogy.  In general, we believe the microblog search problem will require creative formulations of cross-message phonemena beyond current paradigms in IR.
 
 \subsection{Step N: Merge similar topics}
 
 \codenote{ deduper.py }
-Every candidate phrase defines a topic, a set of messages that contain that phrase.  Many phrases, however, occur in roughly the same set of messages, thus their topics are repetitive.  This is undesirable.
+Every candidate phrase defines a topic, a set of messages that contain that phrase.  Many phrases, however, occur in roughly the same set of messages, thus their topics are repetitive.  This is undesirable, so we seek to merge similar topics.
 
 First, there are easy merges between subsumed n-gram phrases of differing sizes.  Note that each of an n-gram's label-subsumed (n-1)-grams must conversely subsume its message set.  For example, the message set for the bigram topic ``swine flu'' must be a subset or equal to the two unigram topics ``swine'' and ``flu.''  If the ``swine flu'' topic is in fact equal to the ``flu'' topic, then we discard the ``flu'' topic, since ``swine flu'' is strictly better: we can move from ``flu'' to the more descriptively labeled ``swine flu'' without losing any messages.
 
