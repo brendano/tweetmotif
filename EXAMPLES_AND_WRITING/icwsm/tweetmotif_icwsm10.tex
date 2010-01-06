@@ -16,6 +16,7 @@
 % color.sty ... red green blue cyan magenta yellow
 
 \newcommand{\bto}[1]{\textcolor{blue}{\textbf{[#1 --BTO]}}}
+\newcommand{\mikeyk}[1]{\textcolor{green}{\textbf{[#1 --mikeyk]}}}
 
 %\newcommand{\codenote}[1]{ \textcolor{cyan}{\textbf{[#1]}} }
 \newcommand{\codenote}[1]{}
@@ -30,7 +31,7 @@
 \author{Brendan O'Connor \\ 
 Carnegie Mellon University \\ brenocon@gmail.com
 \And
-Mike Krieger \\ Meebo, Inc. \\ mikekrieger@gmail.com
+Michel Krieger \\ Meebo, Inc. \\ mikekrieger@gmail.com
 \And
 David Ahn \\ Microsoft, Inc. \\ daviddahn@gmail.com
 }
@@ -47,7 +48,7 @@ We present TweetMotif, an exploratory search application for Twitter.  Unlike tr
 
 Every day, people around the world broadcast their thoughts to the world as textual messages in various social media.  On Twitter, a recently popular microblogging service, users post millions of very short messages every day.
 
-An exciting question is how to best organize and enable search for this corpus.  Users and analysts might like to see examples of, and better understand, what millions of people are saying about various topics.  Current work has focused on two extremes: (1) showing individual messages, and (2) showing aggregate volume counts.
+Organizing and searching through this large corpus is an exciting research problem. Current work has focused on two extremes: (1) showing individual messages, and (2) showing aggregate volume counts.
 
 The most prominent Twitter search systems currently return a flat list of the most recent messages that matched the user query.  This includes Twitter's own search service, \link{search.twitter.com}, as well as recent offerings incorporated into both Google and Microsoft Bing.  This follows the standard approach in web search and traditional information retrieval, where users are often interested in finding a single document that satisfies their information need.  However, characterizing the relevance of microblog messages is an open question; for many information needs, microblog search needs some sort of summarization.
 
@@ -60,16 +61,18 @@ At the other end, there are many efforts that focus on counting the total number
 % 
 % http://www.launchtweet.com/  a specialized jobs-on-twitter finding site.
 
-
-
 %% hmm more criticism.  [[ explain twitter topics ]] is a great google query
 % http://blog.hubspot.com/blog/tabid/6307/bid/4694/Why-Twitter-Hashtags-and-Trending-Topics-Are-Useless-to-Marketers.aspx
 
 Sentiment and opinion analysis approaches ... examples?? ... problematic because sentiment analysis is a difficult, unsolved task in the field of natural language processing ...
 
+\mikeyk{How about http://flixpulse.com/ as an example of opinion/sentiment analysis?}
+
 We believe a different approach is necessary ... want a high-level summary of a corpus of messages, while being able to view individual examples to gain insight ...
 
 \bto{and a partial screenshot!  but what query? hopefully pick one for a single running example for algorithm exposition.  i'm seriously thinking about \#twitterpornnames, because there's that awesome punchline of the "passwords" topic.  that's the "uncover scams" example i said in the abstract. downside, it's hard to understand on first glance.  also. why not make the screenshot BIG and on the FRONT PAGE!  OUR APPLICATION IS BEAUTIFUL! BOOM!!!}
+
+\mikeyk{big fan of large first page screenie}
 
 \bto { oh yeah, and twitterpornnames made it into a dept homeland security warning }
 
@@ -156,6 +159,15 @@ We are now left with a ranked list of topics containing messages in near-duplica
 
 \section{User interface}
 
+Rather than the flat list of results commonly presented in Web search, we opted for a user interface inspired by faceted search, which has been shown to aid Web search tasks. \mikeyk{cite http://portal.acm.org/citation.cfm?id=567525}. This allows users to explore the breadth of related themes that might appear for a given search query.
+
+TweetMotif's main UI is a two-column layout. The left column is a list of themes that are related to the current search term, while the right column presents actual tweets, grouped by theme. As themes are selected on the left column, a sample of tweets for that theme appears at the top of the right column, pushing down (but not removing) tweet results for any previously selected related themes. This allows users to explore and compare multiple related themes at once. 
+
+Color-coding is used to highlight occurrences of the original search term and of the currently selected related theme. The interface purposely focuses on the content of the message, rather than the timestamp or author.
+
+\mikeyk{ wasn't sure what the language we're using in the paper for themes etc, feel free to correct as needed }
+
+
 \section{Examples}
 
 .. TODO dredge up query logs, though not many people used it besides us
@@ -191,6 +203,10 @@ it's more like query refinement really.  cites ... scirus.com (by FAST and Elsev
 .. on topic and clustering models ... All of these approaches suffer from the topic labeling problem. ..  By contrast, we unify the notions of topics and their labels.  This forces a deterministic relationship between a topic's label and the messages under that topic, which ensures maximum transparency to the user.
 
 Another difference with previous topic modeling work is that topic-message relationships and representations are all discrete (boolean).  LSA/LSI is a vector topic model and LDA is a probabilistic topic model; TweetMotif's topic criteria might be formulated as a \emph{discrete topic model}.  Since user interfaces usually communicate discrete information --- e.g., lists of representative words, or the set of documents belonging to a topic --- the results of LSA, LDA, or document clustering usually have to be discretized anyways for a user interface.  Directly formulating discrete topic models may be a useful approach for future work in exploratory document collection analysis.  \bto{or .. ``combinatorial topic model'' was the other term i've been batting around.  both are zero hits on google!}
+
+In the blog and microblog search domain, much of the work on search has focused on its applications and unique characteristics relative to traditional Web search, though some work focuses on improving the search engine  itself. This work includes research that uses temporal data for clustering \mikeyk{cite: http://portal.acm.org/citation.cfm?id=1645953.1645968}, or applies information visualization techniques to aid search \mikeyk{ citation in comments below }.
+
+% http://scholar.google.com/scholar.bib?q=info:-YwvIrwhSvYJ:scholar.google.com/&output=citation&hl=en&as_sdt=2000&ct=citation&cd=3 ~mikeyk
 
 
 \bibliography{tweetmotif.bib}
