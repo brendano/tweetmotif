@@ -1,7 +1,7 @@
 % http://mail.google.com/mail/#search/to%3Akrieger+OR+to%3Adavidahn+OR+(to%3Adavid+AND+to%3Aahn)+OR+from%3Akrieger+OR+from%3Adavidahn/120e6c9667b99ada
 \documentclass[letterpaper]{article}
 \usepackage{aaai}
-
+\usepackage{graphicx}
 \usepackage{times}
 \usepackage{helvet}
 \usepackage{courier}
@@ -38,21 +38,33 @@ David Ahn \\ Microsoft, Inc. \\ daviddahn@gmail.com
 \maketitle
 \begin{abstract}
 \begin{quote}
-We present TweetMotif, an exploratory search application for Twitter.  Unlike traditional approaches to information retrieval, which present a simple list of messages, TweetMotif groups messages by frequent significant terms --- a query set's subtopics --- which facilitate navigation and drilldown through a faceted search interface.  The topic extraction system is based on syntactic filtering, language modeling, near-duplicate detection, and set cover heuristics.  TweetMotif's subtopic groupings make it easy to obtain both an overview and specific examples of what people are saying; we present examples where it can help deflate rumors, uncover scams, summarize sentiment, and track political protests in real-time.   A demo of TweetMotif, plus its source code, is available at http://tweetmotif.com.
+We present TweetMotif, an exploratory search application for Twitter.  Unlike traditional approaches to information retrieval, which present a simple list of messages, TweetMotif groups messages by frequent significant terms --- a result set's subtopics --- which facilitate navigation and drilldown through a faceted search interface.  The topic extraction system is based on syntactic filtering, language modeling, near-duplicate detection, and set cover heuristics.  TweetMotif's subtopic groupings make it easy to obtain both an overview and specific examples of what people are saying; we present examples where it can help deflate rumors, uncover scams, summarize sentiment, and track political protests in real-time.   A demo of TweetMotif, plus its source code, is available at http://tweetmotif.com.
 \end{quote}
 \end{abstract}
 
 \section{Introduction and Motivation}
 
-\bto{probably need to cut this intro crap down}
+%\bto{probably need to cut this intro crap down}
 
 Every day, people around the world broadcast their thoughts to the world as textual messages in various social media.  On Twitter, a recently popular microblogging service, users post millions of very short messages every day.
 
 Organizing and searching through this large corpus is an exciting research problem. Current work has focused on two extremes: (1) showing individual messages, and (2) showing aggregate volume counts.
 
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[scale=0.3]{screenshot.png}
+\caption{Screenshot of TweetMotif.}
+\label{screenshot}
+\end{center}
+\end{figure}
+
+
 The most prominent Twitter search systems currently return a flat list of the most recent messages that matched the user query.  This includes Twitter's own search service, \link{search.twitter.com}, as well as recent offerings incorporated into both Google and Microsoft Bing.  This follows the standard approach in web search and traditional information retrieval, where users are often interested in finding a single document that satisfies their information need.  However, characterizing the relevance of microblog messages is an open question; for many information needs, microblog search needs some sort of summarization.
 
-At the other end, there are many efforts that focus on counting the total number of messages matching a term.  The Twitter website prominently features Trending Topics, a list of terms that have been growing in frequency over the last day, week, or month.  ... many others  ..   http://trendistic.com/  .. bla bla bla ... these methods are good to help attain a very rough idea of what topics people are talking about, but do little to provide specifics.  Indeed, Twitter's Trending Topics are often so mysterious that a new website was started to collect explanations for what they are (\link{whatthetrend.com}), and at least one Twitter client adds such explanatory blurbs to its user interface (\link{brizzly.com}).
+At the other end, there are many efforts that focus on counting the total number of messages matching a term.  The Twitter website prominently features Trending Topics, a list of terms that have been growing in frequency over the last day, week, or month.
+%  ... many others  ..   http://trendistic.com/  .. bla bla bla ... 
+This is good to help attain a very rough idea of what topics people are talking about, but do little to provide specifics.  Indeed, Twitter's Trending Topics are often so mysterious that a new website was started to collect explanations for what they are (\link{whatthetrend.com}), and at least one Twitter client adds such explanatory blurbs to its user interface (\link{brizzly.com}).
 
 % more stuff found in email and notes
 % http://tweetmeme.com  (categories and attempt at a directory)
@@ -64,18 +76,19 @@ At the other end, there are many efforts that focus on counting the total number
 %% hmm more criticism.  [[ explain twitter topics ]] is a great google query
 % http://blog.hubspot.com/blog/tabid/6307/bid/4694/Why-Twitter-Hashtags-and-Trending-Topics-Are-Useless-to-Marketers.aspx
 
-Sentiment and opinion analysis approaches ... examples?? ... problematic because sentiment analysis is a difficult, unsolved task in the field of natural language processing ...
 
-\mikeyk{How about http://flixpulse.com/ as an example of opinion/sentiment analysis?}
+%%%%%%%%%%%%%%%%%%%% KILL
+%Sentiment and opinion analysis approaches ... examples?? ... problematic because sentiment %analysis is a difficult, unsolved task in the field of natural language processing ...
 
-We believe a different approach is necessary ... want a high-level summary of a corpus of messages, while being able to view individual examples to gain insight ...
+%\mikeyk{How about http://flixpulse.com/ as an example of opinion/sentiment analysis?}
 
-\bto{and a partial screenshot!  but what query? hopefully pick one for a single running example for algorithm exposition.  i'm seriously thinking about \#twitterpornnames, because there's that awesome punchline of the "passwords" topic.  that's the "uncover scams" example i said in the abstract. downside, it's hard to understand on first glance.  also. why not make the screenshot BIG and on the FRONT PAGE!  OUR APPLICATION IS BEAUTIFUL! BOOM!!!}
+%We believe a different approach is necessary ... want a high-level summary of a corpus of messages, while being able to view individual examples to gain insight ...
 
-\mikeyk{big fan of large first page screenie}
+%\bto{and a partial screenshot!  but what query? hopefully pick one for a single running example for algorithm exposition.  i'm seriously thinking about \#twitterpornnames, because there's that awesome punchline of the "passwords" topic.  that's the "uncover scams" example i said in the abstract. downside, it's hard to understand on first glance.  also. why not make the screenshot BIG and on the FRONT PAGE!  OUR APPLICATION IS BEAUTIFUL! BOOM!!!}
 
-\bto { oh yeah, and twitterpornnames made it into a dept homeland security warning }
+%\mikeyk{big fan of large first page screenie}
 
+%\bto { oh yeah, and twitterpornnames made it into a dept homeland security warning }
 
 \section{Description of TweetMotif}
 
@@ -93,7 +106,9 @@ Instead of simply showing the user this entire resultset as a list, TweetMotif e
 
 The goal is to provide the user a concise summary of themes and variation in the query subcorpus, then allow the user to navigate to individual topics to see their associated messages, and allow recursive drilldown.
 
-It could be interesting to formulate these desiderata as a constrained optimization problem (e.g. \bto{cite submodular, constr optim}, but in this preliminary work we heuristically fulfill them through several stages of analysis, described as follows.  \bto{need to slip in excuse that all of tweetmotif was built over a 1 month period.  this may fit well in the Examples section.}
+It could be interesting to formulate these desiderata as a constrained optimization problem,
+% (e.g. \bto{cite submodular, constr optim}, 
+but in this preliminary work we heuristically fulfill them through several stages of analysis, described as follows.  %\bto{need to slip in excuse that all of tweetmotif was built over a 1 month period.  this may fit well in the Examples section.}
 
 \subsection{Step 1: Tokenization and syntactic filtering}
 
@@ -101,39 +116,39 @@ Tokenization is difficult in the social media domain, and, as is often glossed o
 
 Unigrams are too narrow a unit of analysis; ideally, we want to extract all phrases and subphrases.  In lieu of developing or adapting a part-of-speech tagger, a prerequisite for standard phrase chunking approaches, we use all unigrams, bigrams, and trigrams (from our fine-grained tokenizations) as candidate topic phrases.  We discard unigrams belonging to a small stopword list of function words, and discard all bigrams and trigrams that cross syntactic boundaries. The rules flag n-grams including certain types of punctuation tokens in certain positions, and ones that end with certain right-binding function words like ``the'' and ``of.''  This simple syntactic filtering greatly improves the coherency of extracted n-grams, though they usually seem worse than the results of a typical phrase chunker.  It often extracts phrases cutting into the named entities and other multiword constructions.
 
-... hashtags get special treatment: set-like semantics, not allowed to participate in phrases
+%... hashtags get special treatment: set-like semantics, not allowed to participate in phrases
 
-\subsection{Step N: Score and filter topic phrase candidates}
+\subsection{Step 2: Score and filter topic phrase candidates}
 
 \codenote{lang_model.py, ranking.py}
-From this lexicon of n-gram phrases, we filter to phrases that occur at least 3 times, and score them by the likelihood ratio:
-\[\frac{Pr(\textrm{ phrase } \ |\ \textrm{ query subcorpus })}
-{Pr(\textrm{ phrase } \ |\ \textrm{ general corpus })}
+TweetMotif takes a simple language modeling approach to identifying topic phrases.  The language models we use are based on the standard query likelihood retrieval model \cite{manning_introduction_2008}.  Rather than trying to find the documents that best model a set of query terms, though, we are trying to find the phrases that are most distinctive for a tweet result set.  One way of looking for such phrases is to seek out phrases whose probability relative to a language model estimated from a tweet result set is much greater than their probability relative to a language model for tweets in general.  To that end, we score phrases by the likelihood ratio:
+\[\frac{Pr(\textrm{ phrase } \ |\ \textrm{ tweet result set })}
+{Pr(\textrm{ phrase } \ |\ \textrm{ general tweet corpus })}
 \]
 
-As is usually the case in language modeling, many candidate phrases do not occur in the background corpus, so their probabilities must be estimated with smoothing so the denominator does not blow up the likelihood ratio.  We use a very simple model, Lidstone smoothing:
-
-\[ Pr(\textrm{ phrase }\ |\ \textrm{ corpus }) = \frac
+Note that we do not try to estimate the probability of phrases on the basis of the constituent tokens in the phrase, i.e., we do not estimate n-gram probabilities from statistics on $(n-1)$-grams or anything like that.  Rather, we estimate the probability of unigram phrases directly from unigram counts, the probability of bigram phrases directly from bigram counts, and the probability of trigram phrases directly from trigram counts.  As is usually the case in language modeling, a given phrase does not necessarily occur in a corpus, so phrase probabilities must be estimated with smoothing.  We tried several simple estimation methods, including maximum likelihood estimation and Laplace smoothing, but settled on Lidstone smoothing:
+\[ Pr(\textrm{ phrase }\ |\ \textrm{corpus}) = \frac
 { \textrm{phrase count in corpus} + \delta }
-{ N + \delta n   }
+{ N + \delta n }
 \]
+where for a phrase of length $m$, $N$ is the count of all phrase instances of length $m$ in the corpus, $\delta$ is the smoothing parameter, and $n$ is the count of all phrase types of length $m$ in the corpus.  Essentially, there are independent models for unigram, bigram, and trigram phrases.
 
-where $\delta$ is the smoothing parameter, set to 0.5, $N$ is the \bto{TODO David what is it??}, and $n$ is the number of types for the phrase size; e.g. number of unique bigrams, if phrase is a bigram.  We did first try even simpler models, MLE and Laplace smoothing, but they gave poor results; since we were satisfied with Lidstone, we did not try more advanced models like Good-Turing, Kneser-Ney, ``stupid backoff,`` etc. \bto{cites}
+%Since we were satisfied with Lidstone, we did not try more advanced language models like Good-Turing, Kneser-Ney, etc.
+%.. interestingly, hacky MLE beat Lidstone for a while until tweaked syntactic analysis filtering \bto{explain if room}
 
-.. interestingly, hacky MLE beat Lidstone for a while until tweaked syntactic analysis filtering \bto{explain if room}
+The background corpus consists of several hundred thousand randomly collected Twitter messages from April 2008, which is admittedly small and limited.
+%.. Backgrond corpus .. say size, admit it's tiny ..
 
-.. Backgrond corpus .. say size, admit it's tiny ..
+It is interesting to compare our approach to TF/IDF for document retrieval, which estimates document relevance by balancing the frequency of query terms against their frequencies in a background corpus.  Note that the average Twitter message is 11 words long, and words rarely occur more than once in a message; thus, the count of a word is virtually the same as the count of messages it occurs in (DF and TF are the same).  If messages are considered documents, the notion of document TF is not very useful.  Our approach is more like TF for one giant document consisting of the concatenation of all query subcorpus messages.  This too is an odd analogy.  In general, we believe the microblog search problem will require creative formulations of cross-message phonemena beyond current paradigms in IR.
 
-It is well-known in the information retrieval literature that this  language model comparison approach is analogous to TF/IDF; e.g. \cite{manning_introduction_2008}.  Thus our approach might be vaguely compared to TF/IDF, which estimates document relevance by balancing the frequency of query terms against their frequencies in a background corpus.  Note that the average Twitter message is 11 words long, and words rarely occur more than once in a message; thus, the count of a word is virtually the same as the count of messages it occurs in (DF and TF are the same).  If messages are considered documents, the notion of document TF is not very useful.  Our approach is more like TF for one giant document consisting of the concatenation of all query subcorpus messages.  This too is an odd analogy.  In general, we believe the microblog search problem will require creative formulations of cross-message phonemena beyond current paradigms in IR.
-
-\subsection{Step N: Merge similar topics}
+\subsection{Step 3: Merge similar topics}
 
 \codenote{ deduper.py }
 Every candidate phrase defines a topic, a set of messages that contain that phrase.  Many phrases, however, occur in roughly the same set of messages, thus their topics are repetitive.  This is undesirable, so we seek to merge similar topics.
 
 First, there are easy merges between subsumed n-gram phrases of differing sizes.  Note that each of an n-gram's label-subsumed (n-1)-grams must conversely subsume its message set.  For example, the message set for the bigram topic ``swine flu'' must be a subset or equal to the two unigram topics ``swine'' and ``flu.''  If the ``swine flu'' topic is in fact equal to the ``flu'' topic, then we discard the ``flu'' topic, since ``swine flu'' is strictly better: we can move from ``flu'' to the more descriptively labeled ``swine flu'' without losing any messages.
 
-\bto{ LOL wish there was a way to incorporate http://xkcd.com/574/ }
+%\bto{ LOL wish there was a way to incorporate http://xkcd.com/574/ }
 
 But more generally, there are more difficult cases when topics roughly overlap; we should to merge topics if their message sets are sufficiently similar.  We use the Jaccard set similarity metric, which measures the size of the intersection, scaled from 0 to 1.  It has a value of 0\% if there are no shared messages, and is 100\% if all messages are shared; i.e, the topics are identical.  For topic message sets $s_1$ and $s_2$, merge the topics if:
 
@@ -141,72 +156,64 @@ But more generally, there are more difficult cases when topics roughly overlap; 
 \]
 Topic labels are ignored for this analysis.  All pairs of topics are compared, and final topics are connected components of the pairwise $Jacc \geq 0.9$ graph --- i.e., single-link clustering, so topics less than 90\% similar may end up merged.  When several topics are merged, only the intersection of messages is included in the new topic.  There is a label choice problem/opportunity for merged topics: any of the old topics' labels are now legitimate.  Our heuristic solution usually picks longer and higher scoring labels, and sometimes combines short labels into a skip n-gram.
 
-\subsection{Step N: Group near-duplicate messages}
+\subsection{Step 4: Group near-duplicate messages}
 
 \codenote{ deduper.py }
-When we implemented the basic topic system, a message duplication issue was revealed: the same, or nearly the same, textual message may be repeated many times.  People forward (``retweet'') interesting messages such as jokes and news headlines \bto{cite the new boyd et al paper?  kinda lame the wrote a whole paper on retweeting}; and furthermore, a seemingly huge number of bots repeat advertisements, spam, weather reports, news feeds, songs being played on the radio, other people's tweets, templated messages, etc.  It is a waste of space to always show near-duplicates to the search user; therefore we detect clusters of near-duplicates, display them with a single representative and numeric size, and allow them to be optionally viewed.  \bto{awkward}
+When we implemented the basic topic system, a message duplication issue was revealed: the same, or nearly the same, textual message may be repeated many times.  People forward (``retweet'') interesting messages such as jokes and news headlines; 
+%\bto{cite the new boyd et al paper?  kinda lame the wrote a whole paper on retweeting} 
+and furthermore, a seemingly huge number of bots repeat advertisements, spam, weather reports, news feeds, other people's tweets, songs being played on personalized Internet radio stations, templated messages, etc.  It is a waste of space to always show near-duplicates to the search user; therefore we detect clusters of near-duplicates, display them with a single representative and numeric size, and allow them optinally to be viewed.%  \bto{awkward}
 
-.. we use metainfo too
+%.. we use metainfo too
 
 The algorithm simply groups messages whose sets of trigrams have a pairwise Jaccard similarity exceeding 65\%.  (Using a trigram message index cuts down on the potentially quadratic runtime.)  This approximates finding a large shared phrase, since usually two messages share several trigrams only when they are overlapping trigrams from a larger shared n-gram.  We experimented with weighting trigrams by their inverse frequency in the general corpus, but this did not seem to improve results.   
 
 This technique seems to reliably find retweets and other forms of repetition; it also naturally groups together spam.
 
 
-\subsection{Step N: Finalize topics}
+\subsection{Step 5: Finalize topics}
 
 We are now left with a ranked list of topics containing messages in near-duplicate clusters.  After eliminating topics that contain only one near-duplicate cluster, the list is cut off to the top 40 topics, and all messages that did not end up in a topic are put in a catch-all ``more...'' topic.
 
 \section{User interface}
 
-Rather than the flat list of results commonly presented in Web search, we opted for a user interface inspired by faceted search, which has been shown to aid Web search tasks. \mikeyk{cite http://portal.acm.org/citation.cfm?id=567525}. This allows users to explore the breadth of related themes that might appear for a given search query.
+Rather than the flat list of results commonly presented in Web search, we opted for a user interface inspired by faceted search, which has been shown to aid Web search tasks \cite{hearst_findingflow_2002}.
+%\mikeyk{cite http://portal.acm.org/citation.cfm?id=567525}. 
+This allows users to explore the breadth of related themes that might appear for a given search query.
 
 TweetMotif's main UI is a two-column layout. The left column is a list of themes that are related to the current search term, while the right column presents actual tweets, grouped by theme. As themes are selected on the left column, a sample of tweets for that theme appears at the top of the right column, pushing down (but not removing) tweet results for any previously selected related themes. This allows users to explore and compare multiple related themes at once. 
 
 Color-coding is used to highlight occurrences of the original search term and of the currently selected related theme. The interface purposely focuses on the content of the message, rather than the timestamp or author.
 
-\mikeyk{ wasn't sure what the language we're using in the paper for themes etc, feel free to correct as needed }
+%\mikeyk{ wasn't sure what the language we're using in the paper for themes etc, feel free to %correct as needed }
 
 
 \section{Examples}
 
-.. TODO dredge up query logs, though not many people used it besides us
+Figure~\ref{screenshot} shows an example of using TweetMotif during the G20 summit meeting in 2009.  Many people were tweeting about the G20 protests in Pittsburgh, and many of the topics capture specific locations (``west penn hospital''), actors (``anarchists,'' ``riot police''), etc.  One of the co-authors used TweetMotif to learn where violent protests were taking place --- ``Baum and Liberty,'' a street intersection, appears as the first topic in the screenshot, and clicking on it reveals reports of protests that were happening there.  But checking again 15 minutes later, a new topic,  ``Baum and Morewood,'' had appeared: the protest had moved down a few blocks.
 
-.. twitterpornnames .. unfortunately i just grepped my incomplete tweet scrape and it's not there
+We have compiled many other examples as suggestions in the TweetMotif interface; it also shows the current Trending Topics as provided by Twitter.
 
-.. sentiment analysis example of some sort.  modifiers, not nouns.  completely unsupervised, biyatches!
-
-.. G20 protesters
-
-.. rumors: balloon boy ... damn maybe i lost that screenshot
-
-.. analyze a single person .. from:USERNAME .   (Only works on high-volume users due to search.twitter limitations.  e.g. from:mashable is nice)
-
-.. folk semantics: sandwich
-
-.. note various parts-of-speech
-
-.. text-topic infections: mother's day => sandwich; \#whoremembers => sandwich
-
-.. show some failures.  trending topics actually perform worst; best use case isn't chasing down these hot trends, but rather exploring the space of what exists on twitter.
-
-\section{Implementation Notes}
-
-surprisingly, it's fast enough to be usable, despite several steps with quadratic runtime and everything in pure python.  caching helps.  waiting on twitter search API is actually a bottleneck.  should be possible to scale this prototype into a full-fledged application.
+%\section{Implementation Notes}
+%
+%surprisingly, it's fast enough to be usable, despite several steps with quadratic runtime and %everything in pure python.  caching helps.  waiting on twitter search API is actually a %bottleneck.  should be possible to scale this prototype into a full-fledged application.
 
 \section{Related Work}
 
-Topic models; LSA, LSI, LDA ... also, k-means-style document clustering.  Clusty [[god is there anything else to cite by now??]].
+%Topic models; LSA, LSI, LDA ... also, k-means-style document clustering.  Clusty [[god is there anything else to cite by now??]].
 
-it's more like query refinement really.  cites ... scirus.com (by FAST and Elsevier)  ... also the major web search engines all do it, though usually not as faceted browsing interface
+%it's more like query refinement really.  cites ... scirus.com (by FAST and Elsevier)  ... also the major web search engines all do it, though usually not as faceted browsing interface
 
-.. on topic and clustering models ... All of these approaches suffer from the topic labeling problem. ..  By contrast, we unify the notions of topics and their labels.  This forces a deterministic relationship between a topic's label and the messages under that topic, which ensures maximum transparency to the user.
+%.. on topic and clustering models ... All of these approaches suffer from the topic labeling problem. ..  By contrast, we unify the notions of topics and their labels.  This forces a deterministic relationship between a topic's label and the messages under that topic, which ensures maximum transparency to the user.
 
-Another difference with previous topic modeling work is that topic-message relationships and representations are all discrete (boolean).  LSA/LSI is a vector topic model and LDA is a probabilistic topic model; TweetMotif's topic criteria might be formulated as a \emph{discrete topic model}.  Since user interfaces usually communicate discrete information --- e.g., lists of representative words, or the set of documents belonging to a topic --- the results of LSA, LDA, or document clustering usually have to be discretized anyways for a user interface.  Directly formulating discrete topic models may be a useful approach for future work in exploratory document collection analysis.  \bto{or .. ``combinatorial topic model'' was the other term i've been batting around.  both are zero hits on google!}
+In the blog and microblog search domain, much of the work on search has focused on its applications and unique characteristics relative to traditional Web search, though some work focuses on improving the search engine  itself. This work includes research that uses temporal data for clustering \cite{alonso_clustering_2009}, or applies information visualization techniques to aid search \cite{ferreira-twitviz}.
 
-In the blog and microblog search domain, much of the work on search has focused on its applications and unique characteristics relative to traditional Web search, though some work focuses on improving the search engine  itself. This work includes research that uses temporal data for clustering \mikeyk{cite: http://portal.acm.org/citation.cfm?id=1645953.1645968}, or applies information visualization techniques to aid search \mikeyk{ citation in comments below }.
+It is interesting to compare TweetMotif to previous work on topic modeling such as Latent Semantic Analysis / Indexing (LSA/LSI) and Dirichlet Topic Models (LDA).  In TweetMotif, unlike these
+models, all topic-message relationships and representations are discrete (boolean).  LSA/LSI is a vector topic model and LDA is a probabilistic topic model; TweetMotif's topic criteria might be formulated as a \emph{discrete topic model}.  Since user interfaces usually communicate discrete information --- e.g., lists of representative words, or the set of documents belonging to a topic --- the results of LSA, LDA, or document clustering usually have to be discretized anyways for a user interface.  Directly formulating discrete topic models may be a useful approach for future work in exploratory document collection analysis.  %\bto{or .. ``combinatorial topic model'' was the other term i've been batting around.  both are zero hits on google!}
 
-% http://scholar.google.com/scholar.bib?q=info:-YwvIrwhSvYJ:scholar.google.com/&output=citation&hl=en&as_sdt=2000&ct=citation&cd=3 ~mikeyk
+
+%The topic and navigation system may be compared to query refinement, which helps a user  or topic models
+
+%Our topic-finding system bears a 
 
 
 \bibliography{tweetmotif.bib}
