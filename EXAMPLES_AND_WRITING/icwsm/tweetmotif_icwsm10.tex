@@ -58,7 +58,7 @@ On the microblogging service Twitter, users post millions of very short messages
 
 Our system, TweetMotif, responds to user queries, first retrieving several hundred recent matching messages from a simple index; we use the Twitter Search API.
 
-Instead of simply showing this result set as a list, TweetMotif extracts a set of topics to group and summarize these messages.  A topic is simultaneously characterized by (1) a 1- to 3-word textual label, and (2) a set of messages, whose texts must all contain the label.
+Instead of simply showing this result set as a list, TweetMotif extracts a set of themes (topics) to group and summarize these messages.  A topic is simultaneously characterized by (1) a 1- to 3-word textual label, and (2) a set of messages, whose texts must all contain the label.
 
 TweetMotif's user interface is inspired by faceted search, which has been shown to aid Web search tasks \cite{hearst_findingflow_2002}.
 The main screen is a two-column layout. The left column is a list of themes that are related to the current search term, while the right column presents actual tweets, grouped by theme. As themes are selected on the left column, a sample of tweets for that theme appears at the top of the right column, pushing down (but not removing) tweet results for any previously selected related themes. This allows users to explore and compare multiple related themes at once. 
@@ -72,12 +72,12 @@ The set of topics is chosen to try to satisfy several criteria, which often conf
 \item Topic size: A topic that includes too few messages is bad; it is overly specific.
 \item Small number of topics: Screen real-estate and concomitant user cognitive load are limited resources.
 \end{enumerate}
-The goal is to provide the user a concise summary of themes and variation in the query subcorpus, then allow the user to navigate to individual topics to see their associated messages, and allow recursive drilldown.  We heuristically fulfill these desiderata through several stages of analysis.
+The goal is to provide the user a concise summary of themes and variation in the query subcorpus, then allow the user to navigate to individual topics to see their associated messages, and allow recursive drilldown.  The approach is related to document clustering (though a message can belong to multiple topics) and text summarization (topic labels are a high-relevance subset of text across messages).  We heuristically proceed through several stages of analysis.
 
 
 \subsection{Step 1: Tokenization and syntactic filtering}
 
-Tokenization is difficult in the social media domain, and good tokenization is absolutely crucial for overall system performance.  Standard tokenizers, usually designed for newspapers or biomedical publications, perform poorly.  Our custom regex-based tokenizer correctly handles hashtags, @-replies, abbreviations, and punctuation, while preserving emoticons and unicode glyphs (e.g. musical notes) as lexical items.
+Tokenization is difficult in the social media domain, and good tokenization is absolutely crucial for overall system performance.  Standard tokenizers, usually designed for newspapers or scientific publications, perform poorly.  Our regex-based tokenizer treats hashtags, @-replies, abbreviations, strings of punctuation, emoticons and unicode glyphs (e.g. musical notes) as tokens.
 
 Unigrams are too narrow a unit of analysis; ideally, we want to extract all phrases and subphrases.  We begin with all unigrams, bigrams, and trigrams, discarding unigrams that are function words, and discarding bigrams and trigrams that cross syntactic boundaries. These rules flag n-grams including certain types of punctuation tokens in certain positions, and ones that end with certain right-binding function words like ``the'' and ``of.''  This simple syntactic filtering greatly improves the coherency of extracted n-grams.
 
@@ -101,7 +101,7 @@ where for a phrase of length $m$, $N$ is the count of all phrase instances of le
 %Since we were satisfied with Lidstone, we did not try more advanced language models like Good-Turing, Kneser-Ney, etc.
 %.. interestingly, hacky MLE beat Lidstone for a while until tweaked syntactic analysis filtering \bto{explain if room}
 
-The background corpus consists of 150,000 Twitter messages collected in April 2008 from search queries for \emph{the}, \emph{of} and several other common English function words.
+The background corpus consists of 150,000 Twitter messages collected in April 2009 from search queries for \emph{the}, \emph{of} and several other common English function words.
 %.. Backgrond corpus .. say size, admit it's tiny ..
 
 It is interesting to compare our approach to TF/IDF for document retrieval, which estimates document relevance by balancing the frequency of query terms against their frequencies in a background corpus.  Note that the average Twitter message is 11 words long, and words rarely occur more than once in a message; thus, the count of a word is virtually the same as the count of messages it occurs in (DF and TF are the same).  If messages are considered documents, the notion of document TF is not very useful.  Our approach is more like TF for one giant document consisting of the concatenation of all query subcorpus messages.  This too is an odd analogy.  In general, we believe the microblog search problem will require creative formulations of cross-message phonemena beyond current paradigms in IR.
@@ -121,13 +121,13 @@ Grouping messages by topic reveals a massive amount of message duplication on Tw
 and furthermore, a seemingly huge number of bots repeat advertisements, spam, weather reports, news feeds, other people's tweets, songs being played on personalized Internet radio stations, templated messages, etc.
 It is a waste of space to always show near-duplicates to the search user; therefore we detect clusters of near-duplicates, display them with a single representative and numeric size, and allow them optionally to be viewed.  The algorithm groups messages whose sets of trigrams have a pairwise Jaccard similarity exceeding 65\%.  (For this and the topic merging step, using phrase-message indexes cuts down on the potentially quadratic runtime.)
 
-This technique seems to reliably find retweets and other forms of repetition; it also naturally groups together spam, which was very prevalent in 2008 when we developed TweetMotif.
+This technique seems to reliably find retweets and other forms of repetition; it also naturally groups together spam.  This was very important in mid-2009 when we developed TweetMotif, when spam was very prevalent and retweets were not explicitly marked in the data.
 
 \subsection{Step 5: Finalize topics}
 
 We are now left with a ranked list of topics containing messages in near-duplicate clusters.  After eliminating topics that contain only one near-duplicate cluster, the list is cut off to the top 40 topics, and all messages that did not end up in a topic are put in a catch-all ``more...'' topic.
 
-Unlike Latent Semantic Analysis or Latent Dirichlet Allocation, our approach can be executed very rapidly.  All the above analysis is conducted on the result set while the user waits.
+All the above analysis is conducted on the result set while the user waits.  A demo, examples, and source code are available at http://tweetmotif.com.
 
 %The topic and navigation system may be compared to query refinement, which helps a user  or topic models
 
