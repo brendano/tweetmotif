@@ -1,3 +1,9 @@
+## Uses the scotch WSGI recorder http://darcs.idyll.org/~t/projects/scotch/doc/
+##  (which is super cool)
+## To exactly save HTTP inputs/outputs of the backend service
+## To exactly reproduce situations and behaviors
+## e.g. for performance profiling
+
 # python scotchy.py record
 # python -mcProfile -s cumulative scotchy.py play
 # anyall.org/chunk.py

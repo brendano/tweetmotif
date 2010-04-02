@@ -9,8 +9,10 @@ built on top of the search.twitter.com API.
 
 Please see http://tweetmotif.com/
 
-Please see the TweetMotif paper (there is a copy in `EXAMPLES_AND_WRITING`, or else
-linked off of http://tweetmotif.com/about) for an overview of the system.
+Please see the TweetMotif paper (inside `EXAMPLES_AND_WRITING`, or a
+[copy at this link][1]) for an overview of the system.
+
+[1]: http://anyall.org/oconnor_krieger_ahn.icwsm2010.tweetmotif.pdf
 
 Running TweetMotif
 ------------------
