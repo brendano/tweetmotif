@@ -6,7 +6,6 @@ __version__= "april 2009"
 
 #from __future__ import print_function
 import re,sys
-import util
 
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 #SMILEY = mycompile(r'[:=].{0,1}[\)dpD]')

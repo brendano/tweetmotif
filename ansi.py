@@ -1,5 +1,7 @@
 """ Terminal coloring via ANSI escape codes """
 
+# 'termcolor' package is better than this. this should be considered deprecated.
+
 def color(s, *codes):
   if len(codes)==0: raise Exception("what color, yo?")
   if len(codes)>1: codes = sorted(codes, key=code_precedence)

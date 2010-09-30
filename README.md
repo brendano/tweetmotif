@@ -1,23 +1,36 @@
 TweetMotif
 =========
 
+TweetMotif is a faceted/topic/summarizing search system for Twitter,
+built on top of the search.twitter.com API.  http://tweetmotif.com
+
+
+Do you just want the tokenizer?
+===============================
+
+All you need is two files:
+
+* [twokenize.py][t]
+* [emoticons.py][e]
+
+[t]: http://github.com/brendano/tweetmotif/raw/master//twokenize.py
+[e]: http://github.com/brendano/tweetmotif/raw/master//emoticons.py
+
+
+More on TweetMotif
+------------------
+
 By Brendan O'Connor, Michel Krieger, and David Ahn. 
 Written over April-May 2009 and released April 2010.
 
-TweetMotif is a faceted/topic/summarizing search system for Twitter,
-built on top of the search.twitter.com API.
-
-Please see http://tweetmotif.com/
-
-Please see the TweetMotif paper (inside `EXAMPLES_AND_WRITING`, or a
-[copy at this link][1]) for an overview of the system.
+The TweetMotif paper (inside `EXAMPLES_AND_WRITING`, or a
+[copy at this link][1]) overviews the system.
 
 [1]: http://anyall.org/oconnor_krieger_ahn.icwsm2010.tweetmotif.pdf
 
+
 Running TweetMotif
 ------------------
-
-Sorry, no guide for setup.
 
 Prerequisites
 
@@ -63,13 +76,6 @@ primitive frontend for development purposes there.
 ### Frontend
 
 The frontend is Django.  See *djfrontend/*.
-
-
-Tweet text analysis code
-------------------------
-
-See `emoticons.py` and `twokenize.py` for code that might be useful for other
-Twitter text analysis projects.
 
 
 License

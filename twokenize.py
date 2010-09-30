@@ -11,7 +11,6 @@ __author__="brendan o'connor (anyall.org)"
 
 import re,sys
 import emoticons
-import util
 mycompile = lambda pat:  re.compile(pat,  re.UNICODE)
 def regex_or(*items):
   r = '|'.join(items)
@@ -67,6 +66,8 @@ assert '-' != '―'
 Separators = regex_or('--+', '―')
 Decorations = r' [  ♫   ]+ '.replace(' ','')
 
+EmbeddedApostrophe = r"\S+'\S+"
+
 ProtectThese = [
     emoticons.Emoticon,
     Url,
@@ -78,6 +79,7 @@ ProtectThese = [
     ArbitraryAbbrev,
     Separators,
     Decorations,
+    EmbeddedApostrophe,
 ]
 Protect_RE = mycompile(regex_or(*ProtectThese))
 
@@ -116,8 +118,13 @@ def align(toks, orig):
 
 class AlignmentFailed(Exception): pass
 
+def unicodify(s, encoding='utf8', *args):
+  if isinstance(s,unicode): return s
+  if isinstance(s,str): return s.decode(encoding, *args)
+  return unicode(s)
+
 def tokenize(tweet):
-  text = util.unicodify(tweet)
+  text = unicodify(tweet)
   text = squeeze_whitespace(text)
   t = Tokenization()
   t += simple_tokenize(text)
@@ -154,7 +161,22 @@ def simple_tokenize(text):
     res += goods[i]
     res.append(bads[i])
   res += goods[-1]
+
+  res = post_process(res)
   return res
+
+AposS = mycompile(r"(\S+)('s)$")
+
+def post_process(pre_toks):
+  # hacky: further splitting of certain tokens
+  post_toks = []
+  for tok in pre_toks:
+    m = AposS.search(tok)
+    if m:
+      post_toks += m.groups()
+    else:
+      post_toks.append( tok )
+  return post_toks
 
 WS_RE = mycompile(r'\s+')
 def squeeze_whitespace(s):
@@ -180,10 +202,10 @@ def unprotected_tokenize(s):
   return s.split()
 
 if __name__=='__main__':
-  import ansi
-  util.fix_stdio()
   for line in sys.stdin:
-    print " ".join(tokenize(line[:-1]))
+    print u" ".join(tokenize(line[:-1])).encode('utf-8')
+    #print "CUR\t" + " ".join(tokenize(line[:-1]))
+    #print "WS\t" + " ".join(line[:-1].split())
     #print ansi.color(line.strip(),'red')
     #print ansi.color(" ".join(tokenize(line.strip())),'blue','bold')
 
