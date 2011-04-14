@@ -28,20 +28,37 @@ PunctChars = r'''['“".?!,:;]'''
 Punct = '%s+' % PunctChars
 Entity = '&(amp|lt|gt|quot);'
 
-# one-liner URL recognition:
-#Url = r'''https?://\S+'''
-
-# more complex version:
-UrlStart1 = regex_or('https?://', r'www\.')
-CommonTLDs = regex_or('com','co\\.uk','org','net','info','ca')
-UrlStart2 = r'[a-z0-9\.-]+?' + r'\.' + CommonTLDs + pos_lookahead(r'[/ \W\b]')
-UrlBody = r'[^ \t\r\n<>]*?'  # * not + for case of:  "go to bla.com." -- don't want period
-UrlExtraCrapBeforeEnd = '%s+?' % regex_or(PunctChars, Entity)
-UrlEnd = regex_or( r'\.\.+', r'[<>]', r'\s', '$')
-Url = (r'\b' + 
-    regex_or(UrlStart1, UrlStart2) + 
-    UrlBody + 
-    pos_lookahead( optional(UrlExtraCrapBeforeEnd) + UrlEnd))
+# Url Regex from http://daringfireball.net/2010/07/improved_regex_for_matching_urls
+# should handle bit.ly, goog.gl, t.co, mailto:, urls with unicode, etc.
+Url = r'''
+(?xi)
+\b
+(                           # Capture 1: entire matched URL
+  (?:
+    [a-z][\w-]+:                # URL protocol and colon
+    (?:
+      /{1,3}                        # 1-3 slashes
+      |                             #   or
+      [a-z0-9%]                     # Single letter or digit or '%'
+                                    # (Trying not to match e.g. "URI::Escape")
+    )
+    |                           #   or
+    www\d{0,3}[.]               # "www.", "www1.", "www2." … "www999."
+    |                           #   or
+    [a-z0-9.\-]+[.][a-z]{2,4}/  # looks like domain name followed by a slash
+  )
+  (?:                           # One or more:
+    [^\s()<>]+                      # Run of non-space, non-()<>
+    |                               #   or
+    \(([^\s()<>]+|(\([^\s()<>]+\)))*\)  # balanced parens, up to 2 levels
+  )+
+  (?:                           # End with:
+    \(([^\s()<>]+|(\([^\s()<>]+\)))*\)  # balanced parens, up to 2 levels
+    |                                   #   or
+    [^\s`!()\[\]{};:'".,<>?«»“”‘’]        # not a space or one of these punct chars
+  )
+)
+'''
 
 Url_RE = re.compile("(%s)" % Url, re.U|re.I)
 
