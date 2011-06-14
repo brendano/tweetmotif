@@ -16,6 +16,11 @@ All you need is two files:
 [t]: http://github.com/brendano/tweetmotif/raw/master//twokenize.py
 [e]: http://github.com/brendano/tweetmotif/raw/master//emoticons.py
 
+Scala port
+==========
+
+There is now a Scala port: https://bitbucket.org/jasonbaldridge/twokenize/
+
 
 More on TweetMotif
 ------------------
