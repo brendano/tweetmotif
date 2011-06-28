@@ -16,6 +16,11 @@ All you need is two files:
 [t]: http://github.com/brendano/tweetmotif/raw/master//twokenize.py
 [e]: http://github.com/brendano/tweetmotif/raw/master//emoticons.py
 
+If you use it in research, please cite:
+
+Brendan O'Connor, Michel Krieger, and David Ahn.  TweetMotif: Exploratory Search and Topic Summarization for Twitter.  ICWSM-2010.
+
+
 Scala port
 ==========
 
