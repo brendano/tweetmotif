@@ -18,7 +18,7 @@ All you need is two files:
 
 If you use it in research, please cite:
 
-Brendan O'Connor, Michel Krieger, and David Ahn.  TweetMotif: Exploratory Search and Topic Summarization for Twitter.  ICWSM-2010.
+* Brendan O'Connor, Michel Krieger, and David Ahn.  TweetMotif: Exploratory Search and Topic Summarization for Twitter.  ICWSM-2010.
 
 
 Scala port
