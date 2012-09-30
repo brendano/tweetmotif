@@ -21,10 +21,12 @@ If you use it in research, please cite:
 * Brendan O'Connor, Michel Krieger, and David Ahn.  TweetMotif: Exploratory Search and Topic Summarization for Twitter.  ICWSM-2010.
 
 
-Scala port
-==========
+Latest version (Java)
+=====================
 
-There is now a Scala port: https://bitbucket.org/jasonbaldridge/twokenize/
+The latest version, with a number of improvements, is in Java.
+We released a new version Sept. 2012.
+See the explanation and links at: http://www.ark.cs.cmu.edu/TweetNLP
 
 
 More on TweetMotif
