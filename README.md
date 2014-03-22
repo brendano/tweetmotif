@@ -13,8 +13,8 @@ All you need is two files:
 * [twokenize.py][t]
 * [emoticons.py][e]
 
-[t]: http://github.com/brendano/tweetmotif/raw/master//twokenize.py
-[e]: http://github.com/brendano/tweetmotif/raw/master//emoticons.py
+[t]: http://github.com/brendano/tweetmotif/raw/master/twokenize.py
+[e]: http://github.com/brendano/tweetmotif/raw/master/emoticons.py
 
 If you use it in research, please cite:
 
