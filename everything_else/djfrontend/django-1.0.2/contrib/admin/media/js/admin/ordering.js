@@ -109,7 +109,7 @@ function getOrder() {
 }
 
 function setOrder(id_list) {
-    /* Set the current order to match the lsit of IDs */
+    /* Set the current order to match the list of IDs */
     var temp_lis = new Array();
     for (var i = 0; i < id_list.length; i++) {
         var id = 'p' + id_list[i];

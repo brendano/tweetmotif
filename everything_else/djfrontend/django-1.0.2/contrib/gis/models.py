@@ -13,7 +13,7 @@ if HAS_GDAL:
 class SpatialRefSysMixin(object):
     """
     The SpatialRefSysMixin is a class used by the database-dependent
-    SpatialRefSys objects to reduce redundnant code.
+    SpatialRefSys objects to reduce redundant code.
     """
 
     # For pulling out the spheroid from the spatial reference string. This
