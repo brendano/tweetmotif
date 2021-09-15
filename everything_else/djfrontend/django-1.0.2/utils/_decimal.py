@@ -2249,7 +2249,7 @@ class Context(object):
 
         If the flag is in _ignored_flags, returns the default response.
         Otherwise, it increments the flag, then, if the corresponding
-        trap_enabler is set, it reaises the exception.  Otherwise, it returns
+        trap_enabler is set, it raises the exception.  Otherwise, it returns
         the default value after incrementing the flag.
         """
         error = _condition_map.get(condition, condition)
